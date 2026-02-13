@@ -47,9 +47,18 @@ if not EMAIL_HOST_PASSWORD:
 SECRET_KEY = 'django-insecure-w6l#63d_5j6!w@%w=9&m)!*lqdlaq46d6s*gtfr5pyn0e&ti7d'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'archives-sable.vercel.app',
+    '.vercel.app',
+    'localhost',
+    '127.0.0.1',
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://archives-sable.vercel.app',
+]
 
 
 # Application definition
