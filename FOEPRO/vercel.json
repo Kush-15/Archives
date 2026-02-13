@@ -1,13 +1,12 @@
 {
   "version": 2,
   "buildCommand": "python manage.py collectstatic --noinput",
-  "builds": [
-    {
-      "src": "FOEPRO/wsgi.py",
-      "use": "@vercel/python",
-      "config": { "maxLambdaSize": "15mb" }
+  "functions": {
+    "FOEPRO/wsgi.py": {
+      "runtime": "python3.12",
+      "maxDuration": 30
     }
-  ],
+  },
   "routes": [
     {
       "src": "/static/(.*)",
