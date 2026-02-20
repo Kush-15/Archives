@@ -16,6 +16,7 @@ import os
 import dj_database_url
 from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
+import warnings
 
 # Project base directory
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -40,7 +41,6 @@ DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER)
 
 # Warn if password is not set so it's obvious during development
 if not EMAIL_HOST_PASSWORD:
-    import warnings
     warnings.warn("EMAIL_HOST_PASSWORD not set in environment; email sending may fail", RuntimeWarning)
 
 # Email configuration
@@ -62,7 +62,10 @@ else:
 if DEBUG:
     SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-only-insecure-secret-key')
 else:
-    SECRET_KEY = get_env("SECRET_KEY", required=True)
+    SECRET_KEY = os.environ.get('SECRET_KEY')
+    if not SECRET_KEY:
+        warnings.warn("SECRET_KEY not set in environment; using temporary fallback key", RuntimeWarning)
+        SECRET_KEY = 'temporary-fallback-key-change-in-production'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 
@@ -136,8 +139,7 @@ if database_url:
         )
     }
 else:
-    if not DEBUG:
-        raise ImproperlyConfigured("DATABASE_URL is required when DEBUG=False")
+    warnings.warn("DATABASE_URL not set; falling back to SQLite", RuntimeWarning)
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
