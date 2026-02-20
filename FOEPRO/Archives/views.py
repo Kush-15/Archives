@@ -206,7 +206,7 @@ def api_signin(request):
     """API endpoint for sign-in via AJAX"""
     try:
         data = json.loads(request.body)
-        email = data.get('email')
+        email = (data.get('email') or '').strip().lower()
         password = data.get('password')
         
         if not email or not password:
@@ -216,7 +216,7 @@ def api_signin(request):
             }, status=400)
         
         try:
-            user = User.objects.get(email=email)
+            user = User.objects.get(email__iexact=email)
             if user.verify_password(password):
                 if user.is_active:
                     # Use Django auth login to update last_login
@@ -255,7 +255,8 @@ def api_signin(request):
         # Convert DB failures into a stable API contract so frontend can show a meaningful message.
         logger.exception('Database error during signin')
         return JsonResponse({
-            'ok': False,
+            'status': 'error',
+            'message': 'Service unavailable. Please try again later.',
             'error': 'service_unavailable',
             'detail': 'database error'
         }, status=503)
@@ -263,7 +264,8 @@ def api_signin(request):
         # Fallback to avoid exposing tracebacks to end users.
         logger.exception('Unhandled exception in signin')
         return JsonResponse({
-            'ok': False,
+            'status': 'error',
+            'message': 'Internal server error',
             'error': 'internal_error'
         }, status=500)
 
@@ -277,7 +279,7 @@ def api_signup(request):
         
         # Validate required fields
         username = data.get('username', '').strip()
-        email = data.get('email', '').strip()
+        email = data.get('email', '').strip().lower()
         phone = data.get('phone', '').strip()
         password = data.get('password', '')
         
