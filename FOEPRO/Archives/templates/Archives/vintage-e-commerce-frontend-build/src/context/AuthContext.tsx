@@ -68,9 +68,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { ok: true };
       }
 
-      return { ok: false, message: data.message || 'Invalid credentials' };
+      // Show backend detail only in development to aid debugging without leaking internals in production.
+      const backendDetail = data?.detail || data?.error || data?.message;
+      const safeMessage = import.meta.env.DEV
+        ? (backendDetail || 'Server error')
+        : (data?.message || 'Invalid credentials');
+      return { ok: false, message: safeMessage };
     } catch (e) {
-      return { ok: false, message: 'Network error' };
+      const errorMessage = e instanceof Error ? e.message : '';
+      return {
+        ok: false,
+        message: import.meta.env.DEV && errorMessage ? `Network error: ${errorMessage}` : 'Network error'
+      };
     }
   };
 

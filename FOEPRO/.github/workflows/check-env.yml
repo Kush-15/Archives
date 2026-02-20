@@ -1,0 +1,38 @@
+name: env-check
+
+on: [push, pull_request]
+
+jobs:
+  check-env:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: pip install -r requirements.txt
+
+      - name: Quick env var check
+        env:
+          SECRET_KEY: ${{ secrets.SECRET_KEY || '' }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL || '' }}
+        run: |
+          python - <<'PY'
+          import os, sys
+          needed = ["SECRET_KEY", "DATABASE_URL"]
+          missing = [k for k in needed if not os.environ.get(k)]
+          if missing:
+              print("Missing env vars:", missing)
+              sys.exit(1)
+          print("Env check OK")
+          PY
+
+      - name: Django system check
+        env:
+          SECRET_KEY: ${{ secrets.SECRET_KEY || '' }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL || '' }}
+        run: python manage.py check

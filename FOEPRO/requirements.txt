@@ -1,5 +1,6 @@
 Django==5.2.10
-psycopg2-binary
+psycopg2-binary>=2.9
+dj-database-url>=1.0
 python-dotenv
 djangorestframework
 whitenoise

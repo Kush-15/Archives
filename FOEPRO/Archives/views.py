@@ -8,6 +8,7 @@ from django.conf import settings
 from django.utils import timezone
 from django.templatetags.static import static
 from django.template import TemplateDoesNotExist
+from django.db import DatabaseError
 from .models import User, Product
 from .forms import UserSignUpForm, UserSignInForm
 import json
@@ -250,6 +251,21 @@ def api_signin(request):
             'status': 'error',
             'message': 'Invalid JSON'
         }, status=400)
+    except DatabaseError:
+        # Convert DB failures into a stable API contract so frontend can show a meaningful message.
+        logger.exception('Database error during signin')
+        return JsonResponse({
+            'ok': False,
+            'error': 'service_unavailable',
+            'detail': 'database error'
+        }, status=503)
+    except Exception:
+        # Fallback to avoid exposing tracebacks to end users.
+        logger.exception('Unhandled exception in signin')
+        return JsonResponse({
+            'ok': False,
+            'error': 'internal_error'
+        }, status=500)
 
 
 @csrf_exempt

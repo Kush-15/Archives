@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 # near top of settings.py
 import os
+import dj_database_url
+from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 
 # Project base directory
@@ -20,6 +22,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Load local .env (not committed). This makes local dev easier and avoids needing setx.
 load_dotenv(BASE_DIR / '.env')
+
+
+def get_env(key, default=None, required=False):
+    val = os.environ.get(key, default)
+    if required and (val is None or val == ""):
+        raise ImproperlyConfigured(f"Environment variable {key} is required but not set.")
+    return val
 
 EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
 EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')  # SMTP hostname
@@ -43,8 +52,13 @@ if not EMAIL_HOST_PASSWORD:
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-w6l#63d_5j6!w@%w=9&m)!*lqdlaq46d6s*gtfr5pyn0e&ti7d'
+# Simple runtime warning turned into immediate error at startup to avoid mysterious 500s:
+try:
+    # Check a minimal expected env var (SECRET_KEY) on startup so we fail visibly during build/deploy.
+    SECRET_KEY = get_env("SECRET_KEY", required=True)
+except ImproperlyConfigured:
+    # Reraise so build/deploy logs show the missing env variable clearly.
+    raise
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
@@ -108,33 +122,14 @@ TEMPLATES = [
 WSGI_APPLICATION = 'FOEPRO.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-
-DB_NAME = os.getenv('DB_NAME')
-
-if DB_NAME:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': DB_NAME,
-            'USER': os.getenv('DB_USER'),
-            'PASSWORD': os.getenv('DB_PASSWORD'),
-            'HOST': os.getenv('DB_HOST'),
-            'PORT': os.getenv('DB_PORT'),
-            'CONN_MAX_AGE': int(os.getenv('CONN_MAX_AGE', 0)),
-            'OPTIONS': {
-                'sslmode': 'require',
-            },
-        }
-    }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
+# DATABASE
+DATABASES = {
+    "default": dj_database_url.config(
+        default=get_env("DATABASE_URL", required=True),
+        conn_max_age=600,
+        ssl_require=True,  # required for Supabase
+    )
+}
 
 
 # Password validation
@@ -171,30 +166,16 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-# Basic logging to console so exceptions are visible during development
+# Basic logging to capture DB errors to stdout (visible in deploy logs)
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-        },
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {"class": "logging.StreamHandler"},
     },
-    'root': {
-        'handlers': ['console'],
-        'level': 'WARNING',
-    },
-    'loggers': {
-        'Archives': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-            'propagate': False,
-        },
-        # module-level logger
-        '': {
-            'handlers': ['console'],
-            'level': 'INFO',
-        },
+    "root": {
+        "handlers": ["console"],
+        "level": os.environ.get("DJANGO_LOG_LEVEL", "INFO"),
     },
 }
 
