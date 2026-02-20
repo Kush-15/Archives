@@ -162,10 +162,6 @@ elif all([db_name, db_user, db_password, db_host]):
         }
     }
 else:
-    if os.environ.get("VERCEL") and not DEBUG:
-        raise ImproperlyConfigured(
-            "No Postgres config found. Set DATABASE_URL (or POSTGRES_URL/POSTGRESQL_URL/SUPABASE_DB_URL) in Vercel."
-        )
     warnings.warn("DATABASE_URL not set and DB_* incomplete; falling back to SQLite", RuntimeWarning)
     DATABASES = {
         "default": {
