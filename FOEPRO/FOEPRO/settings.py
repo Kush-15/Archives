@@ -52,16 +52,19 @@ if not EMAIL_HOST_PASSWORD:
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
-# Simple runtime warning turned into immediate error at startup to avoid mysterious 500s:
-try:
-    # Check a minimal expected env var (SECRET_KEY) on startup so we fail visibly during build/deploy.
+# Keep production strict, but allow local development to start quickly.
+_debug_raw = os.environ.get('DEBUG')
+if _debug_raw is None:
+    DEBUG = not bool(os.environ.get('VERCEL'))
+else:
+    DEBUG = _debug_raw.lower() in ('1', 'true', 'yes', 'on')
+
+if DEBUG:
+    SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-only-insecure-secret-key')
+else:
     SECRET_KEY = get_env("SECRET_KEY", required=True)
-except ImproperlyConfigured:
-    # Reraise so build/deploy logs show the missing env variable clearly.
-    raise
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = [
     'archives-sable.vercel.app',
@@ -123,13 +126,24 @@ WSGI_APPLICATION = 'FOEPRO.wsgi.application'
 
 
 # DATABASE
-DATABASES = {
-    "default": dj_database_url.config(
-        default=get_env("DATABASE_URL", required=True),
-        conn_max_age=600,
-        ssl_require=True,  # required for Supabase
-    )
-}
+database_url = os.environ.get("DATABASE_URL")
+if database_url:
+    DATABASES = {
+        "default": dj_database_url.config(
+            default=database_url,
+            conn_max_age=600,
+            ssl_require=True,
+        )
+    }
+else:
+    if not DEBUG:
+        raise ImproperlyConfigured("DATABASE_URL is required when DEBUG=False")
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 
 
 # Password validation
