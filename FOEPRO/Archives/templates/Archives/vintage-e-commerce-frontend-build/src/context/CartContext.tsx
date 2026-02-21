@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { Product } from '@/data/products';
+import { useAuth } from './AuthContext';
 
 export interface CartItem {
   product: Product;
@@ -21,18 +22,28 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('archives-cart');
-      return saved ? JSON.parse(saved) : [];
-    }
-    return [];
-  });
+  const { user } = useAuth();
+  const [items, setItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
 
+  // Load cart from user-specific localStorage on mount or user change
   useEffect(() => {
-    localStorage.setItem('archives-cart', JSON.stringify(items));
-  }, [items]);
+    if (typeof window !== 'undefined') {
+      if (user?.email) {
+        const saved = localStorage.getItem(`archives-cart-${user.email}`);
+        setItems(saved ? JSON.parse(saved) : []);
+      } else {
+        setItems([]);
+      }
+    }
+  }, [user?.email]);
+
+  // Save cart to user-specific localStorage when items change
+  useEffect(() => {
+    if (user?.email) {
+      localStorage.setItem(`archives-cart-${user.email}`, JSON.stringify(items));
+    }
+  }, [items, user?.email]);
 
   const addToCart = (product: Product) => {
     setItems(prev => {
