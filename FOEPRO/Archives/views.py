@@ -325,15 +325,26 @@ def api_signup(request):
         user.otp_created_at = timezone.now()
         user.save()
         
-        # Send OTP via email
-        # Ensure credentials are available to authenticate with SMTP
+        # Send OTP via email. If SMTP isn't configured, auto-verify so signup still works.
         if not settings.EMAIL_HOST_PASSWORD or not settings.EMAIL_HOST_USER:
-            # Keep the user record so they can retry; don't delete it
-            logger.warning('EMAIL_HOST_USER or EMAIL_HOST_PASSWORD missing; cannot send OTP for %s', email)
+            logger.warning('EMAIL_HOST_USER or EMAIL_HOST_PASSWORD missing; auto-verifying user %s', email)
+            user.is_verified = True
+            user.otp = None
+            user.otp_created_at = None
+            user.save(update_fields=['is_verified', 'otp', 'otp_created_at'])
+
+            login(request, user, backend=_get_auth_backend())
+
             return JsonResponse({
-                'status': 'error',
-                'message': 'Email sending not configured. Please set EMAIL_HOST_USER and EMAIL_HOST_PASSWORD in environment.'
-            }, status=500)
+                'status': 'success',
+                'message': 'Account created successfully.',
+                'requires_otp': False,
+                'user': {
+                    'id': user.id,
+                    'username': user.username,
+                    'email': user.email
+                }
+            })
 
         try:
             send_mail(
@@ -391,7 +402,7 @@ def api_resend_otp(request):
             return JsonResponse({'status': 'error', 'message': 'User not found'}, status=404)
 
         if user.is_verified:
-            return JsonResponse({'status': 'error', 'message': 'User already verified'}, status=400)
+            return JsonResponse({'status': 'success', 'message': 'User is already verified.', 'requires_otp': False})
 
         # Generate new OTP
         otp = ''.join(random.choices(string.digits, k=6))
