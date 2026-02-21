@@ -98,19 +98,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const data = await res.json();
       if (res.ok && data.status === 'success') {
-        setIsAuthModalOpen(false);
-
-        if (data.requires_otp === false) {
-          const userObj = data.user || { email, username };
-          const name = userObj.username || username || email.split('@')[0];
-          const savedItems = JSON.parse(localStorage.getItem(`archives-saved-${email}`) || '[]');
-          setPendingVerificationEmail(null);
-          setIsOtpModalOpen(false);
-          setUser({ email: userObj.email || email, name, savedItems });
-          return { ok: true };
-        }
-
         // Backend created user and sent OTP. Keep user pending verification and open OTP modal
+        setIsAuthModalOpen(false);
         setPendingVerificationEmail(email);
         setIsOtpModalOpen(true);
         return { ok: true };

@@ -325,26 +325,13 @@ def api_signup(request):
         user.otp_created_at = timezone.now()
         user.save()
         
-        # Send OTP via email. If SMTP isn't configured, auto-verify so signup still works.
+        # Send OTP via email
         if not settings.EMAIL_HOST_PASSWORD or not settings.EMAIL_HOST_USER:
-            logger.warning('EMAIL_HOST_USER or EMAIL_HOST_PASSWORD missing; auto-verifying user %s', email)
-            user.is_verified = True
-            user.otp = None
-            user.otp_created_at = None
-            user.save(update_fields=['is_verified', 'otp', 'otp_created_at'])
-
-            login(request, user, backend=_get_auth_backend())
-
+            logger.warning('EMAIL_HOST_USER or EMAIL_HOST_PASSWORD missing; cannot send OTP for %s', email)
             return JsonResponse({
-                'status': 'success',
-                'message': 'Account created successfully.',
-                'requires_otp': False,
-                'user': {
-                    'id': user.id,
-                    'username': user.username,
-                    'email': user.email
-                }
-            })
+                'status': 'error',
+                'message': 'Email sending not configured. Please set EMAIL_HOST_USER and EMAIL_HOST_PASSWORD in environment.'
+            }, status=500)
 
         try:
             send_mail(
