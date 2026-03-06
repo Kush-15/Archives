@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.http import require_http_methods
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.contrib.auth import login, logout as django_logout
 from django.core.mail import send_mail
 from django.conf import settings
@@ -9,6 +9,7 @@ from django.utils import timezone
 from django.templatetags.static import static
 from django.template import TemplateDoesNotExist
 from django.db import DatabaseError
+from django.db.models import Avg, Count
 from .models import User, Product
 from .forms import UserSignUpForm, UserSignInForm
 import json
@@ -28,6 +29,7 @@ def _get_auth_backend():
     return 'django.contrib.auth.backends.ModelBackend'
 
 # Serve the frontend using Django's template engine (so template tags like {% static %} are resolved)
+@ensure_csrf_cookie
 def _serve_spa(request):
     """Render the single canonical `index.html` template using Django's template engine.
     This ensures `{% load static %}` and `{% static ... %}` are processed correctly.
@@ -198,6 +200,50 @@ def check_username(request):
             'available': False,
             'message': str(e)
         }, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def api_link_product(request):
+    """Create or fetch a Product by slug so frontend artifacts can submit reviews."""
+    try:
+        data = json.loads(request.body)
+        slug = (data.get('slug') or '').strip()
+        name = (data.get('name') or '').strip()
+        category_name = (data.get('category') or 'uncategorized').strip().lower()
+        description = (data.get('description') or '').strip()
+        price = data.get('price', 0)
+
+        if not slug or not name:
+            return JsonResponse({'status': 'error', 'message': 'slug and name are required'}, status=400)
+
+        from .models import Category
+
+        category, _ = Category.objects.get_or_create(name=category_name)
+        product, _ = Product.objects.update_or_create(
+            slug=slug,
+            defaults={
+                'category': category,
+                'name': name,
+                'description': description or f'{name} artifact',
+                'price': price or 0,
+                'stock': 10,
+            },
+        )
+
+        return JsonResponse({
+            'status': 'success',
+            'id': product.id,
+            'slug': product.slug,
+            'name': product.name,
+            'rating_avg': float(product.rating_avg),
+            'rating_count': int(product.rating_count),
+        })
+    except json.JSONDecodeError:
+        return JsonResponse({'status': 'error', 'message': 'Invalid JSON'}, status=400)
+    except Exception:
+        logger.exception('Failed to link product')
+        return JsonResponse({'status': 'error', 'message': 'Failed to link product'}, status=500)
 
 
 @csrf_exempt
@@ -528,8 +574,8 @@ def verify_otp(request):
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from .models import Category, Product, Cart, CartItem, ProductRating
-from .serializers import CategorySerializer, ProductSerializer, CartSerializer, CartItemSerializer
+from .models import Category, Product, Cart, CartItem, ProductReview
+from .serializers import CategorySerializer, ProductSerializer, CartSerializer, CartItemSerializer, ProductReviewSerializer
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -584,6 +630,7 @@ class ProductViewSet(viewsets.ModelViewSet):
     def rate(self, request, pk=None):
         product = self.get_object()
         rating = request.data.get('rating')
+        review_text = request.data.get('review_text')
 
         try:
             rating_value = int(rating)
@@ -593,19 +640,37 @@ class ProductViewSet(viewsets.ModelViewSet):
         if rating_value < 1 or rating_value > 5:
             return Response({'error': 'Rating must be between 1 and 5'}, status=status.HTTP_400_BAD_REQUEST)
 
-        ProductRating.objects.update_or_create(
+        if isinstance(review_text, str):
+            review_text = review_text.strip() or None
+
+        review_obj, _ = ProductReview.objects.update_or_create(
             product=product,
             user=request.user,
-            defaults={'rating': rating_value}
+            defaults={
+                'rating': rating_value,
+                'review_text': review_text,
+            }
         )
-        product.update_rating_stats()
+        aggregate = product.reviews.aggregate(avg=Avg('rating'), count=Count('review_id'))
+        product.rating_avg = round(float(aggregate['avg'] or 0), 2)
+        product.rating_count = int(aggregate['count'] or 0)
+        product.save(update_fields=['rating_avg', 'rating_count'])
 
         return Response({
             'product_id': product.id,
+            'review_id': str(review_obj.review_id),
             'rating_avg': float(product.rating_avg),
             'rating_count': product.rating_count,
             'user_rating': rating_value,
+            'review_text': review_obj.review_text,
         }, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['get'], permission_classes=[permissions.AllowAny])
+    def reviews(self, request, pk=None):
+        product = self.get_object()
+        queryset = ProductReview.objects.filter(product=product).select_related('user').order_by('-review_date')
+        serializer = ProductReviewSerializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class CartViewSet(viewsets.ModelViewSet):

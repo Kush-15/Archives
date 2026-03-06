@@ -6,6 +6,7 @@ from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils.text import slugify
 from datetime import timedelta
+import uuid
 
 
 class Category(models.Model):
@@ -52,15 +53,36 @@ class Product(models.Model):
         return self.name
 
     def update_rating_stats(self):
-        aggregate = self.ratings.aggregate(
+        aggregate = self.reviews.aggregate(
             avg=models.Avg('rating'),
-            count=models.Count('id')
+            count=models.Count('review_id')
         )
         avg = aggregate['avg'] or 0
         count = aggregate['count'] or 0
         self.rating_avg = round(float(avg), 2)
         self.rating_count = count
         self.save(update_fields=['rating_avg', 'rating_count'])
+
+
+class ProductReview(models.Model):
+    review_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='reviews')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='reviews')
+    rating = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
+    review_text = models.TextField(blank=True, null=True)
+    review_date = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'product_review'
+        indexes = [
+            models.Index(fields=['product']),
+            models.Index(fields=['user']),
+        ]
+        unique_together = ('product', 'user')
+        ordering = ['-review_date']
+
+    def __str__(self):
+        return f"Review for {self.product.name} by {self.user}"
 
 
 class ProductRating(models.Model):

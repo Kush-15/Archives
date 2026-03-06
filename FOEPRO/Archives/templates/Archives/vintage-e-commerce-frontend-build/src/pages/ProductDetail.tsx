@@ -7,8 +7,30 @@ import { ProductCard } from '@/components/ProductCard';
 import { RatingStars } from '@/components/RatingStars';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
-import { getDisplayRating, getDisplayRatingCount, getStoredRatings, saveStoredRating } from '@/utils/ratings';
 import * as THREE from 'three';
+
+interface BackendProductPayload {
+  id: number;
+  rating_avg: number;
+  rating_count: number;
+}
+
+interface BackendReview {
+  review_id: string;
+  user_name: string;
+  rating: number;
+  review_text: string | null;
+  review_date: string;
+}
+
+function getCookie(name: string) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) {
+    return parts.pop()?.split(';').shift() || '';
+  }
+  return '';
+}
 
 // 3D Product Component with vintage electronics look
 function ProductBox({ color }: { color: string }) {
@@ -129,6 +151,13 @@ export function ProductDetail() {
   const [show3D, setShow3D] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
   const [userRating, setUserRating] = useState<number | null>(null);
+  const [backendProductId, setBackendProductId] = useState<number | null>(null);
+  const [backendAverageRating, setBackendAverageRating] = useState<number | null>(null);
+  const [backendRatingCount, setBackendRatingCount] = useState<number | null>(null);
+  const [reviews, setReviews] = useState<BackendReview[]>([]);
+  const [reviewText, setReviewText] = useState('');
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  const [reviewError, setReviewError] = useState<string | null>(null);
 
   const product = products.find(p => p.id === id);
   const relatedProducts = products
@@ -140,11 +169,76 @@ export function ProductDetail() {
   }, [id]);
 
   useEffect(() => {
-    const ratings = getStoredRatings();
-    if (id) {
-      setUserRating(ratings[id] ?? null);
+    setReviewError(null);
+    setBackendProductId(null);
+    setBackendAverageRating(null);
+    setBackendRatingCount(null);
+    setReviews([]);
+    setUserRating(null);
+
+    if (!id) {
+      return;
     }
-  }, [id]);
+
+    const fetchBackendProduct = async () => {
+      try {
+        const res = await fetch(`/product/${id}/?format=json`, {
+          credentials: 'include',
+        });
+        if (res.ok) {
+          const data = (await res.json()) as BackendProductPayload;
+          setBackendProductId(data.id);
+          setBackendAverageRating(Number(data.rating_avg) || 0);
+          setBackendRatingCount(Number(data.rating_count) || 0);
+          return;
+        }
+
+        const listRes = await fetch('/api/products/', {
+          credentials: 'include',
+        });
+        if (!listRes.ok) {
+          return;
+        }
+
+        const items = (await listRes.json()) as Array<BackendProductPayload & { slug?: string; name?: string }>;
+        const matched = items.find((item) => item.slug === id)
+          ?? items.find((item) => product?.name && item.name === product.name);
+
+        if (matched) {
+          setBackendProductId(matched.id);
+          setBackendAverageRating(Number(matched.rating_avg) || 0);
+          setBackendRatingCount(Number(matched.rating_count) || 0);
+        }
+      } catch {
+        // Keep UI usable with catalog fallback data if backend detail fails.
+      }
+    };
+
+    fetchBackendProduct();
+  }, [id, product?.name]);
+
+  useEffect(() => {
+    if (!backendProductId) {
+      return;
+    }
+
+    const fetchReviews = async () => {
+      try {
+        const res = await fetch(`/api/products/${backendProductId}/reviews/`, {
+          credentials: 'include',
+        });
+        if (!res.ok) {
+          return;
+        }
+        const data = (await res.json()) as BackendReview[];
+        setReviews(data);
+      } catch {
+        // Keep page functional if reviews request fails.
+      }
+    };
+
+    fetchReviews();
+  }, [backendProductId]);
 
   if (!product) {
     return (
@@ -189,13 +283,107 @@ export function ProductDetail() {
       setIsAuthModalOpen(true);
       return;
     }
-    saveStoredRating(product.id, value);
+
     setUserRating(value);
+    setReviewError(null);
+  };
+
+  const submitReview = async () => {
+    if (!isLoggedIn) {
+      setAuthModalMode('login');
+      setIsAuthModalOpen(true);
+      return;
+    }
+
+    if (!userRating) {
+      setReviewError('Please select a star rating first.');
+      return;
+    }
+
+    let resolvedProductId = backendProductId;
+
+    if (!resolvedProductId) {
+      try {
+        const linkRes = await fetch('/api/link-product/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken'),
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            slug: id,
+            name: product.name,
+            category: product.category,
+            description: product.description,
+            price: product.price,
+          }),
+        });
+
+        const linked = await linkRes.json();
+        if (!linkRes.ok || !linked?.id) {
+          throw new Error(linked?.message || 'This product is not linked to backend data yet.');
+        }
+
+        resolvedProductId = Number(linked.id);
+        setBackendProductId(resolvedProductId);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'This product is not linked to backend data yet.';
+        setReviewError(message);
+        return;
+      }
+    }
+
+    setIsSubmittingReview(true);
+    setReviewError(null);
+    try {
+      const res = await fetch(`/api/products/${resolvedProductId}/rate/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken'),
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          rating: userRating,
+          review_text: reviewText,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.status === 401) {
+        setAuthModalMode('login');
+        setIsAuthModalOpen(true);
+        throw new Error('Please sign in to submit your review.');
+      }
+
+      if (!res.ok) {
+        throw new Error(data?.error || data?.detail || data?.message || 'Failed to submit review');
+      }
+
+      setUserRating(userRating);
+      setBackendAverageRating(Number(data.rating_avg) || 0);
+      setBackendRatingCount(Number(data.rating_count) || 0);
+      setReviewText('');
+
+      const reviewsRes = await fetch(`/api/products/${resolvedProductId}/reviews/`, {
+        credentials: 'include',
+      });
+      if (reviewsRes.ok) {
+        const latestReviews = (await reviewsRes.json()) as BackendReview[];
+        setReviews(latestReviews);
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to submit review';
+      setReviewError(message);
+    } finally {
+      setIsSubmittingReview(false);
+    }
   };
 
   const saved = isSaved(product.id);
-  const displayRating = getDisplayRating(product, userRating);
-  const displayRatingCount = getDisplayRatingCount(product, userRating);
+  const displayRating = backendAverageRating ?? product.rating;
+  const displayRatingCount = backendRatingCount ?? product.ratingCount;
   const ratingLabel = displayRatingCount === 1 ? 'rating' : 'ratings';
 
   return (
@@ -376,10 +564,56 @@ export function ProductDetail() {
                       );
                     })}
                     <span className="text-sm text-archive-500">
-                      {userRating ? `Your rating: ${userRating}/5` : 'Tap a star to rate'}
+                      {userRating ? `Selected rating: ${userRating}/5` : 'Tap a star to rate'}
                     </span>
                   </div>
+
+                  <div className="mt-4 space-y-3">
+                    <textarea
+                      value={reviewText}
+                      onChange={(event) => setReviewText(event.target.value)}
+                      placeholder="Share your thoughts about this product"
+                      rows={3}
+                      className="w-full rounded-md border border-archive-200 bg-white px-3 py-2 text-sm text-archive-800 outline-none transition-colors focus:border-archive-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={submitReview}
+                      disabled={!userRating || isSubmittingReview}
+                      className="px-4 py-2 text-xs uppercase tracking-wider bg-archive-900 text-cream disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isSubmittingReview ? 'Submitting...' : 'Submit Review'}
+                    </button>
+                    {reviewError && (
+                      <p className="text-sm text-red-600">{reviewError}</p>
+                    )}
+                  </div>
                 </div>
+              </div>
+
+              <div className="mt-8">
+                <h3 className="text-sm uppercase tracking-wider text-archive-500 mb-4">Collector Reviews</h3>
+                {reviews.length === 0 ? (
+                  <p className="text-sm text-archive-500">No reviews yet. Be the first to review this product.</p>
+                ) : (
+                  <div className="space-y-4 max-h-72 overflow-auto pr-2">
+                    {reviews.map((review) => (
+                      <div key={review.review_id} className="border border-archive-200 rounded-md p-4">
+                        <div className="flex items-center justify-between gap-4 mb-2">
+                          <p className="text-sm font-medium text-archive-900">{review.user_name || 'Collector'}</p>
+                          <div className="flex items-center gap-2">
+                            <RatingStars rating={review.rating} size={14} />
+                            <span className="text-xs text-archive-500">{review.rating.toFixed(1)}</span>
+                          </div>
+                        </div>
+                        {review.review_text && (
+                          <p className="text-sm text-archive-700 leading-relaxed">{review.review_text}</p>
+                        )}
+                        <p className="text-xs text-archive-400 mt-2">{new Date(review.review_date).toLocaleDateString()}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Trust Badges */}

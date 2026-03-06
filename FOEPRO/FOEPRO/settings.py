@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 # near top of settings.py
 import os
+import sys
 import dj_database_url
 from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
@@ -140,8 +141,33 @@ db_user = os.environ.get("DB_USER")
 db_password = os.environ.get("DB_PASSWORD")
 db_host = os.environ.get("DB_HOST")
 db_port = os.environ.get("DB_PORT", "5432")
+use_remote_db = os.environ.get("USE_REMOTE_DB", "0").lower() in ("1", "true", "yes", "on")
+is_runserver = len(sys.argv) > 1 and sys.argv[1] == "runserver"
+runserver_remote_db = os.environ.get("RUNSERVER_REMOTE_DB", "0").lower() in ("1", "true", "yes", "on")
 
-if database_url:
+if is_runserver and not runserver_remote_db:
+    warnings.warn(
+        "runserver detected; using local SQLite. Set RUNSERVER_REMOTE_DB=1 to use remote Postgres with runserver.",
+        RuntimeWarning,
+    )
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
+elif DEBUG and not use_remote_db:
+    warnings.warn(
+        "DEBUG mode detected; using local SQLite. Set USE_REMOTE_DB=1 to use remote Postgres.",
+        RuntimeWarning,
+    )
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
+elif database_url:
     DATABASES = {
         "default": dj_database_url.config(
             default=database_url,

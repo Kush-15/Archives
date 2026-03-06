@@ -24,8 +24,11 @@ function ScrollToTop() {
 }
 
 function AppContent() {
+  const { pathname } = useLocation();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const isHome = pathname === '/';
+  const appIsLoading = isHome ? false : isLoading;
 
   useEffect(() => {
     // Simulate initial load for smooth entrance
@@ -36,9 +39,13 @@ function AppContent() {
   }, []);
 
   return (
-    <div className={`min-h-screen flex flex-col bg-cream transition-opacity duration-700 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
+    <div
+      className={`min-h-screen flex flex-col transition-opacity duration-700 ${
+        isHome ? 'bg-transparent' : 'bg-cream'
+      } ${appIsLoading ? 'opacity-0' : 'opacity-100'}`}
+    >
       <ScrollToTop />
-      <Header onSearchClick={() => setIsSearchOpen(true)} />
+      {!isHome && <Header onSearchClick={() => setIsSearchOpen(true)} />}
       <main className="flex-1">
         <Routes>
           <Route path="/" element={<Home />} />
@@ -47,7 +54,7 @@ function AppContent() {
           <Route path="/profile" element={<Profile />} />
         </Routes>
       </main>
-      <Footer />
+      {!isHome && <Footer />}
       <CartSlide />
       <AuthModal />
       <OtpModal />
