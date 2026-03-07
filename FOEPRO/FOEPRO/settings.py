@@ -246,7 +246,9 @@ LOGGING = {
 
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'Archives' / 'static'
-STATICFILES_DIRS = []
+STATICFILES_DIRS = [
+    BASE_DIR / 'Archives' / 'templates' / 'Archives' / 'vintage-e-commerce-frontend-build' / 'dist',
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

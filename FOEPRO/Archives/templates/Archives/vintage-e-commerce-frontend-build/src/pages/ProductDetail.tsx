@@ -418,7 +418,8 @@ export function ProductDetail() {
               {/* Toggle 3D */}
               <button
                 onClick={() => setShow3D(!show3D)}
-                className="absolute bottom-4 right-4 px-4 py-2 bg-cream/90 backdrop-blur-sm rounded-full text-sm flex items-center gap-2 hover:bg-cream transition-colors"
+                className="absolute bottom-4 right-4 px-4 py-2 rounded-full text-[0.62rem] uppercase tracking-[0.16em] font-mono flex items-center gap-2 transition-colors arc-glass-panel"
+                style={{ background: 'var(--arc-glass-dark)' }}
               >
                 {show3D ? (
                   <>

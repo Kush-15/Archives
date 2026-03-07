@@ -1,12 +1,13 @@
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { CartProvider } from '@/context/CartContext';
 import { AuthProvider } from '@/context/AuthContext';
-import { Header } from '@/components/Header';
+import SiteNav from '@/components/ui/SiteNav';
 import { Footer } from '@/components/Footer';
 import { CartSlide } from '@/components/CartSlide';
 import { AuthModal } from '@/components/AuthModal';
 import { OtpModal } from '@/components/OtpModal';
 import { SearchOverlay } from '@/components/SearchOverlay';
+import CustomCursor from '@/components/cursor/CustomCursor';
 import { Home } from '@/pages/Home';
 import { Catalog } from '@/pages/Catalog';
 import { ProductDetail } from '@/pages/ProductDetail';
@@ -31,7 +32,6 @@ function AppContent() {
   const appIsLoading = isHome ? false : isLoading;
 
   useEffect(() => {
-    // Simulate initial load for smooth entrance
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 500);
@@ -41,11 +41,15 @@ function AppContent() {
   return (
     <div
       className={`min-h-screen flex flex-col transition-opacity duration-700 ${
-        isHome ? 'bg-transparent' : 'bg-cream'
+        isHome ? 'bg-transparent' : 'arc-dark-page'
       } ${appIsLoading ? 'opacity-0' : 'opacity-100'}`}
     >
+      <CustomCursor />
       <ScrollToTop />
-      {!isHome && <Header onSearchClick={() => setIsSearchOpen(true)} />}
+      {/* SiteNav renders on all pages; it self-adapts via useLocation */}
+      {!isHome && (
+        <SiteNav onSearchClick={() => setIsSearchOpen(true)} />
+      )}
       <main className="flex-1">
         <Routes>
           <Route path="/" element={<Home />} />

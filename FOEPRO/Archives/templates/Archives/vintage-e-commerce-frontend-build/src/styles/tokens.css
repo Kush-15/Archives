@@ -1,0 +1,41 @@
+/* ═══════════════════════════════════════════════════════════
+   THE ARCHIVES — Global Design Tokens
+   Single source of truth for all custom properties.
+   Font faces are loaded by typography.css.
+   ═══════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Fonts ── */
+  --font-display: 'Playfair Display', 'Georgia', serif;
+  --font-mono: 'DM Mono', 'Courier New', monospace;
+
+  /* ── Backgrounds ── */
+  --arc-deep-black: #0A0A0A;
+  --arc-black: #111111;
+  --arc-card: #191918;
+  --arc-card-elevated: #1e1e1d;
+
+  /* ── Text ── */
+  --arc-white: #F8F7F4;
+  --arc-text-light: #F8F7F4;
+  --arc-text-dark: #0A0A0A;
+  --arc-text-body: rgba(248, 247, 244, 0.82);
+  --arc-text-muted: rgba(248, 247, 244, 0.45);
+
+  /* ── Accent ── */
+  --arc-indigo: #5C6EFF;
+
+  /* ── Borders ── */
+  --arc-hairline: rgba(10, 10, 10, 0.08);
+  --arc-hairline-light: rgba(248, 247, 244, 0.1);
+  --arc-border: rgba(248, 247, 244, 0.08);
+  --arc-border-hover: rgba(248, 247, 244, 0.22);
+  --arc-glass: rgba(248, 247, 244, 0.06);
+  --arc-glass-dark: rgba(17, 17, 17, 0.62);
+  --arc-glass-strong: rgba(17, 17, 17, 0.84);
+
+  /* ── Motion springs ── */
+  --spring-heavy: cubic-bezier(0.16, 1, 0.3, 1);
+  --spring-medium: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --spring-light: cubic-bezier(0.25, 1, 0.5, 1);
+}

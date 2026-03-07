@@ -2,7 +2,12 @@ import { Link } from 'react-router-dom';
 
 export function Footer() {
   return (
-    <footer className="bg-archive-900 text-archive-300 py-20 mt-32">
+    <footer
+      className="bg-archive-900 text-archive-300 py-20 mt-32"
+      style={{
+        background: 'linear-gradient(180deg, var(--arc-card-elevated) 0%, var(--arc-black) 100%)',
+      }}
+    >
       <div className="max-w-[1800px] mx-auto px-6 md:px-12">
         <div className="grid md:grid-cols-4 gap-12 mb-16">
           {/* Brand */}

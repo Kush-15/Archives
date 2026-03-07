@@ -18,6 +18,7 @@ import string
 import logging
 import smtplib
 import os
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -31,9 +32,15 @@ def _get_auth_backend():
 # Serve the frontend using Django's template engine (so template tags like {% static %} are resolved)
 @ensure_csrf_cookie
 def _serve_spa(request):
-    """Render the single canonical `index.html` template using Django's template engine.
-    This ensures `{% load static %}` and `{% static ... %}` are processed correctly.
-    """
+    """Serve the built SPA index from frontend dist, fallback to Django template."""
+    frontend_dist_index = Path(settings.BASE_DIR) / 'Archives' / 'templates' / 'Archives' / 'vintage-e-commerce-frontend-build' / 'dist' / 'index.html'
+
+    if frontend_dist_index.exists():
+        try:
+            return HttpResponse(frontend_dist_index.read_text(encoding='utf-8'))
+        except OSError:
+            logger.exception("Failed to read frontend dist index at %s", frontend_dist_index)
+
     try:
         return render(request, 'index.html')
     except TemplateDoesNotExist:

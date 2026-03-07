@@ -1,0 +1,254 @@
+/* ═══════════════════════════════════════════════════════════
+   THE ARCHIVES — Non-Home Page Dark Theme
+   Applied via .arc-dark-page wrapper in App.tsx.
+   Does NOT touch Home.tsx (which manages its own theming).
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Page shell ── */
+.arc-dark-page {
+  background-color: var(--arc-deep-black);
+  color: var(--arc-text-light);
+  min-height: 100vh;
+}
+
+/* ── Text colour inversions ── */
+.arc-dark-page .text-archive-950,
+.arc-dark-page .text-archive-900,
+.arc-dark-page .text-archive-800 {
+  color: var(--arc-text-light) !important;
+}
+
+.arc-dark-page .text-archive-700,
+.arc-dark-page .text-archive-600 {
+  color: var(--arc-text-body) !important;
+}
+
+.arc-dark-page .text-archive-500,
+.arc-dark-page .text-archive-400,
+.arc-dark-page .text-archive-300 {
+  color: var(--arc-text-muted) !important;
+}
+
+.arc-dark-page .text-ink {
+  color: var(--arc-text-light) !important;
+}
+
+/* ── Background inversions (light → dark) ── */
+.arc-dark-page .bg-white,
+.arc-dark-page .bg-cream {
+  background-color: var(--arc-card) !important;
+}
+
+.arc-dark-page .bg-archive-50,
+.arc-dark-page .bg-archive-100 {
+  background-color: #161615 !important;
+}
+
+.arc-dark-page .bg-archive-200 {
+  background-color: #1e1e1c !important;
+}
+
+/* ── Border inversions ── */
+.arc-dark-page .border-archive-200,
+.arc-dark-page .border-archive-100 {
+  border-color: var(--arc-border) !important;
+}
+
+.arc-dark-page .border-t,
+.arc-dark-page .border-b {
+  border-color: var(--arc-border);
+}
+
+/* ── Form elements ── */
+.arc-dark-page select,
+.arc-dark-page input[type='number'],
+.arc-dark-page input[type='text'] {
+  background-color: var(--arc-card) !important;
+  color: var(--arc-text-light) !important;
+  border-color: var(--arc-border) !important;
+}
+
+.arc-dark-page select option {
+  background-color: var(--arc-black);
+  color: var(--arc-text-light);
+}
+
+/* ── Catalog product cards — editorial dark look ── */
+
+/* Image container: dark surface */
+.arc-dark-page .card-lift > div:first-child {
+  background-color: #161615 !important;
+  transition: box-shadow 0.3s var(--spring-light), border-color 0.3s ease, transform 0.3s var(--spring-light);
+  border: 1px solid transparent;
+}
+
+/* Card body lift on hover */
+.arc-dark-page .card-lift {
+  transition: transform 0.35s var(--spring-light);
+}
+
+.arc-dark-page .card-lift:hover {
+  transform: translateY(-4px);
+}
+
+.arc-dark-page .card-lift:hover > div:first-child {
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.72);
+  border-color: var(--arc-indigo);
+}
+
+/* Quick-view overlay on hover */
+.arc-dark-page .card-lift > div:first-child::after {
+  content: 'QUICK VIEW';
+  position: absolute;
+  bottom: 1.1rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(6px);
+  font-family: var(--font-mono);
+  font-size: 0.52rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--arc-text-light);
+  background: rgba(10, 10, 10, 0.7);
+  padding: 0.38rem 0.78rem;
+  opacity: 0;
+  transition: opacity 0.28s ease, transform 0.28s ease;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 10;
+}
+
+.arc-dark-page .card-lift:hover > div:first-child::after {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Product image slight dark hover overlay */
+.arc-dark-page .card-lift > div:first-child img {
+  transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1), filter 0.4s ease;
+  filter: brightness(0.94) saturate(0.9);
+}
+
+.arc-dark-page .card-lift:hover > div:first-child img {
+  transform: scale(1.05);
+  filter: brightness(0.78) saturate(0.85);
+}
+
+/* Product card save button */
+.arc-dark-page .product-save-btn {
+  border: 1px solid var(--arc-border-hover);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.32);
+}
+
+.arc-dark-page .product-save-btn--idle {
+  background: rgba(10, 10, 10, 0.48);
+  color: var(--arc-text-light) !important;
+}
+
+.arc-dark-page .product-save-btn--idle:hover {
+  border-color: var(--arc-text-light);
+  background: rgba(10, 10, 10, 0.68);
+}
+
+.arc-dark-page .product-save-btn--active {
+  background: var(--arc-indigo);
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Product badges + quick-view chip */
+.arc-dark-page .product-badge {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.15em;
+  border: 1px solid var(--arc-border-hover);
+  backdrop-filter: blur(10px);
+}
+
+.arc-dark-page .product-badge--new {
+  color: var(--arc-text-light) !important;
+  background: rgba(10, 10, 10, 0.56);
+}
+
+.arc-dark-page .product-badge--featured {
+  color: var(--arc-text-light) !important;
+  background: rgba(10, 10, 10, 0.48);
+  border-color: var(--arc-border-hover);
+}
+
+
+/* ── Page section headings use display font ── */
+.arc-dark-page .font-display {
+  font-family: var(--font-display) !important;
+}
+
+/* ── Reusable glass treatment ── */
+.arc-dark-page .arc-glass-backdrop {
+  background: rgba(10, 10, 10, 0.56);
+  backdrop-filter: blur(12px);
+}
+
+.arc-dark-page .arc-glass-panel {
+  background: var(--arc-glass-dark);
+  border: 1px solid var(--arc-border);
+  backdrop-filter: blur(16px);
+}
+
+/* ── Footer stays dark (no flip needed) ── */
+.arc-dark-page footer.bg-archive-900 {
+  background-color: var(--arc-card-elevated) !important;
+  border-top: 1px solid var(--arc-border);
+}
+
+.arc-dark-page footer .text-archive-300 {
+  color: var(--arc-text-muted) !important;
+}
+
+.arc-dark-page footer .text-archive-400,
+.arc-dark-page footer .text-archive-500 {
+  color: rgba(248, 247, 244, 0.3) !important;
+}
+
+.arc-dark-page footer .text-archive-200 {
+  color: var(--arc-text-body) !important;
+}
+
+.arc-dark-page footer .border-archive-800 {
+  border-color: var(--arc-border) !important;
+}
+
+/* ── Scrollbar (dark pages) ── */
+.arc-dark-page ::-webkit-scrollbar-track {
+  background: var(--arc-card);
+}
+
+.arc-dark-page ::-webkit-scrollbar-thumb {
+  background: rgba(248, 247, 244, 0.15);
+}
+
+/* ── Arc-specific header styles for inner pages ── */
+.arc-page-header {
+  padding-top: 7rem;
+  padding-bottom: 3rem;
+  padding-left: 6vw;
+  padding-right: 6vw;
+  border-bottom: 1px solid var(--arc-border);
+}
+
+.arc-page-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--arc-text-muted);
+  margin-bottom: 1rem;
+}
+
+.arc-page-title {
+  font-family: var(--font-display);
+  font-size: clamp(2.8rem, 7vw, 6rem);
+  line-height: 0.95;
+  letter-spacing: -0.025em;
+  font-weight: 400;
+  color: var(--arc-text-light);
+}

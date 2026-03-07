@@ -59,7 +59,7 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
     <div className="fixed inset-0 z-[100]">
       {/* Backdrop */}
       <div 
-        className="absolute inset-0 bg-archive-900/60 backdrop-blur-md animate-fade-in"
+        className="absolute inset-0 arc-glass-backdrop animate-fade-in"
         onClick={onClose}
       />
       
@@ -74,7 +74,8 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Search the archives..."
-            className="w-full px-6 py-5 bg-cream text-xl font-light border-0 rounded-lg shadow-2xl focus:outline-none placeholder:text-archive-400"
+            className="w-full px-6 py-5 text-xl font-light rounded-lg shadow-2xl focus:outline-none placeholder:text-archive-400 arc-glass-panel"
+            style={{ background: 'var(--arc-glass-strong)' }}
             aria-label="Search"
             role="combobox"
             aria-expanded={results.length > 0}
@@ -95,7 +96,8 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
         {query.length > 0 && (
           <div 
             id="search-results"
-            className="mt-4 bg-cream rounded-lg shadow-xl max-h-[60vh] overflow-y-auto"
+            className="mt-4 rounded-lg shadow-xl max-h-[60vh] overflow-y-auto arc-glass-panel"
+            style={{ background: 'var(--arc-glass-strong)' }}
             role="listbox"
           >
             {results.length === 0 ? (
@@ -140,7 +142,7 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
         {query.length === 0 && (
           <div className="mt-8 text-center">
             <p className="text-archive-400 text-sm">
-              Press <kbd className="px-2 py-1 bg-cream/50 rounded text-archive-500">↑</kbd> <kbd className="px-2 py-1 bg-cream/50 rounded text-archive-500">↓</kbd> to navigate · <kbd className="px-2 py-1 bg-cream/50 rounded text-archive-500">ESC</kbd> to close
+              Press <kbd className="px-2 py-1 rounded text-archive-500" style={{ background: 'var(--arc-glass)' }}>↑</kbd> <kbd className="px-2 py-1 rounded text-archive-500" style={{ background: 'var(--arc-glass)' }}>↓</kbd> to navigate · <kbd className="px-2 py-1 rounded text-archive-500" style={{ background: 'var(--arc-glass)' }}>ESC</kbd> to close
             </p>
           </div>
         )}

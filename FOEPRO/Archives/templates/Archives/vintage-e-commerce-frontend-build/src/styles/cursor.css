@@ -1,0 +1,78 @@
+/* ═══════════════════════════════════════════════════════════
+   THE ARCHIVES — Custom Cursor
+   12px circle, outline-only, zone-aware color transitions
+   ═══════════════════════════════════════════════════════════ */
+
+.custom-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 12px;
+  height: 12px;
+  border: 1px solid var(--arc-text-dark);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  will-change: transform;
+  transition: width 0.25s var(--spring-medium),
+              height 0.25s var(--spring-medium),
+              border-color 0.3s ease,
+              background 0.25s ease;
+  transform: translate(-50%, -50%);
+  mix-blend-mode: normal;
+}
+
+.custom-cursor--dark-zone {
+  border-color: var(--arc-text-light);
+}
+
+.custom-cursor--light-zone {
+  border-color: var(--arc-text-dark);
+}
+
+.custom-cursor--hover {
+  width: 48px;
+  height: 48px;
+  background: rgba(92, 110, 255, 0.15);
+  border-color: rgba(92, 110, 255, 0.4);
+}
+
+.custom-cursor--grab {
+  width: 48px;
+  height: 48px;
+  border-color: rgba(248, 247, 244, 0.3);
+}
+
+.custom-cursor--grab .cursor-rotate-icon {
+  opacity: 1;
+}
+
+.cursor-rotate-icon {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.cursor-rotate-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Hide on touch devices */
+@media (pointer: coarse) {
+  .custom-cursor {
+    display: none !important;
+  }
+}
+
+/* Hide native cursor on fine pointer devices */
+@media (pointer: fine) {
+  body,
+  body * {
+    cursor: none !important;
+  }
+}

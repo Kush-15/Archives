@@ -19,14 +19,14 @@ export function Profile() {
     return (
       <div className="pt-32 pb-20 min-h-screen">
         <div className="max-w-[1800px] mx-auto px-6 md:px-12 text-center">
-          <h1 className="font-editorial text-3xl text-archive-900 mb-4">Sign In Required</h1>
-          <p className="text-archive-500 mb-6">Please sign in to view your profile</p>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '2.5rem', color: 'var(--arc-text-light)', marginBottom: '1rem' }}>Sign In Required</h1>
+          <p style={{ color: 'var(--arc-text-muted)', marginBottom: '1.5rem', fontFamily: 'var(--font-mono)', fontSize: '0.75rem', letterSpacing: '0.08em' }}>Please sign in to view your profile</p>
           <button
             onClick={() => {
               setAuthModalMode('login');
               setIsAuthModalOpen(true);
             }}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-archive-900 text-cream text-sm uppercase tracking-wider hover:bg-archive-800 transition-colors"
+            style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: '#fff', background: 'var(--arc-indigo)', padding: '0.9rem 2rem', border: 'none', cursor: 'pointer', textDecoration: 'none', transition: 'opacity 0.2s ease' }}
           >
             Sign In
           </button>
@@ -43,20 +43,20 @@ export function Profile() {
   };
 
   return (
-    <div className="pt-32 pb-20 min-h-screen">
+    <div className="pt-28 pb-20 min-h-screen">
       <div className="max-w-[1800px] mx-auto px-6 md:px-12">
         {/* Header */}
-        <div className="mb-16">
-          <p className="text-sm uppercase tracking-[0.3em] text-archive-500 mb-4 animate-slide-up">
-            Your Account
-          </p>
+        <div className="mb-16" style={{ borderBottom: '1px solid var(--arc-border)', paddingBottom: '2.5rem' }}>
+          <p className="arc-page-eyebrow">Your Account</p>
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-            <h1 className="font-display text-5xl md:text-6xl text-archive-900 animate-slide-up">
+            <h1 className="arc-page-title animate-slide-up">
               Welcome, {user.name}
             </h1>
             <button
               onClick={handleLogout}
-              className="animate-slide-up text-archive-500 hover:text-archive-900 transition-colors text-sm uppercase tracking-wider"
+              style={{ fontFamily: 'var(--font-mono)', fontSize: '0.58rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--arc-text-muted)', background: 'none', border: 'none', cursor: 'pointer', transition: 'color 0.2s ease' }}
+              onMouseEnter={e => (e.currentTarget.style.color = 'var(--arc-text-light)')}
+              onMouseLeave={e => (e.currentTarget.style.color = 'var(--arc-text-muted)')}
             >
               Sign Out
             </button>
@@ -64,36 +64,36 @@ export function Profile() {
         </div>
 
         {/* Account Info */}
-        <div className="grid md:grid-cols-3 gap-8 mb-20">
-          <div className="bg-white rounded-lg p-8 animate-fade-in">
-            <h2 className="text-sm uppercase tracking-wider text-archive-500 mb-4">Account Details</h2>
+        <div className="grid md:grid-cols-3 gap-6 mb-20">
+          <div style={{ background: 'var(--arc-card)', padding: '2rem', border: '1px solid var(--arc-border)' }} className="animate-fade-in">
+            <h2 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.55rem', letterSpacing: '0.22em', textTransform: 'uppercase', color: 'var(--arc-text-muted)', marginBottom: '1.5rem' }}>Account Details</h2>
             <div className="space-y-4">
               <div>
-                <p className="text-xs text-archive-400 mb-1">Name</p>
-                <p className="text-archive-900">{user.name}</p>
+                <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.52rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--arc-text-muted)', marginBottom: '0.35rem' }}>Name</p>
+                <p style={{ color: 'var(--arc-text-light)' }}>{user.name}</p>
               </div>
               <div>
-                <p className="text-xs text-archive-400 mb-1">Email</p>
-                <p className="text-archive-900">{user.email}</p>
+                <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.52rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--arc-text-muted)', marginBottom: '0.35rem' }}>Email</p>
+                <p style={{ color: 'var(--arc-text-body)' }}>{user.email}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg p-8 animate-fade-in" style={{ animationDelay: '0.1s' }}>
-            <h2 className="text-sm uppercase tracking-wider text-archive-500 mb-4">Collection Stats</h2>
+          <div style={{ background: 'var(--arc-card)', padding: '2rem', border: '1px solid var(--arc-border)', animationDelay: '0.1s' }} className="animate-fade-in">
+            <h2 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.55rem', letterSpacing: '0.22em', textTransform: 'uppercase', color: 'var(--arc-text-muted)', marginBottom: '1.5rem' }}>Collection Stats</h2>
             <div className="space-y-4">
               <div>
-                <p className="font-editorial text-4xl text-archive-900">{savedProducts.length}</p>
-                <p className="text-sm text-archive-500">Saved Items</p>
+                <p style={{ fontFamily: 'var(--font-display)', fontSize: '3.5rem', lineHeight: '1', color: 'var(--arc-text-light)' }}>{savedProducts.length}</p>
+                <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.55rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--arc-text-muted)', marginTop: '0.5rem' }}>Saved Items</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg p-8 animate-fade-in" style={{ animationDelay: '0.2s' }}>
-            <h2 className="text-sm uppercase tracking-wider text-archive-500 mb-4">Member Since</h2>
+          <div style={{ background: 'var(--arc-card)', padding: '2rem', border: '1px solid var(--arc-border)', animationDelay: '0.2s' }} className="animate-fade-in">
+            <h2 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.55rem', letterSpacing: '0.22em', textTransform: 'uppercase', color: 'var(--arc-text-muted)', marginBottom: '1.5rem' }}>Member Since</h2>
             <div>
-              <p className="font-editorial text-4xl text-archive-900">2024</p>
-              <p className="text-sm text-archive-500">Collector</p>
+              <p style={{ fontFamily: 'var(--font-display)', fontSize: '3.5rem', lineHeight: '1', color: 'var(--arc-text-light)' }}>2024</p>
+              <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.55rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--arc-text-muted)', marginTop: '0.5rem' }}>Collector</p>
             </div>
           </div>
         </div>
@@ -102,10 +102,10 @@ export function Profile() {
         <section>
           <div className="flex items-end justify-between gap-6 mb-12">
             <div>
-              <p className="text-sm uppercase tracking-[0.3em] text-archive-500 mb-4">
+              <p className="arc-page-eyebrow" style={{ marginBottom: '0.75rem' }}>
                 Your Saved Items
               </p>
-              <h2 className="font-display text-3xl md:text-4xl text-archive-900">
+              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.8rem, 4vw, 3.5rem)', lineHeight: '0.95', letterSpacing: '-0.02em', color: 'var(--arc-text-light)' }}>
                 Curated Selection
               </h2>
             </div>

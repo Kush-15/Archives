@@ -1,4 +1,4 @@
-from django.urls import path, include
+from django.urls import path, include, re_path
 from rest_framework.routers import DefaultRouter
 from . import views
 
@@ -9,6 +9,8 @@ router.register(r'cart', views.CartViewSet, basename='cart')
 
 urlpatterns = [
     path('', views.home, name='home'),
+    path('catalog/', views.home, name='catalog_spa'),
+    path('profile/', views.home, name='profile_spa'),
     path('about/', views.about, name='about'),
     path('contact/', views.contact, name='contact'),
     path('signup/', views.signup, name='signup'),
@@ -27,4 +29,7 @@ urlpatterns = [
     
     # E-commerce API
     path('api/', include(router.urls)),
+
+    # SPA fallback: keep this last so API/admin/static/media are not intercepted.
+    re_path(r'^(?!api/|admin/|static/|media/).*$' , views.home, name='spa_fallback'),
 ]

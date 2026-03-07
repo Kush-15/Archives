@@ -87,18 +87,18 @@ export function Catalog() {
   const hasActiveFilters = selectedCategory || selectedEra || priceRange[0] > 0 || priceRange[1] < 5000 || selectedRating;
 
   return (
-    <div className="pt-32 pb-20">
+    <div className="pt-28 pb-20">
       <div className="max-w-[1800px] mx-auto px-6 md:px-12">
         {/* Header */}
-        <div className="mb-12">
-          <p className="text-sm uppercase tracking-[0.3em] text-archive-500 mb-4 animate-slide-up">
+        <div className="mb-12" style={{ borderBottom: '1px solid var(--arc-border)', paddingBottom: '2rem' }}>
+          <p className="arc-page-eyebrow" style={{ marginBottom: '1rem' }}>
             The Collection
           </p>
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-            <h1 className="font-display text-5xl md:text-6xl lg:text-7xl text-archive-900 animate-slide-up">
+            <h1 className="arc-page-title animate-slide-up">
               All Artifacts
             </h1>
-            <p className="text-archive-500 animate-slide-up" style={{ animationDelay: '0.1s' }}>
+            <p style={{ color: 'var(--arc-text-muted)', fontFamily: 'var(--font-mono)', fontSize: '0.65rem', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
               {filteredProducts.length} {filteredProducts.length === 1 ? 'piece' : 'pieces'}
             </p>
           </div>

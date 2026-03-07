@@ -56,12 +56,12 @@ export function ProductCard({ product, variant = 'default' }: ProductCardProps) 
         {/* Badges */}
         <div className="absolute top-4 left-4 flex flex-wrap gap-2">
           {product.new && (
-            <span className="px-3 py-1 bg-cream/90 backdrop-blur-sm text-xs uppercase tracking-wider text-archive-900 rounded-full">
+            <span className="product-badge product-badge--new px-3 py-1 text-xs uppercase tracking-wider rounded-full">
               New
             </span>
           )}
           {product.featured && (
-            <span className="px-3 py-1 bg-archive-900/90 backdrop-blur-sm text-xs uppercase tracking-wider text-cream rounded-full">
+            <span className="product-badge product-badge--featured px-3 py-1 text-xs uppercase tracking-wider rounded-full">
               Featured
             </span>
           )}
@@ -70,10 +70,10 @@ export function ProductCard({ product, variant = 'default' }: ProductCardProps) 
         {/* Save Button */}
         <button
           onClick={handleSave}
-          className={`absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 ${
+          className={`product-save-btn absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 ${
             saved 
-              ? 'bg-archive-900 text-cream' 
-              : 'bg-cream/90 backdrop-blur-sm text-archive-600 opacity-0 group-hover:opacity-100'
+              ? 'product-save-btn--active' 
+              : 'product-save-btn--idle opacity-0 group-hover:opacity-100'
           }`}
           aria-label={saved ? 'Remove from saved' : 'Save item'}
         >
@@ -87,14 +87,6 @@ export function ProductCard({ product, variant = 'default' }: ProductCardProps) 
           </svg>
         </button>
 
-        {/* Quick View */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-[var(--ease-expo)]">
-          <div className="flex justify-center">
-            <span className="px-6 py-3 bg-cream/95 backdrop-blur-sm text-archive-900 text-sm uppercase tracking-wider rounded-full">
-              View Details
-            </span>
-          </div>
-        </div>
       </div>
 
       {/* Info */}
