@@ -14,6 +14,8 @@ interface CameraData {
   name: string;
   year: number;
   color: string;
+  metalness: number;
+  roughness: number;
   specs: { label: string; value: string }[];
 }
 
@@ -22,7 +24,9 @@ const CAMERAS: CameraData[] = [
     id: 'om1',
     name: 'Olympus OM-1',
     year: 1972,
-    color: '#1a1a1a',
+    color: '#1C1C1C',
+    metalness: 0.35,
+    roughness: 0.65,
     specs: [
       { label: 'Type', value: '35mm SLR' },
       { label: 'Lens Mount', value: 'OM Bayonet' },
@@ -34,7 +38,9 @@ const CAMERAS: CameraData[] = [
     id: 'hasselblad',
     name: 'Hasselblad 500C',
     year: 1957,
-    color: '#222222',
+    color: '#101010',
+    metalness: 0.82,
+    roughness: 0.18,
     specs: [
       { label: 'Type', value: 'Medium Format SLR' },
       { label: 'Film', value: '120 Roll Film' },
@@ -46,7 +52,9 @@ const CAMERAS: CameraData[] = [
     id: 'leica',
     name: 'Leica M3',
     year: 1954,
-    color: '#181818',
+    color: '#1A120A',
+    metalness: 0.55,
+    roughness: 0.38,
     specs: [
       { label: 'Type', value: '35mm Rangefinder' },
       { label: 'Lens Mount', value: 'M Bayonet' },
@@ -89,12 +97,12 @@ function CollectionCamera({
     () =>
       new THREE.MeshStandardMaterial({
         color: data.color,
-        metalness: 0.85,
-        roughness: 0.25,
+        metalness: data.metalness,
+        roughness: data.roughness,
         transparent: !isCenter,
         opacity: isCenter ? 1 : 0.3,
       }),
-    [data.color, isCenter]
+    [data.color, data.metalness, data.roughness, isCenter]
   );
 
   const silverMat = useMemo(
@@ -152,30 +160,84 @@ function CollectionCamera({
         onClick();
       }}
     >
-      {/* Main body */}
-      <mesh material={mat} castShadow>
-        <boxGeometry args={[2.4, 1.5, 1.2]} />
-      </mesh>
-      {/* Top plate */}
-      <mesh material={sMat} position={[0, 0.82, 0]}>
-        <boxGeometry args={[2.5, 0.15, 1.22]} />
-      </mesh>
-      {/* Bottom plate */}
-      <mesh material={sMat} position={[0, -0.82, 0]}>
-        <boxGeometry args={[2.5, 0.15, 1.22]} />
-      </mesh>
-      {/* Lens */}
-      <mesh
-        material={mat}
-        position={[0, -0.05, 0.9]}
-        rotation={[Math.PI / 2, 0, 0]}
-      >
-        <cylinderGeometry args={[0.5, 0.55, 0.7, 32]} />
-      </mesh>
-      {/* Viewfinder */}
-      <mesh material={mat} position={[0, 1.05, 0]}>
-        <boxGeometry args={[1.0, 0.3, 0.8]} />
-      </mesh>
+      {/* ── Olympus OM-1 — compact 35mm SLR with pentaprism hump ── */}
+      {data.id === 'om1' && <>
+        <mesh material={mat} castShadow>
+          <boxGeometry args={[1.9, 1.05, 0.9]} />
+        </mesh>
+        {/* Pentaprism hump */}
+        <mesh material={mat} position={[0.08, 0.73, 0.02]}>
+          <boxGeometry args={[0.88, 0.34, 0.78]} />
+        </mesh>
+        {/* Top plate */}
+        <mesh material={sMat} position={[0, 0.59, 0]}>
+          <boxGeometry args={[1.95, 0.12, 0.92]} />
+        </mesh>
+        {/* Bottom plate */}
+        <mesh material={sMat} position={[0, -0.59, 0]}>
+          <boxGeometry args={[1.95, 0.12, 0.92]} />
+        </mesh>
+        {/* Lens — centered, medium barrel */}
+        <mesh material={mat} position={[-0.08, -0.04, 0.76]} rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.3, 0.32, 0.56, 32]} />
+        </mesh>
+        {/* Film advance lever */}
+        <mesh material={sMat} position={[0.8, 0.66, 0]}>
+          <boxGeometry args={[0.13, 0.07, 0.16]} />
+        </mesh>
+      </>}
+
+      {/* ── Hasselblad 500C — nearly square medium-format SLR ── */}
+      {data.id === 'hasselblad' && <>
+        {/* Main body — tall and square */}
+        <mesh material={mat} castShadow>
+          <boxGeometry args={[1.6, 1.65, 1.15]} />
+        </mesh>
+        {/* Film magazine — block on the back */}
+        <mesh material={mat} position={[0, 0, -0.88]}>
+          <boxGeometry args={[1.56, 1.6, 0.6]} />
+        </mesh>
+        {/* Waist-level finder box on top */}
+        <mesh material={mat} position={[0, 1.02, 0.1]}>
+          <boxGeometry args={[1.5, 0.38, 0.62]} />
+        </mesh>
+        {/* Front plate (silver) */}
+        <mesh material={sMat} position={[0, 0, 0.63]}>
+          <boxGeometry args={[1.62, 1.67, 0.1]} />
+        </mesh>
+        {/* Wide lens barrel */}
+        <mesh material={mat} position={[0, 0.08, 0.9]} rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.44, 0.48, 0.58, 32]} />
+        </mesh>
+      </>}
+
+      {/* ── Leica M3 — wide flat rangefinder, no hump ── */}
+      {data.id === 'leica' && <>
+        {/* Body — wide and low */}
+        <mesh material={mat} castShadow>
+          <boxGeometry args={[2.3, 0.92, 0.68]} />
+        </mesh>
+        {/* Top plate (chrome) */}
+        <mesh material={sMat} position={[0, 0.52, 0]}>
+          <boxGeometry args={[2.34, 0.12, 0.7]} />
+        </mesh>
+        {/* Bottom plate (chrome) */}
+        <mesh material={sMat} position={[0, -0.52, 0]}>
+          <boxGeometry args={[2.34, 0.12, 0.7]} />
+        </mesh>
+        {/* Lens — small, offset left of center */}
+        <mesh material={mat} position={[-0.42, 0.04, 0.55]} rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.22, 0.24, 0.44, 32]} />
+        </mesh>
+        {/* Rangefinder window */}
+        <mesh material={sMat} position={[0.52, 0.08, 0.36]}>
+          <boxGeometry args={[0.2, 0.11, 0.04]} />
+        </mesh>
+        {/* Viewfinder window */}
+        <mesh material={sMat} position={[0.82, 0.08, 0.36]}>
+          <boxGeometry args={[0.13, 0.09, 0.04]} />
+        </mesh>
+      </>}
 
       {/* Hover label */}
       {isHovered && !isCenter && null}

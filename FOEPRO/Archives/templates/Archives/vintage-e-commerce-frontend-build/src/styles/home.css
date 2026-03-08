@@ -788,17 +788,20 @@ body {
   line-height: 1.1;
 }
 
-.archive-placeholder-msg {
-  color: var(--accent-dim);
-  letter-spacing: 0.18em;
-  margin-top: 0.5rem;
-}
-
 .archive-placeholder-line {
   width: 40px;
   height: 1px;
   background: var(--border-hover);
-  margin-top: 1rem;
+  margin-top: 0.4rem;
+}
+
+.archive-placeholder-descriptor {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.4;
+  margin-top: 0.25rem;
 }
 
 /* ── Footer ── */

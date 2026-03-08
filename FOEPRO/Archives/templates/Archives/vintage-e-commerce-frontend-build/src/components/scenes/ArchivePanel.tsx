@@ -13,79 +13,145 @@ interface ArchiveCamera {
   year: number;
   has3D: boolean;
   color?: string;
+  metalness?: number;
+  roughness?: number;
 }
 
 const ARCHIVE_CAMERAS: ArchiveCamera[] = [
-  { name: 'Olympus OM-1', year: 1972, has3D: true, color: '#1a1a1a' },
-  { name: 'Hasselblad 500C', year: 1957, has3D: true, color: '#222222' },
-  { name: 'Leica M3', year: 1954, has3D: true, color: '#181818' },
-  { name: 'Nikon F', year: 1959, has3D: false },
-  { name: 'Canon AE-1', year: 1976, has3D: false },
-  { name: 'Pentax K1000', year: 1976, has3D: false },
-  { name: 'Minolta SRT 101', year: 1966, has3D: false },
-  { name: 'Rolleiflex 2.8F', year: 1960, has3D: false },
-  { name: 'Contax T2', year: 1990, has3D: false },
-  { name: 'Mamiya RB67', year: 1970, has3D: false },
-  { name: 'Yashica Mat-124G', year: 1970, has3D: false },
-  { name: 'Polaroid SX-70', year: 1972, has3D: false },
-  { name: 'Bronica SQ-A', year: 1982, has3D: false },
-  { name: 'Fujica ST801', year: 1973, has3D: false },
-  { name: 'Voigtländer Bessa R', year: 1999, has3D: false },
+  { name: 'Olympus OM-1',         year: 1972, has3D: true,  color: '#1C1C1C', metalness: 0.35, roughness: 0.65 },
+  { name: 'Hasselblad 500C',      year: 1957, has3D: true,  color: '#101010', metalness: 0.82, roughness: 0.18 },
+  { name: 'Leica M3',             year: 1954, has3D: true,  color: '#1A120A', metalness: 0.55, roughness: 0.38 },
+  { name: 'Nikon F',              year: 1959, has3D: false },
+  { name: 'Canon AE-1',           year: 1976, has3D: false },
+  { name: 'Pentax K1000',         year: 1976, has3D: false },
+  { name: 'Minolta SRT 101',      year: 1966, has3D: false },
+  { name: 'Rolleiflex 2.8F',      year: 1960, has3D: false },
+  { name: 'Contax T2',            year: 1990, has3D: false },
+  { name: 'Mamiya RB67',          year: 1970, has3D: false },
+  { name: 'Yashica Mat-124G',     year: 1970, has3D: false },
+  { name: 'Polaroid SX-70',       year: 1972, has3D: false },
+  { name: 'Bronica SQ-A',         year: 1982, has3D: false },
+  { name: 'Fujica ST801',         year: 1973, has3D: false },
+  { name: 'Voigtländer Bessa R',  year: 1999, has3D: false },
 ];
 
 /* ─────────────────────────────────────────────────────────
    Procedural camera for archive viewer
    ───────────────────────────────────────────────────────── */
 
-function ArchiveCameraModel({ color = '#1a1a1a' }: { color: string }) {
+function ArchiveCameraModel({ name, color = '#1C1C1C', metalness = 0.35, roughness = 0.65 }: {
+  name: string;
+  color?: string;
+  metalness?: number;
+  roughness?: number;
+}) {
   const groupRef = useRef<THREE.Group>(null);
   const controlsActive = useRef(false);
 
   const bodyMat = useMemo(
-    () => new THREE.MeshStandardMaterial({ color, metalness: 0.85, roughness: 0.25 }),
-    [color]
+    () => new THREE.MeshStandardMaterial({ color, metalness, roughness }),
+    [color, metalness, roughness]
   );
   const silverMat = useMemo(
-    () => new THREE.MeshStandardMaterial({ color: '#c0c0c0', metalness: 0.95, roughness: 0.15 }),
+    () => new THREE.MeshStandardMaterial({ color: '#c8c8c8', metalness: 0.95, roughness: 0.12 }),
     []
   );
 
   useFrame(() => {
     if (!groupRef.current || controlsActive.current) return;
-    groupRef.current.rotation.y += 0.009; // 0.9°/frame ≈ 0.9°/s at 60fps
+    groupRef.current.rotation.y += 0.009;
   });
 
   return (
     <>
       <group ref={groupRef} scale={0.9}>
-        <mesh material={bodyMat} castShadow>
-          <boxGeometry args={[2.4, 1.5, 1.2]} />
-        </mesh>
-        <mesh material={silverMat} position={[0, 0.82, 0]}>
-          <boxGeometry args={[2.5, 0.15, 1.22]} />
-        </mesh>
-        <mesh material={silverMat} position={[0, -0.82, 0]}>
-          <boxGeometry args={[2.5, 0.15, 1.22]} />
-        </mesh>
-        <mesh material={bodyMat} position={[0, 1.05, 0]}>
-          <boxGeometry args={[1.0, 0.3, 0.8]} />
-        </mesh>
-        <mesh
-          material={bodyMat}
-          position={[0, -0.05, 0.9]}
-          rotation={[Math.PI / 2, 0, 0]}
-        >
-          <cylinderGeometry args={[0.5, 0.55, 0.7, 32]} />
-        </mesh>
+
+        {/* ── Olympus OM-1 — compact 35mm SLR ── */}
+        {name === 'Olympus OM-1' && <>
+          <mesh material={bodyMat} castShadow>
+            <boxGeometry args={[2.0, 1.1, 0.92]} />
+          </mesh>
+          {/* Pentaprism hump */}
+          <mesh material={bodyMat} position={[0.1, 0.76, 0.02]}>
+            <boxGeometry args={[0.92, 0.36, 0.8]} />
+          </mesh>
+          {/* Top plate */}
+          <mesh material={silverMat} position={[0, 0.61, 0]}>
+            <boxGeometry args={[2.05, 0.13, 0.94]} />
+          </mesh>
+          {/* Bottom plate */}
+          <mesh material={silverMat} position={[0, -0.61, 0]}>
+            <boxGeometry args={[2.05, 0.13, 0.94]} />
+          </mesh>
+          {/* Lens — centered */}
+          <mesh material={bodyMat} position={[-0.1, -0.05, 0.78]} rotation={[Math.PI / 2, 0, 0]}>
+            <cylinderGeometry args={[0.31, 0.34, 0.58, 32]} />
+          </mesh>
+          {/* Film advance lever */}
+          <mesh material={silverMat} position={[0.82, 0.68, 0]}>
+            <boxGeometry args={[0.14, 0.08, 0.18]} />
+          </mesh>
+        </>}
+
+        {/* ── Hasselblad 500C — square medium-format SLR ── */}
+        {name === 'Hasselblad 500C' && <>
+          {/* Main body — nearly square */}
+          <mesh material={bodyMat} castShadow>
+            <boxGeometry args={[1.65, 1.7, 1.18]} />
+          </mesh>
+          {/* Film magazine on back */}
+          <mesh material={bodyMat} position={[0, 0, -0.9]}>
+            <boxGeometry args={[1.6, 1.65, 0.62]} />
+          </mesh>
+          {/* Waist-level finder top */}
+          <mesh material={bodyMat} position={[0, 1.05, 0.12]}>
+            <boxGeometry args={[1.55, 0.4, 0.64]} />
+          </mesh>
+          {/* Front plate (silver) */}
+          <mesh material={silverMat} position={[0, 0, 0.65]}>
+            <boxGeometry args={[1.67, 1.72, 0.1]} />
+          </mesh>
+          {/* Wide lens barrel */}
+          <mesh material={bodyMat} position={[0, 0.1, 0.92]} rotation={[Math.PI / 2, 0, 0]}>
+            <cylinderGeometry args={[0.46, 0.5, 0.6, 32]} />
+          </mesh>
+        </>}
+
+        {/* ── Leica M3 — wide flat rangefinder ── */}
+        {name === 'Leica M3' && <>
+          {/* Body — wide and low */}
+          <mesh material={bodyMat} castShadow>
+            <boxGeometry args={[2.4, 0.95, 0.7]} />
+          </mesh>
+          {/* Top plate (chrome) */}
+          <mesh material={silverMat} position={[0, 0.54, 0]}>
+            <boxGeometry args={[2.44, 0.13, 0.72]} />
+          </mesh>
+          {/* Bottom plate (chrome) */}
+          <mesh material={silverMat} position={[0, -0.54, 0]}>
+            <boxGeometry args={[2.44, 0.13, 0.72]} />
+          </mesh>
+          {/* Lens — small, offset left */}
+          <mesh material={bodyMat} position={[-0.44, 0.04, 0.57]} rotation={[Math.PI / 2, 0, 0]}>
+            <cylinderGeometry args={[0.23, 0.25, 0.46, 32]} />
+          </mesh>
+          {/* Rangefinder window */}
+          <mesh material={silverMat} position={[0.54, 0.08, 0.37]}>
+            <boxGeometry args={[0.21, 0.12, 0.04]} />
+          </mesh>
+          {/* Viewfinder window */}
+          <mesh material={silverMat} position={[0.86, 0.08, 0.37]}>
+            <boxGeometry args={[0.14, 0.1, 0.04]} />
+          </mesh>
+        </>}
+
       </group>
 
       <OrbitControls
         enableZoom={false}
         enablePan={false}
         autoRotate={false}
-        onStart={() => {
-          controlsActive.current = true;
-        }}
+        onStart={() => { controlsActive.current = true; }}
       />
 
       <directionalLight position={[-5, 5, 5]} intensity={2.2} castShadow />
@@ -150,7 +216,12 @@ export default function ArchivePanel() {
             camera={{ position: [0, 0.5, 5], fov: 40 }}
           >
             <Suspense fallback={null}>
-              <ArchiveCameraModel color={activeCamera.color || '#1a1a1a'} />
+              <ArchiveCameraModel
+                name={activeCamera.name}
+                color={activeCamera.color}
+                metalness={activeCamera.metalness}
+                roughness={activeCamera.roughness}
+              />
             </Suspense>
           </Canvas>
         ) : (

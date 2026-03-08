@@ -6,7 +6,6 @@ import HeroScene from '../components/scenes/HeroScene';
 import RevealScene from '../components/scenes/RevealScene';
 import CollectionScene from '@/components/scenes/CollectionScene';
 import CraftsmanshipStack, { STATIONS } from '@/components/ui/CraftsmanshipStation';
-import ArchivePanel from '@/components/scenes/ArchivePanel';
 import Loader from '@/components/Loader';
 import '@/styles/home-new.css';
 
@@ -40,9 +39,6 @@ export function Home() {
 
         {/* ACT IV — The Craftsmanship (scattered card stack) */}
         <CraftsmanshipStack stations={STATIONS} />
-
-        {/* ACT V — The Archive */}
-        <ArchivePanel />
       </main>
 
       {/* Footer CTA */}
