@@ -17,17 +17,21 @@
   transition: width 0.25s var(--spring-medium),
               height 0.25s var(--spring-medium),
               border-color 0.3s ease,
-              background 0.25s ease;
+              background 0.25s ease,
+              color 0.3s ease;
   transform: translate(-50%, -50%);
   mix-blend-mode: normal;
+  color: var(--arc-text-dark);
 }
 
 .custom-cursor--dark-zone {
   border-color: var(--arc-text-light);
+  color: var(--arc-text-light);
 }
 
 .custom-cursor--light-zone {
   border-color: var(--arc-text-dark);
+  color: var(--arc-text-dark);
 }
 
 .custom-cursor--hover {
@@ -41,6 +45,7 @@
   width: 48px;
   height: 48px;
   border-color: rgba(248, 247, 244, 0.3);
+  color: rgba(248, 247, 244, 0.7);
 }
 
 .custom-cursor--grab .cursor-rotate-icon {

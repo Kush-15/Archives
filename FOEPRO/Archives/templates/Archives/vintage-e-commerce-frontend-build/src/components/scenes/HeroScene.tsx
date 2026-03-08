@@ -1,54 +1,25 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect } from 'react';
 import gsap from 'gsap';
 
-function CRTIntro({ onComplete }: { onComplete: () => void }) {
-  const overlayRef = useRef<HTMLDivElement>(null);
-  const lightRef = useRef<HTMLDivElement>(null);
+interface HeroSceneProps {
+  startAnimation?: boolean;
+}
+
+export default function HeroScene({ startAnimation = true }: HeroSceneProps) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const photoRef = useRef<HTMLImageElement>(null);
+  const hasAnimated = useRef(false);
 
   useEffect(() => {
-    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    if (prefersReduced) {
-      onComplete();
+    if (!startAnimation) {
+      gsap.set('.hero-headline-line span', { y: 80, opacity: 0 });
+      gsap.set(scrollRef.current, { opacity: 0, y: 20 });
+      gsap.set(photoRef.current, { scale: 1.08, opacity: 0.65 });
       return;
     }
 
-    const tl = gsap.timeline({ onComplete });
-    tl.set(lightRef.current, { scale: 0, opacity: 1 });
-    tl.to(lightRef.current, {
-      scale: 200,
-      duration: 2.0,
-      ease: 'power2.inOut',
-    });
-    tl.to(
-      overlayRef.current,
-      {
-        opacity: 0,
-        duration: 0.4,
-        ease: 'power2.out',
-      },
-      '-=0.3'
-    );
-
-    return () => {
-      tl.kill();
-    };
-  }, [onComplete]);
-
-  return (
-    <div ref={overlayRef} className="crt-overlay">
-      <div ref={lightRef} className="crt-light" />
-    </div>
-  );
-}
-
-export default function HeroScene() {
-  const [introComplete, setIntroComplete] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const photoRef = useRef<HTMLImageElement>(null);
-
-  useEffect(() => {
-    if (!introComplete) return;
+    if (hasAnimated.current) return;
+    hasAnimated.current = true;
 
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (prefersReduced) {
@@ -57,21 +28,23 @@ export default function HeroScene() {
       return;
     }
 
-    gsap.from('.hero-headline-line span', {
-      y: 80,
-      opacity: 0,
+    gsap.to('.hero-headline-line span', {
+      y: 0,
+      opacity: 1,
       duration: 0.95,
       stagger: 0.14,
       ease: 'power3.out',
       delay: 0.2,
+      overwrite: 'auto',
     });
 
-    gsap.from(scrollRef.current, {
-      opacity: 0,
-      y: 20,
+    gsap.to(scrollRef.current, {
+      opacity: 1,
+      y: 0,
       duration: 0.8,
-      delay: 1.4,
+      delay: 1.1,
       ease: 'power2.out',
+      overwrite: 'auto',
     });
 
     gsap.fromTo(
@@ -79,12 +52,10 @@ export default function HeroScene() {
       { scale: 1.08, opacity: 0.65 },
       { scale: 1, opacity: 0.95, duration: 1.8, ease: 'power2.out' }
     );
-  }, [introComplete]);
+  }, [startAnimation]);
 
   return (
     <section className="hero-act" data-cursor-zone="dark" id="hero">
-      {!introComplete && <CRTIntro onComplete={() => setIntroComplete(true)} />}
-
       <div className="hero-photo-wrap">
         <img
           ref={photoRef}

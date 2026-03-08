@@ -15,13 +15,16 @@ export function useCursorZone(): Zone {
     const handleMouseMove = (e: MouseEvent) => {
       cancelAnimationFrame(rafRef.current);
       rafRef.current = requestAnimationFrame(() => {
-        // Walk up from the element under the cursor to find a zone
-        const els = document.elementsFromPoint(e.clientX, e.clientY);
-        for (const el of els) {
-          const zoneAttr = (el as HTMLElement).dataset?.cursorZone;
-          if (zoneAttr === 'dark' || zoneAttr === 'light') {
-            setZone(zoneAttr);
-            return;
+        // Get the topmost element under the cursor and walk up its ancestors
+        const top = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null;
+        if (top) {
+          const zoneEl = top.closest<HTMLElement>('[data-cursor-zone]');
+          if (zoneEl) {
+            const val = zoneEl.dataset.cursorZone;
+            if (val === 'dark' || val === 'light') {
+              setZone(val);
+              return;
+            }
           }
         }
         setZone('dark');

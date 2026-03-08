@@ -1,5 +1,6 @@
 import { useRef, useState, Suspense, useMemo, useCallback, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
+import { useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useInViewCanvas } from '@/hooks/useInViewCanvas';
 import CollectionSpec from '@/components/ui/CollectionSpec';
@@ -119,7 +120,7 @@ function CollectionCamera({
     []
   );
 
-  useFrame(() => {
+  useFrame(({ invalidate }) => {
     if (!groupRef.current) return;
     // Spring toward target scale
     currentScale.current += (targetScale.current - currentScale.current) * 0.08;
@@ -128,6 +129,7 @@ function CollectionCamera({
     if (isCenter || isHovered) {
       groupRef.current.rotation.y += isHovered ? 0.02 : 0.006;
     }
+    invalidate();
   });
 
   const mat = xray && isCenter ? xrayMat : bodyMat;
@@ -198,12 +200,21 @@ function CollectionSceneInner({
   onSelect: (i: number) => void;
   xray: boolean;
 }) {
-  // Fixed slots: cameras stay in their original positions.
-  const positions: [number, number, number][] = [
-    [-3.5, 0, 0],
-    [0, 0, 1],
-    [3.5, 0, 0],
-  ];
+  const { size } = useThree();
+  const isCompact = size.width < 1100;
+
+  // Keep the trio centered while avoiding overlap with the right spec panel.
+  const positions: [number, number, number][] = isCompact
+    ? [
+        [-2.2, 0.1, 0.0],
+        [-0.15, 0.24, 1.0],
+        [1.85, 0.1, 0.0],
+      ]
+    : [
+        [-3.9, 0.08, 0.0],
+        [-0.45, 0.24, 1.05],
+        [2.95, 0.08, 0.0],
+      ];
 
   return (
     <>
@@ -276,7 +287,7 @@ export default function CollectionScene() {
         <div className="collection-canvas-wrap" data-cursor="grab">
           <Canvas
             dpr={[1, 1.5]}
-            frameloop={inView ? 'always' : 'never'}
+            frameloop={inView ? 'demand' : 'never'}
             gl={{ antialias: false }}
             camera={{ position: [0, 1, 8], fov: 40 }}
           >

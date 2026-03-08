@@ -3,6 +3,7 @@ import { useLocation, Link } from 'react-router-dom';
 import gsap from 'gsap';
 import { useAuth } from '@/context/AuthContext';
 import { useCart } from '@/context/CartContext';
+import ScrambleText from '@/components/ui/ScrambleText';
 
 interface SiteNavProps {
   onSearchClick?: () => void;
@@ -93,15 +94,15 @@ export default function SiteNav({ onSearchClick }: SiteNavProps = {}) {
       <div className="arc-nav-links">
         {isHome ? (
           <>
-            <a href="#reveal" className="arc-nav-link">About</a>
-            <a href="#collection" className="arc-nav-link">Collection</a>
-            <a href="#craftsmanship" className="arc-nav-link">Craftsmanship</a>
-            <a href="#archive" className="arc-nav-link">Archive</a>
+            <a href="#reveal" className="arc-nav-link"><ScrambleText text="About" /></a>
+            <a href="#collection" className="arc-nav-link"><ScrambleText text="Collection" /></a>
+            <a href="#craftsmanship" className="arc-nav-link"><ScrambleText text="Craftsmanship" /></a>
+            <a href="#archive" className="arc-nav-link"><ScrambleText text="Archive" /></a>
           </>
         ) : (
           <>
-            <Link to="/catalog" className="arc-nav-link">Collection</Link>
-            <Link to="/profile" className="arc-nav-link">Account</Link>
+            <Link to="/catalog" className="arc-nav-link"><ScrambleText text="Collection" /></Link>
+            <Link to="/profile" className="arc-nav-link"><ScrambleText text="Account" /></Link>
           </>
         )}
       </div>

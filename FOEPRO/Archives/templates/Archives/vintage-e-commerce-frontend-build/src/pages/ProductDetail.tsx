@@ -7,6 +7,7 @@ import { ProductCard } from '@/components/ProductCard';
 import { RatingStars } from '@/components/RatingStars';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
+import { useInViewCanvas } from '@/hooks/useInViewCanvas';
 import * as THREE from 'three';
 
 interface BackendProductPayload {
@@ -41,6 +42,7 @@ function ProductBox({ color }: { color: string }) {
     if (groupRef.current) {
       groupRef.current.rotation.y += 0.002;
       groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.4) * 0.03;
+      state.invalidate();
     }
   });
 
@@ -110,11 +112,15 @@ function ProductBox({ color }: { color: string }) {
 
 // 3D Viewer Component
 function ProductViewer3D({ color }: { color: string }) {
+  const { inView, containerRef } = useInViewCanvas();
+
   return (
-    <div className="w-full h-full min-h-[400px]">
+    <div ref={containerRef} className="w-full h-full min-h-[400px]">
       <Canvas
         camera={{ position: [0, 0, 4], fov: 45 }}
-        dpr={[1, 2]}
+        dpr={[1, Math.min(window.devicePixelRatio, 1.5)]}
+        frameloop={inView ? 'demand' : 'never'}
+        gl={{ antialias: false }}
       >
         <ambientLight intensity={0.4} />
         <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} intensity={1} />

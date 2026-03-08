@@ -64,37 +64,7 @@ body::-webkit-scrollbar {
               0 0 200px 100px rgba(248, 247, 244, 0.1);
 }
 
-/* ── Welcome Band (logged-in personalisation) ── */
-.welcome-band {
-  position: relative;
-  z-index: 3;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1.25rem 6vw;
-  background: #141413;
-  border-top: 1px solid var(--arc-hairline-light);
-  border-bottom: 1px solid var(--arc-hairline-light);
-  color: var(--arc-text-light);
-  opacity: 0;
-  transform: translateY(-12px);
-  transition: opacity 0.4s ease, transform 0.4s var(--spring-light);
-}
 
-.welcome-band--visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.welcome-band-cta {
-  text-decoration: none;
-  color: var(--arc-indigo);
-  transition: opacity 0.2s ease;
-}
-
-.welcome-band-cta:hover {
-  opacity: 0.72;
-}
 
 /* ── Hero (Act I) ── */
 .hero-act {
@@ -220,7 +190,6 @@ body::-webkit-scrollbar {
   object-fit: cover;
   filter: grayscale(1) contrast(1.2) brightness(0.42);
   transition: transform 0.32s var(--spring-light);
-  will-change: transform;
   backface-visibility: hidden;
   transform-style: preserve-3d;
 }
@@ -233,10 +202,15 @@ body::-webkit-scrollbar {
   transition: opacity 0.45s ease;
 }
 
+.reveal-copy-title {
+  font-size: clamp(2rem, 5.4vw, 4.8rem);
+  line-height: 0.96;
+}
+
 .reveal-copy-note {
   max-width: 38ch;
   margin-top: 1.5rem;
-  font-size: 1.15rem;
+  font-size: 0.8rem;
   line-height: 1.6;
   letter-spacing: 0em;
   color: rgba(248, 247, 244, 0.9);
@@ -257,11 +231,11 @@ body::-webkit-scrollbar {
 
 .reveal-label-text {
   font-family: var(--font-mono);
-  font-size: 0.82rem;
-  letter-spacing: 0.09em;
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   white-space: nowrap;
-  padding: 0.46rem 0.84rem;
+  padding: 0.22rem 0.48rem;
   border: 1px solid currentColor;
   opacity: 0.96;
   background: rgba(17, 17, 17, 0.58);
@@ -309,9 +283,13 @@ body::-webkit-scrollbar {
   bottom: 0;
   width: 340px;
   max-width: 40vw;
-  background: rgba(17, 17, 17, 0.92);
-  border-left: 1px solid var(--arc-hairline-light);
-  backdrop-filter: blur(20px);
+  background: rgba(17, 17, 17, 0.72);
+  border-left: 1px solid rgba(248, 247, 244, 0.12);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+  box-shadow:
+    -8px 0 32px rgba(0, 0, 0, 0.28),
+    inset 1px 0 0 rgba(248, 247, 244, 0.06);
   padding: 2.5rem 2rem;
   transform: translateX(110%);
   z-index: 3;
@@ -319,6 +297,12 @@ body::-webkit-scrollbar {
   flex-direction: column;
   gap: 1.5rem;
   overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.collection-spec-panel::-webkit-scrollbar {
+  display: none;
 }
 
 .collection-spec-panel--open {
@@ -398,94 +382,298 @@ body::-webkit-scrollbar {
   color: white;
 }
 
-/* ── Craftsmanship (Act IV) ── */
+/* ── Craftsmanship (Act IV) — Scattered Card Stack ── */
 .craft-act {
   position: relative;
-  height: auto;
   width: 100%;
-  background: var(--arc-white);
-  color: var(--arc-text-dark);
+  background: var(--arc-deep-black) !important;
+  color: var(--arc-text-light);
+  padding: 7rem 6vw 10rem;
+  min-height: 145vh;
+  overflow: visible;
 }
 
-.craft-sticky {
-  position: sticky;
-  top: 0;
-  height: 100vh;
+.craft-bg-text {
+  position: absolute;
+  top: 46%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-display);
+  font-size: clamp(3.5rem, 12vw, 12rem);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(248, 247, 244, 0.06);
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+}
+
+/* ── Step counter (top-right) ── */
+.craft-step-counter {
+  position: absolute;
+  top: 3rem;
+  right: 6vw;
+  display: flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  z-index: 20;
+}
+
+.craft-step-num {
+  display: inline-block;
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 4vw, 3.5rem);
+  line-height: 1;
+  color: var(--arc-text-light);
+}
+
+.craft-step-total {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  color: rgba(248, 247, 244, 0.42);
+}
+
+/* ── Card stage ── */
+.craft-stage {
+  position: relative;
   width: 100%;
-  overflow: hidden;
+  height: 720px;
   display: flex;
   align-items: center;
-}
-
-.craft-track {
-  display: flex;
-  height: 100%;
-  will-change: transform;
-}
-
-.craft-station {
-  flex: 0 0 100vw;
-  width: 100vw;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
   justify-content: center;
-  padding: 0 8vw;
-  position: relative;
-}
-
-.craft-station-number {
-  font-family: var(--font-mono);
-  font-size: clamp(6rem, 20vw, 20vw);
-  line-height: 0.8;
-  color: rgba(10, 10, 10, 0.06);
-  position: absolute;
-  top: 50%;
-  right: 8vw;
-  transform: translateY(-50%);
-  pointer-events: none;
-}
-
-.craft-station-content {
-  position: relative;
+  overflow: visible;
+  margin: 3rem 0 1rem;
   z-index: 1;
-  max-width: 600px;
 }
 
-.craft-station-label {
-  font-family: var(--font-mono);
-  font-size: 0.6rem;
-  letter-spacing: 0.25em;
-  text-transform: uppercase;
-  color: rgba(10, 10, 10, 0.4);
-  margin-bottom: 2rem;
+@media (max-width: 768px) {
+  .craft-stage {
+    height: 560px;
+  }
 }
 
-.craft-station-title {
-  font-family: var(--font-display);
-  font-size: clamp(2rem, 5vw, 4rem);
-  font-style: italic;
-  line-height: 1.05;
-  margin-bottom: 1.5rem;
+/* ── Craft Card — positioned absolutely within stage ── */
+.craft-card {
+  position: absolute;
+  width: 430px;
+  min-height: 460px;
+  padding: 2rem 2rem 1.5rem;
+  overflow: hidden;
+  /* Dark glass on dark bg */
+  background: rgba(25, 25, 24, 0.75);
+  border-top: 1px solid rgba(248, 247, 244, 0.1);
+  border-left: 1px solid rgba(248, 247, 244, 0.1);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+  border-right: 1px solid rgba(0, 0, 0, 0.3);
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(248, 247, 244, 0.06);
+  border-radius: 2px;
+  transform-origin: center center;
+  cursor: grab;
+  touch-action: none;
 }
 
-.craft-station-body {
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-  line-height: 1.8;
-  color: rgba(10, 10, 10, 0.55);
-  max-width: 42ch;
+@media (max-width: 768px) {
+  .craft-card {
+    width: 90vw;
+    min-height: 430px;
+  }
 }
 
-.craft-shape {
+/* Active card — intensified glass + accent border */
+.craft-card--active {
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  backdrop-filter: blur(24px) saturate(160%);
+  border-top: 1px solid rgba(92, 110, 255, 0.4);
+  border-left: 1px solid rgba(92, 110, 255, 0.4);
+  will-change: transform, opacity;
+}
+
+.craft-card--active:active {
+  cursor: grabbing;
+}
+
+/* Accent gradient at top edge for active card */
+.craft-card--active::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, var(--arc-indigo), #9f7aea);
+  opacity: 0.6;
+}
+
+/* ── Watermark numeral — centered within card ── */
+.craft-card-numeral {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 200px;
-  height: 200px;
+  font-family: var(--font-display);
+  font-size: clamp(8rem, 18vw, 14rem);
+  font-weight: 100;
+  line-height: 1;
+  color: rgba(248, 247, 244, 0.06);
   pointer-events: none;
-  opacity: 0.06;
+  user-select: none;
+}
+
+/* ── Card body ── */
+.craft-card-body {
+  position: relative;
+  z-index: 1;
+}
+
+.craft-review-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.2rem;
+}
+
+.craft-review-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--arc-text-body);
+  border: 1px solid rgba(248, 247, 244, 0.12);
+  background: rgba(248, 247, 244, 0.08);
+}
+
+.craft-review-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.08rem;
+}
+
+.craft-review-name {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  line-height: 1;
+  color: var(--arc-text-light);
+}
+
+.craft-review-role {
+  font-family: var(--font-mono);
+  font-size: 0.56rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--arc-text-muted);
+}
+
+.craft-card-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.95rem, 2.8vw, 2.6rem);
+  font-style: italic;
+  line-height: 1.1;
+  margin-bottom: 1.05rem;
+  color: var(--arc-text-light);
+}
+
+.craft-card-desc {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  line-height: 1.9;
+  color: var(--arc-text-body);
+  max-width: 42ch;
+}
+
+.craft-review-foot {
+  margin-top: 1.3rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.craft-review-step,
+.craft-review-station {
+  font-family: var(--font-mono);
+  font-size: 0.56rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--arc-text-muted);
+}
+
+/* ── Progress line ── */
+.craft-card-progress {
+  position: relative;
+  z-index: 1;
+  margin-top: 1.5rem;
+  height: 1px;
+  width: 100%;
+  background: rgba(248, 247, 244, 0.08);
+  overflow: hidden;
+}
+
+.craft-card-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--arc-indigo);
+  transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.craft-card--active .craft-card-progress-fill {
+  width: 100%;
+}
+
+/* ── Navigation arrows + dots ── */
+.craft-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 1rem;
+  position: relative;
+  z-index: 20;
+}
+
+.craft-nav-arrow {
+  font-size: 28px;
+  line-height: 1;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: rgba(248, 247, 244, 0.46);
+  padding: 0.25rem;
+  transition: color 0.25s ease;
+  font-family: var(--font-mono);
+}
+
+.craft-nav-arrow:hover {
+  color: var(--arc-text-light);
+}
+
+.craft-nav-dots {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.craft-nav-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  border: 1px solid var(--arc-border);
+  background: transparent;
+  transition: background 0.3s var(--spring-light), border-color 0.3s var(--spring-light);
+}
+
+.craft-nav-dot--active {
+  background: var(--arc-indigo);
+  border-color: var(--arc-indigo);
 }
 
 /* ── Archive (Act V) ── */
@@ -656,8 +844,9 @@ body::-webkit-scrollbar {
 
 .arc-nav--scrolled {
   mix-blend-mode: normal;
-  background: rgba(10, 10, 10, 0.7);
-  backdrop-filter: blur(12px);
+  background: rgba(10, 10, 10, 0.80);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
   border-bottom: 1px solid var(--arc-hairline-light);
 }
 
@@ -728,8 +917,9 @@ body::-webkit-scrollbar {
 /* ── Non-home solid background ── */
 .arc-nav--page {
   mix-blend-mode: normal !important;
-  background: rgba(10, 10, 10, 0.88);
-  backdrop-filter: blur(14px);
+  background: rgba(10, 10, 10, 0.80);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
   border-bottom: 1px solid var(--arc-hairline-light);
 }
 
@@ -848,9 +1038,16 @@ body::-webkit-scrollbar {
   top: calc(100% + 0.75rem);
   right: 0;
   min-width: 160px;
-  background: var(--arc-card);
-  border: 1px solid var(--arc-border);
-  backdrop-filter: blur(16px);
+  background: rgba(17, 17, 17, 0.72);
+  border-top: 1px solid rgba(248, 247, 244, 0.12);
+  border-left: 1px solid rgba(248, 247, 244, 0.12);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.18);
+  border-right: 1px solid rgba(0, 0, 0, 0.18);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.36),
+    inset 0 1px 0 rgba(248, 247, 244, 0.08);
   transform-origin: top right;
   animation: dropdown-open 0.22s var(--spring-medium) forwards;
   z-index: 200;
@@ -901,6 +1098,82 @@ body::-webkit-scrollbar {
   max-width: min(92vw, 1200px);
 }
 
+/* ── Footer CTA — Atmospheric depth ── */
+.footer-cta-section {
+  position: relative;
+  overflow: hidden;
+  /* Layer 1 — base */
+  background: #111111;
+  color: #F8F7F4;
+  padding: 6rem 6vw;
+  text-align: center;
+  border-top: 1px solid rgba(248, 247, 244, 0.08);
+}
+
+/* Layer 2 — Radial halo behind text */
+.footer-cta-section::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -55%);
+  width: 80%;
+  height: 70%;
+  background: radial-gradient(ellipse at center, rgba(92, 110, 255, 0.06) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Layer 4 — Vignette (corners darken ~40%) */
+.footer-cta-section::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 40%, rgba(0, 0, 0, 0.4) 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Layer 3 — SVG feTurbulence noise grain */
+.footer-cta-noise {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.035;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Layer 5 — Subtle grid */
+.footer-cta-content {
+  position: relative;
+  z-index: 3;
+}
+
+.footer-cta-content::before {
+  content: '';
+  position: absolute;
+  inset: -6rem -6vw;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 79px,
+      rgba(255, 255, 255, 0.02) 79px,
+      rgba(255, 255, 255, 0.02) 80px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 79px,
+      rgba(255, 255, 255, 0.02) 79px,
+      rgba(255, 255, 255, 0.02) 80px
+    );
+  pointer-events: none;
+  z-index: -1;
+}
+
 @media (max-width: 768px) {
   .arc-nav-links {
     display: none;
@@ -914,7 +1187,7 @@ body::-webkit-scrollbar {
   }
 
   .reveal-label-text {
-    font-size: 0.62rem;
+    font-size: 0.52rem;
     letter-spacing: 0.06em;
   }
 
@@ -927,7 +1200,7 @@ body::-webkit-scrollbar {
   .reveal-copy-note {
     max-width: 30ch;
     margin-top: 0.9rem;
-    font-size: 0.82rem;
+    font-size: 0.72rem;
     line-height: 1.6;
   }
 }

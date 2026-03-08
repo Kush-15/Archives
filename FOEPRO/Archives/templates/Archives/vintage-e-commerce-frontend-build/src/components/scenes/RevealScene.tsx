@@ -87,7 +87,7 @@ export default function RevealScene() {
           <div className="typo-label" style={{ marginBottom: '1.5rem', opacity: 0.7, fontSize: '0.75rem' }}>
             The Anatomy
           </div>
-          <div className="typo-section">
+          <div className="typo-section reveal-copy-title">
             Every component<br />
             <em>has a purpose</em>
           </div>

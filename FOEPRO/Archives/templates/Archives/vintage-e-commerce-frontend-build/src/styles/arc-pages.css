@@ -77,8 +77,9 @@
 
 /* Image container: dark surface */
 .arc-dark-page .card-lift > div:first-child {
-  background-color: #161615 !important;
-  transition: box-shadow 0.3s var(--spring-light), border-color 0.3s ease, transform 0.3s var(--spring-light);
+  background-color: rgba(22, 22, 21, 0.97) !important;
+  transition: box-shadow 0.3s var(--spring-light), border-color 0.3s ease, transform 0.3s var(--spring-light),
+              background-color 0.3s ease, backdrop-filter 0.3s ease, -webkit-backdrop-filter 0.3s ease;
   border: 1px solid transparent;
 }
 
@@ -94,6 +95,9 @@
 .arc-dark-page .card-lift:hover > div:first-child {
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.72);
   border-color: var(--arc-indigo);
+  background-color: rgba(22, 22, 21, 0.75) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  backdrop-filter: blur(16px) saturate(160%);
 }
 
 /* Quick-view overlay on hover */
