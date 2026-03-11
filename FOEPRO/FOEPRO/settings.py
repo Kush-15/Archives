@@ -32,6 +32,7 @@ def get_env(key, default=None, required=False):
         raise ImproperlyConfigured(f"Environment variable {key} is required but not set.")
     return val
 
+
 EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
 EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')  # SMTP hostname
 EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
@@ -93,6 +94,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework.authtoken',
 ]
 
 # Custom user model
@@ -145,9 +147,27 @@ use_remote_db = os.environ.get("USE_REMOTE_DB", "0").lower() in ("1", "true", "y
 is_runserver = len(sys.argv) > 1 and sys.argv[1] == "runserver"
 runserver_remote_db = os.environ.get("RUNSERVER_REMOTE_DB", "0").lower() in ("1", "true", "yes", "on")
 
-if is_runserver and not runserver_remote_db:
+# Detect unfilled placeholder credentials so we fail fast with a clear message
+# rather than a cryptic Supabase "Tenant or user not found" error.
+if database_url and ('<user>' in database_url or '<pass>' in database_url or '<password>' in database_url):
     warnings.warn(
-        "runserver detected; using local SQLite. Set RUNSERVER_REMOTE_DB=1 to use remote Postgres with runserver.",
+        "DATABASE_URL contains placeholder values (<user>/<pass>). "
+        "Replace them with your real Supabase credentials from "
+        "Supabase Dashboard > Project Settings > Database > Connection string. "
+        "Ignoring DATABASE_URL and checking DB_* variables instead.",
+        RuntimeWarning,
+    )
+    database_url = None
+
+# Use remote DB if USE_REMOTE_DB=1 is explicitly set (even with runserver),
+# or if RUNSERVER_REMOTE_DB=1 is set, otherwise fall back to SQLite locally.
+_want_remote = use_remote_db or runserver_remote_db
+_force_sqlite = is_runserver and not _want_remote
+
+if _force_sqlite:
+    warnings.warn(
+        "runserver detected; using local SQLite. "
+        "Set USE_REMOTE_DB=1 (or RUNSERVER_REMOTE_DB=1) to connect to the remote Postgres database.",
         RuntimeWarning,
     )
     DATABASES = {
@@ -156,7 +176,7 @@ if is_runserver and not runserver_remote_db:
             "NAME": BASE_DIR / "db.sqlite3",
         }
     }
-elif DEBUG and not use_remote_db:
+elif DEBUG and not _want_remote:
     warnings.warn(
         "DEBUG mode detected; using local SQLite. Set USE_REMOTE_DB=1 to use remote Postgres.",
         RuntimeWarning,
@@ -257,3 +277,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# Django REST Framework
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+        'Archives.authentication.CsrfExemptSessionAuthentication',
+    ],
+}

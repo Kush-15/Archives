@@ -10,6 +10,7 @@ from django.templatetags.static import static
 from django.template import TemplateDoesNotExist
 from django.db import DatabaseError
 from django.db.models import Avg, Count
+from rest_framework.authtoken.models import Token
 from .models import User, Product
 from .forms import UserSignUpForm, UserSignInForm
 import json
@@ -274,6 +275,7 @@ def api_signin(request):
                 if user.is_active:
                     # Use Django auth login to update last_login
                     login(request, user, backend=_get_auth_backend())
+                    token, _ = Token.objects.get_or_create(user=user)
                     return JsonResponse({
                         'status': 'success',
                         'message': f'Welcome back, {user.username}!',
@@ -281,7 +283,8 @@ def api_signin(request):
                             'id': user.id,
                             'username': user.username,
                             'email': user.email
-                        }
+                        },
+                        'token': token.key
                     })
                 else:
                     return JsonResponse({
@@ -548,6 +551,7 @@ def verify_otp(request):
             
             # Use Django auth login to update last_login
             login(request, user, backend=_get_auth_backend())
+            token, _ = Token.objects.get_or_create(user=user)
             
             return JsonResponse({
                 'status': 'success',
@@ -556,7 +560,8 @@ def verify_otp(request):
                     'id': user.id,
                     'username': user.username,
                     'email': user.email
-                }
+                },
+                'token': token.key
             })
         
         except User.DoesNotExist:

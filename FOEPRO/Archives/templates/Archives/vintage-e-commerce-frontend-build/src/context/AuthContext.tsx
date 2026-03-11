@@ -24,6 +24,7 @@ interface AuthContextType {
   setPendingVerificationEmail: (email: string | null) => void;
   authModalMode: 'login' | 'signup';
   setAuthModalMode: (mode: 'login' | 'signup') => void;
+  getAuthHeaders: () => Record<string, string>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -63,6 +64,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const userObj = data.user || { email };
         const name = userObj.username || email.split('@')[0];
         const savedItems = JSON.parse(localStorage.getItem(`archives-saved-${email}`) || '[]');
+        if (data.token) {
+          localStorage.setItem('archives-token', data.token);
+        }
         setUser({ email: userObj.email || email, name, savedItems });
         setIsAuthModalOpen(false);
         return { ok: true };
@@ -128,6 +132,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const userObj = data.user;
         const name = userObj.username || email.split('@')[0];
         const savedItems = JSON.parse(localStorage.getItem(`archives-saved-${email}`) || '[]');
+        if (data.token) {
+          localStorage.setItem('archives-token', data.token);
+        }
         setUser({ email: userObj.email || email, name, savedItems });
         setIsOtpModalOpen(false);
         setPendingVerificationEmail(null);
@@ -159,6 +166,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (user) {
       localStorage.setItem(`archives-saved-${user.email}`, JSON.stringify(user.savedItems));
     }
+    localStorage.removeItem('archives-token');
     setUser(null);
   };
 
@@ -175,6 +183,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const isSaved = (productId: string) => {
     return user?.savedItems.includes(productId) || false;
+  };
+
+  const getAuthHeaders = (): Record<string, string> => {
+    const token = localStorage.getItem('archives-token');
+    if (token) {
+      return { 'Authorization': `Token ${token}` };
+    }
+    return {};
   };
 
   return (
@@ -196,7 +212,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         pendingVerificationEmail,
         setPendingVerificationEmail,
         authModalMode,
-        setAuthModalMode
+        setAuthModalMode,
+        getAuthHeaders
       }}
     >
       {children}

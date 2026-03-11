@@ -153,7 +153,7 @@ function ProductViewer3D({ color }: { color: string }) {
 export function ProductDetail() {
   const { id } = useParams<{ id: string }>();
   const { addToCart } = useCart();
-  const { isLoggedIn, isSaved, toggleSavedItem, setIsAuthModalOpen, setAuthModalMode } = useAuth();
+  const { isLoggedIn, isSaved, toggleSavedItem, setIsAuthModalOpen, setAuthModalMode, getAuthHeaders } = useAuth();
   const [show3D, setShow3D] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
   const [userRating, setUserRating] = useState<number | null>(null);
@@ -314,7 +314,7 @@ export function ProductDetail() {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'X-CSRFToken': getCookie('csrftoken'),
+            ...getAuthHeaders(),
           },
           credentials: 'include',
           body: JSON.stringify({
@@ -347,7 +347,7 @@ export function ProductDetail() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-CSRFToken': getCookie('csrftoken'),
+          ...getAuthHeaders(),
         },
         credentials: 'include',
         body: JSON.stringify({
@@ -357,7 +357,7 @@ export function ProductDetail() {
       });
 
       const data = await res.json();
-      if (res.status === 401) {
+      if (res.status === 401 || res.status === 403) {
         setAuthModalMode('login');
         setIsAuthModalOpen(true);
         throw new Error('Please sign in to submit your review.');
