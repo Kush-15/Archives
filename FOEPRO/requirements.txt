@@ -4,3 +4,7 @@ dj-database-url>=1.0
 python-dotenv
 djangorestframework
 whitenoise
+django-cors-headers>=4.0
+google-auth>=2.0
+requests>=2.28
+django-ratelimit>=4.1.0
