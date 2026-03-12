@@ -220,6 +220,30 @@ ALLOWED_HOSTS=archives-sable.vercel.app,.vercel.app
 CSRF_TRUSTED_ORIGINS=https://archives-sable.vercel.app
 ```
 
+### Google OAuth 2.0
+
+The project includes a secure Google OAuth login. To enable it:
+
+1. Create an OAuth client in Google Cloud Console (Web application) and add `http://127.0.0.1:8000/api/auth/google/callback/` as an authorized redirect URI for local development.
+2. Provide credentials to Django via either:
+   - Environment variables `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`, or
+   - `GOOGLE_CREDENTIALS_FILE=/absolute/path/credentials.json`, or
+   - `FOEPRO/credentials.json` (auto-detected).
+3. Set `FRONTEND_BASE_URL` and `BACKEND_BASE_URL` if deploying to a custom domain.
+4. Restart the backend after changing credentials so caches clear.
+
+#### Troubleshooting
+
+| Error | Description | Fix |
+|-------|-------------|-----|
+| `redirect_uri_mismatch` | Registered URI differs from configured `GOOGLE_REDIRECT_URI` | Update either Google Cloud Console or `.env` |
+| `state_mismatch` | Session expired or cookies blocked | Retry, ensure cookies are enabled |
+| `google_email_not_verified` | Google account email is unverified | Verify email in Google account settings |
+| `google_sub_mismatch` | Email already linked to another Google account | Sign in with original account or contact support |
+| `token_exchange_failed` | Network/Google API error | Check backend logs for details |
+
+See `FOEPRO/SECURITY.md` for complete security architecture.
+
 ### Database Selection
 
 The app automatically selects the database based on environment:
