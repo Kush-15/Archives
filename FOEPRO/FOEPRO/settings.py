@@ -78,9 +78,31 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
 ]
 
+# Extend ALLOWED_HOSTS from env (comma-separated)
+_extra_hosts = get_env('ALLOWED_HOSTS_CSV', '')
+if _extra_hosts:
+    ALLOWED_HOSTS.extend(h.strip() for h in _extra_hosts.split(',') if h.strip())
+
 CSRF_TRUSTED_ORIGINS = [
     'https://archives-sable.vercel.app',
 ]
+
+# Extend CSRF_TRUSTED_ORIGINS from env (comma-separated)
+_extra_origins = get_env('CSRF_TRUSTED_ORIGINS_CSV', '')
+if _extra_origins:
+    CSRF_TRUSTED_ORIGINS.extend(o.strip() for o in _extra_origins.split(',') if o.strip())
+
+# Proxy / HTTPS settings for production behind a reverse proxy
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SESSION_COOKIE_SECURE = get_env('SESSION_COOKIE_SECURE', 'true').lower() in ('1', 'true', 'yes')
+    CSRF_COOKIE_SECURE = get_env('CSRF_COOKIE_SECURE', 'true').lower() in ('1', 'true', 'yes')
+else:
+    # Local HTTP dev: cookies must work over plain HTTP between Vite and Django
+    SESSION_COOKIE_SAMESITE = 'Lax'
+    CSRF_COOKIE_SAMESITE = 'Lax'
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
 
 
 # Application definition
@@ -95,6 +117,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework.authtoken',
+    'corsheaders',
 ]
 
 # Custom user model
@@ -103,6 +126,7 @@ AUTH_USER_MODEL = 'Archives.User'
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -258,9 +282,16 @@ LOGGING = {
     "handlers": {
         "console": {"class": "logging.StreamHandler"},
     },
+    "loggers": {
+        "Archives.google_oauth": {
+            "level": "DEBUG",
+            "handlers": ["console"],
+            "propagate": False,
+        },
+    },
     "root": {
         "handlers": ["console"],
-        "level": os.environ.get("DJANGO_LOG_LEVEL", "INFO"),
+        "level": os.environ.get("DJANGO_LOG_LEVEL", "DEBUG"),
     },
 }
 
@@ -285,3 +316,38 @@ REST_FRAMEWORK = {
         'Archives.authentication.CsrfExemptSessionAuthentication',
     ],
 }
+
+# ---------------------------------------------------------------------------
+# Google OAuth 2.0
+# ---------------------------------------------------------------------------
+GOOGLE_CLIENT_ID = get_env('GOOGLE_CLIENT_ID', '')
+GOOGLE_CLIENT_SECRET = get_env('GOOGLE_CLIENT_SECRET', '')
+GOOGLE_REDIRECT_URI = get_env('GOOGLE_REDIRECT_URI', 'http://127.0.0.1:8000/api/auth/google/callback/')
+
+if GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET:
+    if not GOOGLE_REDIRECT_URI:
+        warnings.warn(
+            'GOOGLE_REDIRECT_URI is empty. Google OAuth will fail with redirect_uri_mismatch. '
+            'Set GOOGLE_REDIRECT_URI to match your Google Cloud Console configuration.',
+            RuntimeWarning,
+        )
+    elif DEBUG and not any(host in GOOGLE_REDIRECT_URI for host in ('127.0.0.1', 'localhost')):
+        warnings.warn(
+            'GOOGLE_REDIRECT_URI appears to point to production while DEBUG=True. '
+            'Ensure the redirect URI matches your Google Cloud Console project.',
+            RuntimeWarning,
+        )
+
+# Base URLs
+BACKEND_BASE_URL = get_env('BACKEND_BASE_URL', 'http://127.0.0.1:8000')
+FRONTEND_BASE_URL = get_env('FRONTEND_BASE_URL', 'http://127.0.0.1:3000')
+
+# ---------------------------------------------------------------------------
+# CORS (django-cors-headers)
+# ---------------------------------------------------------------------------
+CORS_ALLOWED_ORIGINS = [FRONTEND_BASE_URL]
+CORS_ALLOW_CREDENTIALS = True
+
+# Also trust the frontend origin for CSRF
+if FRONTEND_BASE_URL not in CSRF_TRUSTED_ORIGINS:
+    CSRF_TRUSTED_ORIGINS.append(FRONTEND_BASE_URL)
