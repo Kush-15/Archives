@@ -5,6 +5,17 @@
       "source": "cloudai-x/threejs-skills",
       "sourceType": "github",
       "computedHash": "9312cc4d2a68f408c789ff326904bbc88840605c8f6985d9a7a0a92d64918953"
-    }
+    },
+    "frontend-design": {
+      "source": "mager/frontend-design",
+      "sourceType": "github",
+      "computedHash": "648ac1168dcfb6c8d6952abb381a879982c4e1f4789a377de29efc5d2274f7a6"
+    },
+    "ui-ux-pro-max": {
+      "source": "nextlevelbuilder/ui-ux-pro-max-skill",
+      "sourceType": "github",
+      "computedHash": "4cfe5e95a230616c17d92b44e3cd37bae543ce087a7756a446a62f77d7c58a37"
+    }}
   }
-}
+
+
