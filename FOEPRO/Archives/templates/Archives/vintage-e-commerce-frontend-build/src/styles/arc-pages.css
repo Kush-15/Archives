@@ -11,6 +11,16 @@
   min-height: 100vh;
 }
 
+/* ── Smooth page-entry animation ── */
+.arc-dark-page {
+  animation: page-enter 0.6s var(--spring-light) both;
+}
+
+@keyframes page-enter {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 /* ── Text colour inversions ── */
 .arc-dark-page .text-archive-950,
 .arc-dark-page .text-archive-900,
@@ -78,44 +88,48 @@
 /* Image container: dark surface */
 .arc-dark-page .card-lift > div:first-child {
   background-color: rgba(22, 22, 21, 0.97) !important;
-  transition: box-shadow 0.3s var(--spring-light), border-color 0.3s ease, transform 0.3s var(--spring-light),
+  transition: box-shadow 0.35s var(--spring-light), border-color 0.35s ease, transform 0.35s var(--spring-light),
               background-color 0.3s ease, backdrop-filter 0.3s ease, -webkit-backdrop-filter 0.3s ease;
   border: 1px solid transparent;
+  border-radius: 1px;
 }
 
 /* Card body lift on hover */
 .arc-dark-page .card-lift {
-  transition: transform 0.35s var(--spring-light);
+  transition: transform 0.4s var(--spring-light);
 }
 
 .arc-dark-page .card-lift:hover {
-  transform: translateY(-4px);
+  transform: translateY(-6px);
 }
 
 .arc-dark-page .card-lift:hover > div:first-child {
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.72);
-  border-color: var(--arc-indigo);
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.76),
+    0 1px 0 rgba(92, 110, 255, 0.18);
+  border-color: rgba(92, 110, 255, 0.28);
   background-color: rgba(22, 22, 21, 0.75) !important;
-  -webkit-backdrop-filter: blur(16px) saturate(160%);
-  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  backdrop-filter: blur(18px) saturate(160%);
 }
 
 /* Quick-view overlay on hover */
 .arc-dark-page .card-lift > div:first-child::after {
   content: 'QUICK VIEW';
   position: absolute;
-  bottom: 1.1rem;
+  bottom: 1.2rem;
   left: 50%;
-  transform: translateX(-50%) translateY(6px);
+  transform: translateX(-50%) translateY(10px);
   font-family: var(--font-mono);
-  font-size: 0.52rem;
-  letter-spacing: 0.22em;
+  font-size: 0.5rem;
+  letter-spacing: 0.24em;
   text-transform: uppercase;
   color: var(--arc-text-light);
-  background: rgba(10, 10, 10, 0.7);
-  padding: 0.38rem 0.78rem;
+  background: rgba(10, 10, 10, 0.72);
+  padding: 0.4rem 0.9rem;
+  border: 1px solid rgba(248, 247, 244, 0.12);
   opacity: 0;
-  transition: opacity 0.28s ease, transform 0.28s ease;
+  transition: opacity 0.3s ease, transform 0.3s var(--spring-light);
   pointer-events: none;
   white-space: nowrap;
   z-index: 10;
@@ -128,13 +142,13 @@
 
 /* Product image slight dark hover overlay */
 .arc-dark-page .card-lift > div:first-child img {
-  transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1), filter 0.4s ease;
+  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), filter 0.4s ease;
   filter: brightness(0.94) saturate(0.9);
 }
 
 .arc-dark-page .card-lift:hover > div:first-child img {
-  transform: scale(1.05);
-  filter: brightness(0.78) saturate(0.85);
+  transform: scale(1.06);
+  filter: brightness(0.76) saturate(0.88);
 }
 
 /* Product card save button */
@@ -255,4 +269,113 @@
   letter-spacing: -0.025em;
   font-weight: 400;
   color: var(--arc-text-light);
+}
+
+/* ════════════════════════════════════════════
+   ARC-PAGES REFINEMENTS v2
+   ════════════════════════════════════════════ */
+
+/* ── Focus ring — consistent keyboard nav ── */
+.arc-dark-page *:focus-visible {
+  outline: 1.5px solid var(--arc-indigo);
+  outline-offset: 3px;
+}
+
+/* ── Section dividers ── */
+.arc-section-divider {
+  width: 100%;
+  height: 1px;
+  background: var(--arc-border);
+  margin: 3rem 0;
+}
+
+/* ── Arc button — primary action ── */
+.arc-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--arc-text-light);
+  background: transparent;
+  border: 1px solid var(--arc-border-hover);
+  padding: 0.75rem 1.5rem;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.3s ease, color 0.3s ease;
+  isolation: isolate;
+}
+
+.arc-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--arc-glass);
+  transform: translateX(-101%);
+  transition: transform 0.4s var(--spring-light);
+}
+
+.arc-btn:hover::before  { transform: translateX(0); }
+.arc-btn:hover          { border-color: rgba(248, 247, 244, 0.4); }
+
+/* ── Arc button — filled (CTA) ── */
+.arc-btn--filled {
+  background: var(--arc-indigo);
+  border-color: transparent;
+  color: #fff;
+}
+
+.arc-btn--filled::before {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.arc-btn--filled:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* ── Scrollbar (dark pages) — refined ── */
+.arc-dark-page ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.arc-dark-page ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.arc-dark-page ::-webkit-scrollbar-thumb {
+  background: rgba(248, 247, 244, 0.1);
+  border-radius: 3px;
+}
+
+.arc-dark-page ::-webkit-scrollbar-thumb:hover {
+  background: rgba(248, 247, 244, 0.22);
+}
+
+/* ── Text selection colour on dark pages ── */
+.arc-dark-page ::selection {
+  background: rgba(92, 110, 255, 0.3);
+  color: var(--arc-text-light);
+}
+
+/* ── Fade-in stagger for list items ── */
+.arc-stagger-enter > * {
+  opacity: 0;
+  transform: translateY(12px);
+  animation: arc-item-enter 0.5s var(--spring-light) forwards;
+}
+
+.arc-stagger-enter > *:nth-child(1) { animation-delay: 0.05s; }
+.arc-stagger-enter > *:nth-child(2) { animation-delay: 0.10s; }
+.arc-stagger-enter > *:nth-child(3) { animation-delay: 0.15s; }
+.arc-stagger-enter > *:nth-child(4) { animation-delay: 0.20s; }
+.arc-stagger-enter > *:nth-child(5) { animation-delay: 0.25s; }
+.arc-stagger-enter > *:nth-child(6) { animation-delay: 0.30s; }
+.arc-stagger-enter > *:nth-child(n+7) { animation-delay: 0.35s; }
+
+@keyframes arc-item-enter {
+  to { opacity: 1; transform: translateY(0); }
 }

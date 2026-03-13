@@ -263,7 +263,7 @@ class GoogleAuthCallbackTests(TestCase):
         response = google_auth_callback(request)
 
         self.assertEqual(response.status_code, 302)
-        self.assertIn('/auth/callback?code=', response['Location'])
+        self.assertIn('/auth/callback?hcode=', response['Location'])
 
         # User created
         user = User.objects.get(email='test@example.com')
@@ -328,7 +328,7 @@ class GoogleAuthCallbackTests(TestCase):
         )
         response = google_auth_callback(request)
         self.assertEqual(response.status_code, 302)
-        self.assertIn('/auth/callback?code=', response['Location'])
+        self.assertIn('/auth/callback?hcode=', response['Location'])
 
     def test_invalid_state_redirects_with_error(self):
         session = SessionStore()

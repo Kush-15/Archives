@@ -491,7 +491,7 @@ def google_auth_callback(request):
     request.session.pop(_SK_NEXT, None)
 
     # Redirect to SPA callback page with handoff code
-    redirect_url = f'{frontend_base}/auth/callback?code={handoff_code}'
+    redirect_url = f'{frontend_base}/auth/callback?hcode={handoff_code}'
     return HttpResponseRedirect(redirect_url)
 
 

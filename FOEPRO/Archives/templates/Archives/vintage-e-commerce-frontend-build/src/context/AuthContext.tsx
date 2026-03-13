@@ -16,11 +16,12 @@ interface GoogleLoginResult {
 interface AuthContextType {
   user: User | null;
   isLoggedIn: boolean;
+  isAuthLoading: boolean;
   login: (email: string, password: string) => Promise<{ ok: boolean; message?: string }>;
   signup: (username: string, email: string, phone: string, password: string) => Promise<{ ok: boolean; message?: string }>;
   verifyOtp: (email: string, otp: string) => Promise<{ ok: boolean; message?: string }>;
   resendOtp: (email: string) => Promise<{ ok: boolean; message?: string }>;
-  logout: () => void;
+  logout: () => Promise<void>;
   toggleSavedItem: (productId: string) => void;
   isSaved: (productId: string) => boolean;
   isAuthModalOpen: boolean;
@@ -46,8 +47,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     return null;
   });
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authModalMode, setAuthModalMode] = useState<'login' | 'signup'>('login');
+
+  useEffect(() => {
+    setIsAuthLoading(false);
+  }, []);
 
   useEffect(() => {
     if (user) {
@@ -167,9 +173,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
     if (user) {
       localStorage.setItem(`archives-saved-${user.email}`, JSON.stringify(user.savedItems));
+    }
+    try {
+      await apiFetch('/api/logout/', { method: 'POST', headers: getAuthHeaders() });
+    } catch {
+      // Network error should not block local logout
     }
     localStorage.removeItem('archives-token');
     setUser(null);
@@ -214,14 +225,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const data = await res.json();
       if (res.ok && data.status === 'success') {
-        const userObj = data.user;
-        const email = userObj.email;
-        const name = userObj.username || email.split('@')[0];
-        const savedItems = JSON.parse(localStorage.getItem(`archives-saved-${email}`) || '[]');
+        const userObj = data.user || {};
+        const email = userObj.email || '';
+        const name = userObj.username || email.split('@')[0] || '';
+        const savedItems = JSON.parse(localStorage.getItem(`archives-saved-${email}`) || '[]') as string[];
+        const userData: User = { email, name, savedItems };
         if (data.token) {
           localStorage.setItem('archives-token', data.token);
         }
-        setUser({ email, name, savedItems });
+        localStorage.setItem('archives-user', JSON.stringify(userData));
+        setUser(userData);
         setIsAuthModalOpen(false);
         return { ok: true, redirectTo: data.redirect_to || '/profile' };
       }
@@ -237,6 +250,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         user,
         isLoggedIn: !!user,
+        isAuthLoading,
         login,
         signup,
         verifyOtp,

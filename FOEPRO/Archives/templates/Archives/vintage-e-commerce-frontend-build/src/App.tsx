@@ -42,34 +42,37 @@ function AppContent() {
   }, []);
 
   return (
-    <div
-      className={`min-h-screen flex flex-col transition-opacity duration-700 ${
-        isHome ? 'bg-transparent' : 'arc-dark-page'
-      } ${appIsLoading ? 'opacity-0' : 'opacity-100'}`}
-    >
+    <>
       <CustomCursor />
       <ScrollToTop />
-      {/* SiteNav renders on all pages; it self-adapts via useLocation */}
+      {/* All position:fixed elements live outside arc-dark-page so CSS transform
+          on the page-enter animation never creates a new containing block for them */}
       {!isHome && (
         <SiteNav onSearchClick={() => setIsSearchOpen(true)} />
       )}
-      <main className="flex-1">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/catalog" element={<Catalog />} />
-          <Route path="/product/:id" element={<ProductDetail />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/auth/callback" element={<GoogleAuthCallback />} />
-          <Route path="/terms" element={<TermsAndConditions />} />
-          <Route path="/privacy" element={<PrivacyPolicy />} />
-        </Routes>
-      </main>
-      {!isHome && <Footer />}
       <CartSlide />
       <AuthModal />
       <OtpModal />
       <SearchOverlay isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
-    </div>
+      <div
+        className={`min-h-screen flex flex-col transition-opacity duration-700 ${
+          isHome ? 'bg-transparent' : 'arc-dark-page'
+        } ${appIsLoading ? 'opacity-0' : 'opacity-100'}`}
+      >
+        <main className="flex-1">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/catalog" element={<Catalog />} />
+            <Route path="/product/:id" element={<ProductDetail />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/auth/callback" element={<GoogleAuthCallback />} />
+            <Route path="/terms" element={<TermsAndConditions />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+          </Routes>
+        </main>
+        {!isHome && <Footer />}
+      </div>
+    </>
   );
 }
 

@@ -1,8 +1,10 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 
-const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ01234';
+// Editorial character set: uppercase + sparse symbols for archival aesthetic.
+// Avoid numbers — they feel digital; lean into print-era marks instead.
+const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ·—×▪◆';
 const INTERVAL_MS = 16; // ~60fps
-const TOTAL_DURATION_MS = 420;
+const TOTAL_DURATION_MS = 360; // slightly snappier than 420ms
 
 export function useTextScramble(text: string) {
   const [display, setDisplay] = useState(text);
@@ -36,8 +38,11 @@ export function useTextScramble(text: string) {
 
       const result = chars.map((char, i) => {
         if (char === ' ') return ' ';
-        // Left-to-right decode: each char resolves based on its position
-        const resolveAt = (i / chars.length) * 0.7 + 0.3; // first char resolves at ~30%, last at ~100%
+        // Exponential ramp: first char resolves at ~25%, last snaps at 100%.
+        // Squaring the index fraction front-loads resolution — feels like a fast
+        // left-to-right decode rather than a uniform reveal.
+        const frac = chars.length > 1 ? i / (chars.length - 1) : 1;
+        const resolveAt = 0.25 + frac * frac * 0.75;
         if (progress >= resolveAt) return char;
         return CHARS[Math.floor(Math.random() * CHARS.length)];
       }).join('');

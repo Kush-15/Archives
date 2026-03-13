@@ -84,6 +84,7 @@ export default function HeroScene({ startAnimation = true }: HeroSceneProps) {
       </div>
 
       <div className="hero-scroll-indicator" ref={scrollRef}>
+        <div className="hero-scroll-dot" />
         <div className="hero-scroll-line" />
       </div>
     </section>

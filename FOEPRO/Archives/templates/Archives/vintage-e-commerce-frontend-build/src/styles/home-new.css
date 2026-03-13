@@ -1215,3 +1215,261 @@ body::-webkit-scrollbar {
     will-change: auto;
   }
 }
+
+/* ════════════════════════════════════════════
+   NAV ENHANCEMENTS v2
+   ════════════════════════════════════════════ */
+
+/* ── Active nav link — underline draw from left ── */
+.arc-nav-link {
+  position: relative;
+  overflow: hidden;
+}
+
+.arc-nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: var(--arc-text-light);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.38s var(--spring-light);
+}
+
+.arc-nav-link:hover::after,
+.arc-nav-link--active::after {
+  transform: scaleX(1);
+}
+
+.arc-nav-link--active {
+  color: var(--arc-text-light) !important;
+}
+
+/* ── Auth divider ── */
+.arc-nav-auth-divider {
+  display: block;
+  width: 1px;
+  height: 10px;
+  background: rgba(248, 247, 244, 0.18);
+  flex-shrink: 0;
+}
+
+/* ── Chevron on avatar button ── */
+.arc-nav-chevron {
+  color: rgba(248, 247, 244, 0.4);
+  transition: transform 0.25s var(--spring-light), color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.arc-nav-chevron--open {
+  transform: rotate(180deg);
+  color: var(--arc-text-light);
+}
+
+/* ── CTA hover — animated arrow slide ── */
+.arc-nav-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  overflow: hidden;
+}
+
+.arc-nav-cta-text {
+  display: inline-block;
+  transition: transform 0.3s var(--spring-light);
+}
+
+.arc-nav-cta-arrow {
+  display: inline-block;
+  transition: transform 0.3s var(--spring-light), opacity 0.3s ease;
+  opacity: 0.7;
+}
+
+.arc-nav-cta:hover .arc-nav-cta-text {
+  transform: translateX(-2px);
+}
+
+.arc-nav-cta:hover .arc-nav-cta-arrow {
+  transform: translateX(3px);
+  opacity: 1;
+}
+
+/* ── Hamburger (mobile) ── */
+.arc-nav-hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  width: 32px;
+  height: 32px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  flex-shrink: 0;
+}
+
+.arc-nav-hamburger-bar {
+  display: block;
+  width: 20px;
+  height: 1px;
+  background: rgba(248, 247, 244, 0.75);
+  transition: transform 0.3s var(--spring-medium), opacity 0.25s ease, width 0.3s ease;
+  transform-origin: center;
+}
+
+.arc-nav-hamburger-bar--open-top {
+  transform: translateY(6px) rotate(45deg);
+}
+
+.arc-nav-hamburger-bar--open-mid {
+  opacity: 0;
+  transform: scaleX(0);
+}
+
+.arc-nav-hamburger-bar--open-bot {
+  transform: translateY(-6px) rotate(-45deg);
+}
+
+/* ── Mobile drawer ── */
+.arc-nav-mobile-drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(10, 10, 10, 0.97);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  backdrop-filter: blur(24px) saturate(160%);
+  z-index: 99;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: mobile-drawer-in 0.35s var(--spring-medium) forwards;
+}
+
+@keyframes mobile-drawer-in {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.arc-nav-mobile-links {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  text-align: center;
+}
+
+.arc-nav-mobile-link {
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 6vw, 3.2rem);
+  color: rgba(248, 247, 244, 0.6);
+  text-decoration: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.2s ease;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.arc-nav-mobile-link:hover {
+  color: var(--arc-text-light);
+}
+
+.arc-nav-mobile-link--cta {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--arc-indigo);
+  border: 1px solid var(--arc-indigo);
+  padding: 0.75rem 2rem;
+  margin-top: 0.5rem;
+  transition: background 0.25s ease, color 0.25s ease;
+}
+
+.arc-nav-mobile-link--cta:hover {
+  background: var(--arc-indigo);
+  color: #fff;
+}
+
+/* ── Show hamburger on mobile ── */
+@media (max-width: 768px) {
+  .arc-nav-hamburger {
+    display: flex;
+  }
+  /* Hide desktop auth/cta on mobile */
+  .arc-nav-auth,
+  .arc-nav-cta {
+    display: none;
+  }
+}
+
+/* ── Hero scroll indicator — pulsing dot ── */
+.hero-scroll-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--arc-text-light);
+  margin-bottom: 0.5rem;
+  animation: scroll-dot-blink 2.5s ease-in-out infinite;
+}
+
+@keyframes scroll-dot-blink {
+  0%, 100% { opacity: 0.2; transform: scale(0.8); }
+  50%       { opacity: 0.7; transform: scale(1.2); }
+}
+
+/* ── Footer CTA button — elevated hover ── */
+.footer-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #ffffff;
+  background: var(--arc-indigo);
+  padding: 1rem 2.5rem;
+  border: 1px solid transparent;
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+  transition: letter-spacing 0.3s ease, background 0.3s ease, border-color 0.3s ease;
+  isolation: isolate;
+}
+
+.footer-cta-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateX(-101%);
+  transition: transform 0.4s var(--spring-light);
+}
+
+.footer-cta-btn:hover::before {
+  transform: translateX(0);
+}
+
+.footer-cta-btn:hover {
+  letter-spacing: 0.18em;
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.footer-cta-btn-arrow {
+  display: inline-block;
+  transition: transform 0.3s var(--spring-light);
+}
+
+.footer-cta-btn:hover .footer-cta-btn-arrow {
+  transform: translateX(5px);
+}

@@ -584,10 +584,21 @@ def verify_otp(request):
 
 # E-commerce API Views
 from rest_framework import viewsets, permissions, status
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from .models import Category, Product, Cart, CartItem, ProductReview
 from .serializers import CategorySerializer, ProductSerializer, CartSerializer, CartItemSerializer, ProductReviewSerializer
+
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def api_logout(request):
+    """Revoke the DRF token and log out."""
+    try:
+        request.user.auth_token.delete()
+    except Exception:
+        pass
+    return Response({'detail': 'Logged out.'}, status=200)
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -621,6 +632,9 @@ class ProductViewSet(viewsets.ModelViewSet):
         category_id = self.request.query_params.get('category')
         if category_id:
             queryset = queryset.filter(category_id=category_id)
+        slug = self.request.query_params.get('slug')
+        if slug:
+            queryset = queryset.filter(slug=slug)
         return queryset
     
     def create(self, request, *args, **kwargs):

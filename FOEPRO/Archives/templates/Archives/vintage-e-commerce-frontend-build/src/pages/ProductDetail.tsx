@@ -145,7 +145,7 @@ function ProductViewer3D({ color }: { color: string }) {
 export function ProductDetail() {
   const { id } = useParams<{ id: string }>();
   const { addToCart } = useCart();
-  const { isLoggedIn, isSaved, toggleSavedItem, setIsAuthModalOpen, setAuthModalMode, getAuthHeaders } = useAuth();
+  const { isLoggedIn, isAuthLoading, isSaved, toggleSavedItem, setIsAuthModalOpen, setAuthModalMode, getAuthHeaders } = useAuth();
   const [show3D, setShow3D] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
   const [userRating, setUserRating] = useState<number | null>(null);
@@ -187,6 +187,19 @@ export function ProductDetail() {
           setBackendAverageRating(Number(data.rating_avg) || 0);
           setBackendRatingCount(Number(data.rating_count) || 0);
           return;
+        }
+
+        // Try slug-filtered API query before full list scan
+        const slugRes = await apiFetch(`/api/products/?slug=${encodeURIComponent(id)}`);
+        if (slugRes.ok) {
+          const slugItems = (await slugRes.json()) as Array<BackendProductPayload & { slug?: string; name?: string }>;
+          if (slugItems.length > 0) {
+            const matched = slugItems[0];
+            setBackendProductId(matched.id);
+            setBackendAverageRating(Number(matched.rating_avg) || 0);
+            setBackendRatingCount(Number(matched.rating_count) || 0);
+            return;
+          }
         }
 
         const listRes = await apiFetch('/api/products/');
@@ -270,7 +283,8 @@ export function ProductDetail() {
   };
 
   const handleRate = (value: number) => {
-    if (!isLoggedIn) {
+    if (isAuthLoading) return;
+    if (!isLoggedIn && !localStorage.getItem('archives-token')) {
       setAuthModalMode('login');
       setIsAuthModalOpen(true);
       return;
@@ -281,7 +295,8 @@ export function ProductDetail() {
   };
 
   const submitReview = async () => {
-    if (!isLoggedIn) {
+    if (isAuthLoading) return;
+    if (!isLoggedIn && !localStorage.getItem('archives-token')) {
       setAuthModalMode('login');
       setIsAuthModalOpen(true);
       return;
@@ -568,10 +583,10 @@ export function ProductDetail() {
                     <button
                       type="button"
                       onClick={submitReview}
-                      disabled={!userRating || isSubmittingReview}
+                      disabled={!userRating || isSubmittingReview || isAuthLoading}
                       className="px-4 py-2 text-xs uppercase tracking-wider bg-archive-900 text-cream disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {isSubmittingReview ? 'Submitting...' : 'Submit Review'}
+                      {isAuthLoading ? 'Loading...' : isSubmittingReview ? 'Submitting...' : 'Submit Review'}
                     </button>
                     {reviewError && (
                       <p className="text-sm text-red-600">{reviewError}</p>

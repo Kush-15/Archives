@@ -37,34 +37,35 @@ export function OtpModal() {
 
   return (
     <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-archive-900/40 backdrop-blur-sm animate-fade-in" onClick={() => setIsOtpModalOpen(false)} />
+      <div className="auth-overlay absolute inset-0 animate-fade-in" onClick={() => setIsOtpModalOpen(false)} />
 
-      <div className="relative w-full max-w-md bg-cream rounded-lg shadow-2xl animate-scale-in" role="dialog" aria-labelledby="otp-title">
-        <button onClick={() => setIsOtpModalOpen(false)} className="absolute top-4 right-4 p-2 text-archive-400 hover:text-archive-900 transition-colors" aria-label="Close">
+      <div className="auth-panel relative w-full max-w-md rounded-lg animate-scale-in" role="dialog" aria-labelledby="otp-title">
+        <button onClick={() => setIsOtpModalOpen(false)} className="auth-close absolute top-4 right-4 p-2 transition-colors" aria-label="Close">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
 
-        <div className="p-8">
+        <div className="relative p-8">
           <div className="text-center mb-6">
-            <h2 id="otp-title" className="font-editorial text-2xl mb-1">Verify your email</h2>
-            <p className="text-archive-500 text-sm">We sent a 6-digit code to <strong>{pendingVerificationEmail}</strong></p>
+            <p className="auth-kicker mb-4">Verification Required</p>
+            <h2 id="otp-title" className="auth-title mb-3">Verify your email</h2>
+            <p className="auth-copy">We sent a 6-digit code to <strong className="text-cream">{pendingVerificationEmail}</strong></p>
           </div>
 
           <form onSubmit={handleVerify} className="space-y-5">
             <div>
-              <label htmlFor="otp" className="block text-sm text-archive-600 mb-2">One-time code</label>
+              <label htmlFor="otp" className="auth-label block mb-2">One-time code</label>
               <input id="otp" value={otp} onChange={(e) => setOtp(e.target.value)} type="text" inputMode="numeric" maxLength={6}
-                className="w-full px-4 py-3 bg-white border border-archive-200 rounded focus:outline-none focus:border-archive-500 transition-colors" placeholder="Enter 6-digit code" required />
+                className="auth-input px-4 py-3" placeholder="Enter 6-digit code" required />
             </div>
 
             {error && <p className="text-red-600 text-sm text-center" role="alert">{error}</p>}
 
-            <button disabled={isLoading} type="submit" className="w-full py-3 bg-archive-900 text-cream text-sm uppercase tracking-wider hover:bg-archive-800 transition-colors disabled:opacity-50">{isLoading ? 'Verifying...' : 'Verify'}</button>
+            <button disabled={isLoading} type="submit" className="auth-primary w-full py-3 text-sm uppercase tracking-[0.22em] disabled:opacity-50">{isLoading ? 'Verifying...' : 'Verify'}</button>
 
             <div className="text-center mt-3">
-              <button type="button" onClick={handleResend} disabled={resendLoading} className="text-archive-900 hover:underline">{resendLoading ? 'Resending...' : 'Resend code'}</button>
+              <button type="button" onClick={handleResend} disabled={resendLoading} className="auth-link">{resendLoading ? 'Resending...' : 'Resend code'}</button>
             </div>
           </form>
         </div>

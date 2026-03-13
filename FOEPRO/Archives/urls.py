@@ -1,6 +1,7 @@
 from django.urls import path, include, re_path
 from rest_framework.routers import DefaultRouter
 from . import views
+from .views import api_logout
 from .google_oauth import google_auth_start, google_auth_callback, google_auth_exchange
 
 router = DefaultRouter()
@@ -27,6 +28,7 @@ urlpatterns = [
     path('api/verify-otp/', views.verify_otp, name='verify_otp'),
     path('api/resend-otp/', views.api_resend_otp, name='api_resend_otp'),
     path('api/email-status/', views.email_status, name='email_status'),
+    path('api/logout/', api_logout, name='api_logout'),
     
     # Google OAuth 2.0
     path('api/auth/google/login/', google_auth_start, name='google_auth_login'),

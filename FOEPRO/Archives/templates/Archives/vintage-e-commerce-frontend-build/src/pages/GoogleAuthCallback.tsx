@@ -43,7 +43,7 @@ export function GoogleAuthCallback() {
   const exchangeAttempted = useRef(false);
 
   useEffect(() => {
-    const code = searchParams.get('code');
+    const code = searchParams.get('hcode');
     const errorParam = searchParams.get('error');
 
     if (errorParam) {

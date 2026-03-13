@@ -63,21 +63,12 @@ export function Home() {
           </h2>
           <a
             href="/catalog"
-            style={{
-              display: 'inline-block',
-              fontFamily: 'var(--font-mono)',
-              fontSize: '0.68rem',
-              letterSpacing: '0.14em',
-              textTransform: 'uppercase',
-              color: '#ffffff',
-              background: '#5C6EFF',
-              padding: '1rem 2.5rem',
-              border: 'none',
-              textDecoration: 'none',
-              transition: 'all 0.3s ease',
-            }}
+            className="footer-cta-btn"
+            data-cursor="magnetic"
+            data-cursor-label="SHOP"
           >
-            Enter the Shop →
+            Enter the Shop
+            <span className="footer-cta-btn-arrow">→</span>
           </a>
           <div
             style={{

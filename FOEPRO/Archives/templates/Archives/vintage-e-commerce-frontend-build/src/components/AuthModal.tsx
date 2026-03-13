@@ -68,26 +68,28 @@ export function AuthModal() {
     setError('');
   };
 
+  const isSignup = authModalMode === 'signup';
+
   if (!isAuthModalOpen) return null;
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       {/* Backdrop */}
       <div 
-        className="absolute inset-0 bg-archive-900/40 backdrop-blur-sm animate-fade-in"
+        className="auth-overlay absolute inset-0 animate-fade-in"
         onClick={() => setIsAuthModalOpen(false)}
       />
       
       {/* Modal */}
       <div 
-        className="relative w-full max-w-md bg-cream rounded-lg shadow-2xl animate-scale-in"
+        className={`auth-panel relative w-full max-w-md rounded-lg animate-scale-in ${isSignup ? 'auth-panel--signup' : ''}`}
         role="dialog"
         aria-labelledby="auth-title"
       >
         {/* Close */}
         <button
           onClick={() => setIsAuthModalOpen(false)}
-          className="absolute top-4 right-4 p-2 text-archive-400 hover:text-archive-900 transition-colors"
+          className="auth-close absolute top-4 right-4 p-2 z-10 transition-colors"
           aria-label="Close"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -95,13 +97,14 @@ export function AuthModal() {
           </svg>
         </button>
 
-        <div className="p-8">
+        <div className="relative p-6">
           {/* Header */}
-          <div className="text-center mb-8">
-            <h2 id="auth-title" className="font-editorial text-3xl mb-2">
+          <div className="text-center mb-5">
+            <p className="auth-kicker mb-4">The Archives Account</p>
+            <h2 id="auth-title" className="auth-title mb-3">
               {authModalMode === 'login' ? 'Welcome Back' : 'Join The Archives'}
             </h2>
-            <p className="text-archive-500">
+            <p className="auth-copy">
               {authModalMode === 'login' 
                 ? 'Sign in to access your collection' 
                 : 'Create an account to start collecting'}
@@ -113,7 +116,7 @@ export function AuthModal() {
             {authModalMode === 'signup' && (
               <>
                 <div>
-                  <label htmlFor="username" className="block text-sm text-archive-600 mb-2">
+                  <label htmlFor="username" className="auth-label block mb-2">
                     Username (unique)
                   </label>
                   <input
@@ -135,17 +138,17 @@ export function AuthModal() {
                         setUsernameAvailable(null);
                       } finally { setCheckingUsername(false); }
                     }}
-                    className="w-full px-4 py-3 bg-white border border-archive-200 rounded focus:outline-none focus:border-archive-500 transition-colors"
+                    className="auth-input px-4 py-3"
                     placeholder="Choose a username"
                     required
                   />
-                  {checkingUsername && <p className="text-sm text-archive-500 mt-1">Checking username...</p>}
+                  {checkingUsername && <p className="auth-copy mt-2">Checking username...</p>}
                   {usernameAvailable === false && <p className="text-sm text-red-600 mt-1">Username is already taken</p>}
                   {usernameAvailable === true && <p className="text-sm text-green-600 mt-1">Username is available</p>}
                 </div>
 
                 <div>
-                  <label htmlFor="phone" className="block text-sm text-archive-600 mb-2">
+                  <label htmlFor="phone" className="auth-label block mb-2">
                     Phone number
                   </label>
                   <input
@@ -153,7 +156,7 @@ export function AuthModal() {
                     id="phone"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="w-full px-4 py-3 bg-white border border-archive-200 rounded focus:outline-none focus:border-archive-500 transition-colors"
+                    className="auth-input px-4 py-3"
                     placeholder="e.g. +15551234567"
                     required
                   />
@@ -162,7 +165,7 @@ export function AuthModal() {
             )}
 
             <div>
-              <label htmlFor="email" className="block text-sm text-archive-600 mb-2">
+              <label htmlFor="email" className="auth-label block mb-2">
                 Email Address
               </label>
               <input
@@ -170,14 +173,14 @@ export function AuthModal() {
                 id="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 bg-white border border-archive-200 rounded focus:outline-none focus:border-archive-500 transition-colors"
+                className="auth-input px-4 py-3"
                 placeholder="your@email.com"
                 required
               />
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm text-archive-600 mb-2">
+              <label htmlFor="password" className="auth-label block mb-2">
                 Password
               </label>
               <input
@@ -185,9 +188,9 @@ export function AuthModal() {
                 id="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 bg-white border border-archive-200 rounded focus:outline-none focus:border-archive-500 transition-colors"
-                placeholder="Enter password (min 4 characters)"
-                minLength={4}
+                className="auth-input px-4 py-3"
+                placeholder="Password (min 6 characters)"
+                minLength={6}
                 required
               />
             </div>
@@ -201,7 +204,7 @@ export function AuthModal() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-4 bg-archive-900 text-cream text-sm uppercase tracking-wider hover:bg-archive-800 transition-colors disabled:opacity-50"
+              className="auth-primary w-full py-4 text-sm uppercase tracking-[0.22em] disabled:opacity-50"
             >
               {isLoading ? 'Please wait...' : authModalMode === 'login' ? 'Sign In' : 'Create Account'}
             </button>
@@ -209,9 +212,9 @@ export function AuthModal() {
 
           {/* Divider */}
           <div className="flex items-center my-6">
-            <div className="flex-1 border-t border-archive-200" />
-            <span className="px-4 text-archive-400 text-xs uppercase tracking-wider">or</span>
-            <div className="flex-1 border-t border-archive-200" />
+            <div className="auth-divider flex-1 border-t" />
+            <span className="px-4 auth-kicker">or</span>
+            <div className="auth-divider flex-1 border-t" />
           </div>
 
           {/* Google Sign-In */}
@@ -222,7 +225,7 @@ export function AuthModal() {
               googleLoginInProgress.current = true;
               startGoogleLogin('/profile');
             }}
-            className="w-full flex items-center justify-center gap-3 py-3 border border-archive-200 rounded hover:bg-archive-50 transition-colors"
+            className="auth-secondary w-full flex items-center justify-center gap-3 py-3 rounded"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path
@@ -242,15 +245,15 @@ export function AuthModal() {
                 fill="#EA4335"
               />
             </svg>
-            <span className="text-sm text-archive-700">Continue with Google</span>
+            <span className="text-sm">Continue with Google</span>
           </button>
 
           {/* Switch Mode */}
-          <p className="mt-6 text-center text-archive-500 text-sm">
+          <p className="auth-copy mt-6 text-center">
             {authModalMode === 'login' ? "Don't have an account?" : 'Already have an account?'}
             <button
               onClick={switchMode}
-              className="ml-1 text-archive-900 hover:underline"
+              className="auth-link ml-1"
             >
               {authModalMode === 'login' ? 'Sign up' : 'Sign in'}
             </button>

@@ -12,11 +12,11 @@ export default function ScrambleText({ text, className }: ScrambleTextProps) {
 
   const handleEnter = useCallback(() => {
     trigger();
-    // Letter-spacing breathe after scramble resolves
+    // Letter-spacing breathe fires just after scramble fully resolves (360ms + 20ms)
     setTimeout(() => {
       setBreathe(true);
-      setTimeout(() => setBreathe(false), 80);
-    }, 450); // 420ms scramble + 30ms pause
+      setTimeout(() => setBreathe(false), 120);
+    }, 380);
   }, [trigger]);
 
   const handleLeave = useCallback(() => {
@@ -30,8 +30,8 @@ export default function ScrambleText({ text, className }: ScrambleTextProps) {
       onMouseLeave={handleLeave}
       className={className}
       style={{
-        letterSpacing: breathe ? '0.20em' : undefined,
-        transition: breathe ? 'letter-spacing 0.08s ease' : 'letter-spacing 0.08s ease',
+        letterSpacing: breathe ? '0.24em' : undefined,
+        transition: 'letter-spacing 0.12s cubic-bezier(0.16, 1, 0.3, 1)',
       }}
     >
       {display}

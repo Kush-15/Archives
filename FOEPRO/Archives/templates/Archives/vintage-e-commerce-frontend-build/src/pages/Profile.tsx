@@ -19,17 +19,20 @@ export function Profile() {
     return (
       <div className="pt-32 pb-20 min-h-screen">
         <div className="max-w-[1800px] mx-auto px-6 md:px-12 text-center">
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '2.5rem', color: 'var(--arc-text-light)', marginBottom: '1rem' }}>Sign In Required</h1>
-          <p style={{ color: 'var(--arc-text-muted)', marginBottom: '1.5rem', fontFamily: 'var(--font-mono)', fontSize: '0.75rem', letterSpacing: '0.08em' }}>Please sign in to view your profile</p>
-          <button
-            onClick={() => {
-              setAuthModalMode('login');
-              setIsAuthModalOpen(true);
-            }}
-            style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: '#fff', background: 'var(--arc-indigo)', padding: '0.9rem 2rem', border: 'none', cursor: 'pointer', textDecoration: 'none', transition: 'opacity 0.2s ease' }}
-          >
-            Sign In
-          </button>
+          <div className="auth-panel auth-gate rounded-lg">
+            <p className="auth-kicker mb-4">Account Access</p>
+            <h1 className="auth-title mb-4">Sign In Required</h1>
+            <p className="auth-copy mb-6">Please sign in to view your profile and manage your saved collection.</p>
+            <button
+              onClick={() => {
+                setAuthModalMode('login');
+                setIsAuthModalOpen(true);
+              }}
+              className="auth-primary inline-flex items-center justify-center px-8 py-4 text-sm uppercase tracking-[0.22em] rounded-md"
+            >
+              Sign In
+            </button>
+          </div>
         </div>
       </div>
     );
