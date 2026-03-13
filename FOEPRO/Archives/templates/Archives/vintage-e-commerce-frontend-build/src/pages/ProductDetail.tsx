@@ -8,6 +8,7 @@ import { RatingStars } from '@/components/RatingStars';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { useInViewCanvas } from '@/hooks/useInViewCanvas';
+import { apiFetch } from '@/lib/api';
 import * as THREE from 'three';
 
 interface BackendProductPayload {
@@ -22,15 +23,6 @@ interface BackendReview {
   rating: number;
   review_text: string | null;
   review_date: string;
-}
-
-function getCookie(name: string) {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) {
-    return parts.pop()?.split(';').shift() || '';
-  }
-  return '';
 }
 
 // 3D Product Component with vintage electronics look
@@ -188,9 +180,7 @@ export function ProductDetail() {
 
     const fetchBackendProduct = async () => {
       try {
-        const res = await fetch(`/product/${id}/?format=json`, {
-          credentials: 'include',
-        });
+        const res = await apiFetch(`/product/${id}/?format=json`);
         if (res.ok) {
           const data = (await res.json()) as BackendProductPayload;
           setBackendProductId(data.id);
@@ -199,9 +189,7 @@ export function ProductDetail() {
           return;
         }
 
-        const listRes = await fetch('/api/products/', {
-          credentials: 'include',
-        });
+        const listRes = await apiFetch('/api/products/');
         if (!listRes.ok) {
           return;
         }
@@ -230,9 +218,7 @@ export function ProductDetail() {
 
     const fetchReviews = async () => {
       try {
-        const res = await fetch(`/api/products/${backendProductId}/reviews/`, {
-          credentials: 'include',
-        });
+        const res = await apiFetch(`/api/products/${backendProductId}/reviews/`);
         if (!res.ok) {
           return;
         }
@@ -310,13 +296,12 @@ export function ProductDetail() {
 
     if (!resolvedProductId) {
       try {
-        const linkRes = await fetch('/api/link-product/', {
+        const linkRes = await apiFetch('/api/link-product/', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             ...getAuthHeaders(),
           },
-          credentials: 'include',
           body: JSON.stringify({
             slug: id,
             name: product.name,
@@ -343,13 +328,12 @@ export function ProductDetail() {
     setIsSubmittingReview(true);
     setReviewError(null);
     try {
-      const res = await fetch(`/api/products/${resolvedProductId}/rate/`, {
+      const res = await apiFetch(`/api/products/${resolvedProductId}/rate/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           ...getAuthHeaders(),
         },
-        credentials: 'include',
         body: JSON.stringify({
           rating: userRating,
           review_text: reviewText,
@@ -372,9 +356,7 @@ export function ProductDetail() {
       setBackendRatingCount(Number(data.rating_count) || 0);
       setReviewText('');
 
-      const reviewsRes = await fetch(`/api/products/${resolvedProductId}/reviews/`, {
-        credentials: 'include',
-      });
+      const reviewsRes = await apiFetch(`/api/products/${resolvedProductId}/reviews/`);
       if (reviewsRes.ok) {
         const latestReviews = (await reviewsRes.json()) as BackendReview[];
         setReviews(latestReviews);

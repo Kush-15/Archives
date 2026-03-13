@@ -1,6 +1,7 @@
 from django.urls import path, include, re_path
 from rest_framework.routers import DefaultRouter
 from . import views
+from .google_oauth import google_auth_start, google_auth_callback, google_auth_exchange
 
 router = DefaultRouter()
 router.register(r'categories', views.CategoryViewSet, basename='category')
@@ -26,6 +27,12 @@ urlpatterns = [
     path('api/verify-otp/', views.verify_otp, name='verify_otp'),
     path('api/resend-otp/', views.api_resend_otp, name='api_resend_otp'),
     path('api/email-status/', views.email_status, name='email_status'),
+    
+    # Google OAuth 2.0
+    path('api/auth/google/login/', google_auth_start, name='google_auth_login'),
+    path('api/auth/google/start/', google_auth_start, name='google_auth_start'),
+    path('api/auth/google/callback/', google_auth_callback, name='google_auth_callback'),
+    path('api/auth/google/exchange/', google_auth_exchange, name='google_auth_exchange'),
     
     # E-commerce API
     path('api/', include(router.urls)),

@@ -8,13 +8,18 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   plugins: [react(), tailwindcss()],
-  base: '/static/',
+  base: command === 'serve' ? '/' : '/static/',
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src"),
     },
+  },
+  server: {
+    host: '127.0.0.1',
+    port: 3000,
+    strictPort: true,
   },
   build: {
     outDir: 'dist',
@@ -27,4 +32,4 @@ export default defineConfig({
       }
     }
   }
-});
+}));

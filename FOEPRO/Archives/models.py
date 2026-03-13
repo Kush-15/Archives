@@ -123,16 +123,19 @@ class CartItem(models.Model):
         return f"{self.quantity} x {self.product.name}"
 
 class UserManager(BaseUserManager):
-    def create_user(self, username, email, phone, password=None, **extra_fields):
+    def create_user(self, username, email, phone=None, password=None, **extra_fields):
         if not email:
             raise ValueError('The Email field must be set')
         email = self.normalize_email(email)
         user = self.model(username=username, email=email, phone=phone, **extra_fields)
-        user.set_password(password)
+        if password:
+            user.set_password(password)
+        else:
+            user.set_unusable_password()
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, username, email, phone, password=None, **extra_fields):
+    def create_superuser(self, username, email, phone=None, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
         return self.create_user(username, email, phone, password, **extra_fields)
@@ -143,7 +146,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     """
     username = models.CharField(max_length=150, unique=True)
     email = models.EmailField(unique=True)
-    phone = models.CharField(max_length=20, unique=True)
+    phone = models.CharField(max_length=20, unique=True, blank=True, null=True)
+    google_sub = models.CharField(max_length=255, unique=True, blank=True, null=True)
     password = models.CharField(max_length=255)  # Stored as hashed password
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -156,7 +160,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ['email', 'phone']
+    REQUIRED_FIELDS = ['email']
     
     class Meta:
         db_table = 'archives_users'

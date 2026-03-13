@@ -1,9 +1,16 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
+import { apiFetch, apiUrl } from '@/lib/api';
 
 interface User {
   email: string;
   name: string;
   savedItems: string[];
+}
+
+interface GoogleLoginResult {
+  ok: boolean;
+  message?: string;
+  redirectTo?: string;
 }
 
 interface AuthContextType {
@@ -25,6 +32,8 @@ interface AuthContextType {
   authModalMode: 'login' | 'signup';
   setAuthModalMode: (mode: 'login' | 'signup') => void;
   getAuthHeaders: () => Record<string, string>;
+  startGoogleLogin: (nextPath?: string) => void;
+  completeGoogleLogin: (code: string) => Promise<GoogleLoginResult>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -52,10 +61,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Call backend API for signin
     try {
       if (!email || !password) return { ok: false, message: 'Email and password are required' };
-      const res = await fetch('/api/signin/', {
+      const res = await apiFetch('/api/signin/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ email, password })
       });
 
@@ -93,10 +101,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (password.length < 6) return { ok: false, message: 'Password must be at least 6 characters' };
 
     try {
-      const res = await fetch('/api/signup/', {
+      const res = await apiFetch('/api/signup/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ username, email, phone, password })
       });
 
@@ -121,10 +128,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const verifyOtp = async (email: string, otp: string): Promise<{ ok: boolean; message?: string }> => {
     try {
-      const res = await fetch('/api/verify-otp/', {
+      const res = await apiFetch('/api/verify-otp/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ email, otp })
       });
       const data = await res.json();
@@ -148,10 +154,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const resendOtp = async (email: string): Promise<{ ok: boolean; message?: string }> => {
     try {
-      const res = await fetch('/api/resend-otp/', {
+      const res = await apiFetch('/api/resend-otp/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ email })
       });
       if (!res.ok) return { ok: false, message: 'Failed' };
@@ -193,6 +198,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return {};
   };
 
+  const startGoogleLogin = (nextPath?: string) => {
+    const next = nextPath || window.location.pathname;
+    // Full-page redirect to Django endpoint which will redirect to Google
+    window.location.href = apiUrl(`/api/auth/google/login/?next=${encodeURIComponent(next)}`);
+  };
+
+  const completeGoogleLogin = useCallback(async (code: string): Promise<GoogleLoginResult> => {
+    try {
+      const res = await apiFetch('/api/auth/google/exchange/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.status === 'success') {
+        const userObj = data.user;
+        const email = userObj.email;
+        const name = userObj.username || email.split('@')[0];
+        const savedItems = JSON.parse(localStorage.getItem(`archives-saved-${email}`) || '[]');
+        if (data.token) {
+          localStorage.setItem('archives-token', data.token);
+        }
+        setUser({ email, name, savedItems });
+        setIsAuthModalOpen(false);
+        return { ok: true, redirectTo: data.redirect_to || '/profile' };
+      }
+
+      return { ok: false, message: data.error || data.message || 'Google sign-in failed' };
+    } catch {
+      return { ok: false, message: 'Network error during Google sign-in' };
+    }
+  }, []);
+
   return (
     <AuthContext.Provider
       value={{
@@ -213,7 +252,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setPendingVerificationEmail,
         authModalMode,
         setAuthModalMode,
-        getAuthHeaders
+        getAuthHeaders,
+        startGoogleLogin,
+        completeGoogleLogin,
       }}
     >
       {children}

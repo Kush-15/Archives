@@ -87,9 +87,17 @@ export function Home() {
               letterSpacing: '0.2em',
               textTransform: 'uppercase',
               opacity: 0.3,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '1rem',
             }}
           >
-            © {new Date().getFullYear()} The Archives. All rights reserved.
+            <span>© {new Date().getFullYear()} The Archives. All rights reserved.</span>
+            <div style={{ display: 'flex', gap: '2rem' }}>
+              <a href="/terms" style={{ color: 'inherit', textDecoration: 'none', borderBottom: '1px solid currentColor', paddingBottom: '1px' }}>Terms &amp; Conditions</a>
+              <a href="/privacy" style={{ color: 'inherit', textDecoration: 'none', borderBottom: '1px solid currentColor', paddingBottom: '1px' }}>Privacy Policy</a>
+            </div>
           </div>
         </div>
       </footer>

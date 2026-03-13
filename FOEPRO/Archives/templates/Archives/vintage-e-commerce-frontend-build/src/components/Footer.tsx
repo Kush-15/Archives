@@ -80,9 +80,22 @@ export function Footer() {
           <p className="text-sm text-archive-500">
             © {new Date().getFullYear()} The Archives. All rights reserved.
           </p>
-          <p className="text-sm text-archive-500">
-            Curating history, one artifact at a time.
-          </p>
+          <div className="flex items-center gap-6">
+            <Link
+              to="/terms"
+              className="text-archive-500 hover:text-cream transition-colors duration-300"
+              style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6rem', letterSpacing: '0.12em', textTransform: 'uppercase', textDecoration: 'none' }}
+            >
+              Terms &amp; Conditions
+            </Link>
+            <Link
+              to="/privacy"
+              className="text-archive-500 hover:text-cream transition-colors duration-300"
+              style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6rem', letterSpacing: '0.12em', textTransform: 'uppercase', textDecoration: 'none' }}
+            >
+              Privacy Policy
+            </Link>
+          </div>
         </div>
       </div>
     </footer>

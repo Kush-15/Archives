@@ -3,3 +3,12 @@ db.sqlite3
 __pycache__/
 *.pyc
 .env.example
+credentials.json
+googleauth.json
+# Windows reserved device names
+nul
+con
+prn
+aux
+lpt*
+com*

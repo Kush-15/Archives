@@ -69,7 +69,7 @@ export default function RevealScene() {
             {/* Body annotation */}
             <line x1="60%" y1="62%" x2="74%" y2="48%" className="reveal-label-line" />
             {/* Shutter/top-plate annotation */}
-            <line x1="60%" y1="22%" x2="74%" y2="24%" className="reveal-label-line" />
+            <line x1="55%" y1="32%" x2="74%" y2="24%" className="reveal-label-line" />
           </svg>
 
           <div className="reveal-label" style={{ left: '74%', top: '24%', opacity: t > 0.3 ? 1 : 0 }}>

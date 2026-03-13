@@ -16,7 +16,7 @@ import secrets
 import time
 import re
 from pathlib import Path
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urlparse
 
 import requests
 from google.auth.transport import requests as google_requests
@@ -163,6 +163,16 @@ def _sanitize_next(raw: str | None) -> str:
     return raw
 
 
+def _split_host_port(netloc: str) -> tuple[str, str]:
+    """Return lowercase host + port from a netloc string."""
+    if not netloc:
+        return '', ''
+    host, sep, port = netloc.rpartition(':')
+    if sep and port.isdigit():
+        return host.lower(), port
+    return netloc.lower(), ''
+
+
 # ---------------------------------------------------------------------------
 # 1) GET /api/auth/google/login/?next=/some/path
 #    (also aliased as /api/auth/google/start/ for backward compat)
@@ -195,6 +205,25 @@ def google_auth_start(request):
             {'error': 'Google OAuth is not configured on this server.'},
             status=503,
         )
+
+    # Canonicalize loopback host to match redirect_uri host (localhost vs 127.0.0.1).
+    # If start uses one loopback host and callback uses another, session cookies do not
+    # carry over and state validation fails with `state_mismatch`.
+    redirect_parts = urlparse(redirect_uri)
+    redirect_host, redirect_port = _split_host_port(redirect_parts.netloc)
+    current_host, current_port = _split_host_port(request.get_host())
+    loopback_hosts = {'127.0.0.1', 'localhost'}
+    if (
+        redirect_parts.scheme
+        and redirect_host in loopback_hosts
+        and current_host in loopback_hosts
+        and (redirect_host != current_host or (redirect_port and redirect_port != current_port))
+    ):
+        canonical_start = f'{redirect_parts.scheme}://{redirect_parts.netloc}{request.path}'
+        query_string = request.META.get('QUERY_STRING', '')
+        if query_string:
+            canonical_start = f'{canonical_start}?{query_string}'
+        return HttpResponseRedirect(canonical_start)
 
     state = secrets.token_urlsafe(32)
     next_path = _sanitize_next(request.GET.get('next'))
