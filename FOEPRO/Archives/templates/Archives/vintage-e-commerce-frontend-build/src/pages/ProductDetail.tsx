@@ -1,15 +1,12 @@
 import { useParams, Link } from 'react-router-dom';
-import { useEffect, useState, Suspense, useRef } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, Environment, ContactShadows } from '@react-three/drei';
+import { useEffect, useState, Suspense } from 'react';
 import { products } from '@/data/products';
 import { ProductCard } from '@/components/ProductCard';
 import { RatingStars } from '@/components/RatingStars';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
-import { useInViewCanvas } from '@/hooks/useInViewCanvas';
 import { apiFetch } from '@/lib/api';
-import * as THREE from 'three';
+import { Product3DRenderer } from '@/lib/product3d';
 
 interface BackendProductPayload {
   id: number;
@@ -25,119 +22,23 @@ interface BackendReview {
   review_date: string;
 }
 
-// 3D Product Component with vintage electronics look
-function ProductBox({ color }: { color: string }) {
-  const groupRef = useRef<THREE.Group>(null);
-  const [hovered, setHovered] = useState(false);
-
-  useFrame((state) => {
-    if (groupRef.current) {
-      groupRef.current.rotation.y += 0.002;
-      groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.4) * 0.03;
-      state.invalidate();
-    }
-  });
-
+// 3D Viewer Component using the new Product3DRenderer
+function ProductViewer3D({ slug }: { slug: string }) {
   return (
-    <group
-      ref={groupRef}
-      onPointerOver={() => setHovered(true)}
-      onPointerOut={() => setHovered(false)}
-      scale={hovered ? 1.02 : 1}
-    >
-      {/* Main Body */}
-      <mesh position={[0, 0, 0]}>
-        <boxGeometry args={[1.6, 1, 0.7]} />
-        <meshStandardMaterial 
-          color={color} 
-          roughness={0.4} 
-          metalness={0.3}
-          envMapIntensity={0.8}
+    <div className="w-full h-full min-h-[400px]">
+      <Suspense fallback={
+        <div className="w-full h-full flex items-center justify-center bg-archive-100">
+          <div className="w-8 h-8 border-2 border-archive-300 border-t-archive-700 rounded-full animate-spin" />
+        </div>
+      }>
+        <Product3DRenderer
+          slug={slug}
+          className="w-full h-full"
+          interactive={true}
+          autoRotate={true}
+          showLoader={true}
         />
-      </mesh>
-      
-      {/* Screen/Display */}
-      <mesh position={[0, 0.1, 0.36]}>
-        <boxGeometry args={[1.2, 0.6, 0.02]} />
-        <meshStandardMaterial 
-          color="#1a1a1a" 
-          roughness={0.1} 
-          metalness={0.9}
-          envMapIntensity={1.5}
-        />
-      </mesh>
-      
-      {/* Control Panel */}
-      <mesh position={[0, -0.35, 0.36]}>
-        <boxGeometry args={[1.4, 0.2, 0.02]} />
-        <meshStandardMaterial 
-          color="#2a2a2a" 
-          roughness={0.6} 
-          metalness={0.2}
-        />
-      </mesh>
-      
-      {/* Buttons/Knobs */}
-      {[-0.4, 0, 0.4].map((x, i) => (
-        <mesh key={i} position={[x, -0.35, 0.38]}>
-          <cylinderGeometry args={[0.04, 0.04, 0.03, 16]} />
-          <meshStandardMaterial 
-            color="#444" 
-            roughness={0.3} 
-            metalness={0.6}
-          />
-        </mesh>
-      ))}
-      
-      {/* Brand plate */}
-      <mesh position={[0, 0.42, 0.36]}>
-        <boxGeometry args={[0.4, 0.06, 0.01]} />
-        <meshStandardMaterial 
-          color="#c0c0c0" 
-          roughness={0.2} 
-          metalness={0.8}
-        />
-      </mesh>
-    </group>
-  );
-}
-
-// 3D Viewer Component
-function ProductViewer3D({ color }: { color: string }) {
-  const { inView, containerRef } = useInViewCanvas();
-
-  return (
-    <div ref={containerRef} className="w-full h-full min-h-[400px]">
-      <Canvas
-        camera={{ position: [0, 0, 4], fov: 45 }}
-        dpr={[1, Math.min(window.devicePixelRatio, 1.5)]}
-        frameloop={inView ? 'demand' : 'never'}
-        gl={{ antialias: false }}
-      >
-        <ambientLight intensity={0.4} />
-        <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} intensity={1} />
-        <pointLight position={[-10, -10, -10]} intensity={0.5} />
-        
-        <Suspense fallback={null}>
-          <ProductBox color={color} />
-          <Environment preset="city" />
-          <ContactShadows
-            position={[0, -0.8, 0]}
-            opacity={0.4}
-            scale={5}
-            blur={2.5}
-          />
-        </Suspense>
-        
-        <OrbitControls
-          enableZoom={false}
-          enablePan={false}
-          minPolarAngle={Math.PI / 4}
-          maxPolarAngle={Math.PI / 2}
-          autoRotate
-          autoRotateSpeed={0.5}
-        />
-      </Canvas>
+      </Suspense>
     </div>
   );
 }
@@ -409,7 +310,7 @@ export function ProductDetail() {
           <div className="space-y-4">
             <div className="aspect-square bg-archive-100 rounded-lg overflow-hidden relative">
               {show3D ? (
-                <ProductViewer3D color={product.color} />
+                <ProductViewer3D slug={product.id} />
               ) : (
                 <img
                   src={product.images[0]}
