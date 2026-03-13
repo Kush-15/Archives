@@ -23,7 +23,8 @@ import warnings
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Load local .env (not committed). This makes local dev easier and avoids needing setx.
-load_dotenv(BASE_DIR / '.env')
+# Override inherited shell variables so local edits to .env take effect immediately.
+load_dotenv(BASE_DIR / '.env', override=True)
 
 
 def get_env(key, default=None, required=False):
