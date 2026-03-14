@@ -7,6 +7,7 @@
  * Features:
  * - Automatic device capability detection and tier assignment
  * - Procedural geometry generation for all product families
+ * - Multi-mesh rendering with per-feature materials (photorealistic PBR)
  * - Reduced motion support (respects prefers-reduced-motion)
  * - Runtime telemetry for monitoring
  * - Graceful fallback for unknown slugs
@@ -18,8 +19,9 @@
 import { useRef, useMemo, useEffect, useState, useCallback } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Environment, ContactShadows } from '@react-three/drei';
+import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import * as THREE from 'three';
-import type { Product3DRendererProps, QualityTier, ProductRendererConfig } from './types';
+import type { Product3DRendererProps, QualityTier, ProductRendererConfig, MaterialConfig } from './types';
 import { lookupProduct } from './registry';
 import { 
   detectQualityTier, 
@@ -30,7 +32,8 @@ import {
   recordFrame,
 } from './tierDetection';
 import { getPerformanceBudget } from './constants';
-import { generateProductGeometry, generateFallbackGeometry } from './proceduralGeometry';
+import { generateFallbackGeometry, generateSeparateGeometries } from './proceduralGeometry';
+import type { SeparateGeometryResult } from './proceduralGeometry';
 import { useInViewCanvas } from '@/hooks/useInViewCanvas';
 
 // =============================================================================
@@ -38,14 +41,13 @@ import { useInViewCanvas } from '@/hooks/useInViewCanvas';
 // =============================================================================
 
 /**
- * Material factory based on registry config.
+ * Material factory from a MaterialConfig.
+ * Creates the appropriate Three.js material based on type and tier.
  */
-function createMaterial(
-  config: ProductRendererConfig,
+function createMaterialFromConfig(
+  matConfig: MaterialConfig,
   tier: QualityTier
 ): THREE.Material {
-  const matConfig = config.material;
-  
   // Use simpler material for low tier
   if (tier === 'low' && matConfig.type !== 'lambert') {
     return new THREE.MeshLambertMaterial({
@@ -64,6 +66,8 @@ function createMaterial(
         envMapIntensity: matConfig.envMapIntensity ?? 1,
         transparent: matConfig.transparent,
         opacity: matConfig.opacity,
+        ...(matConfig.emissive ? { emissive: matConfig.emissive } : {}),
+        ...(matConfig.emissiveIntensity != null ? { emissiveIntensity: matConfig.emissiveIntensity } : {}),
       });
     case 'basic':
       return new THREE.MeshBasicMaterial({
@@ -86,12 +90,56 @@ function createMaterial(
         envMapIntensity: tier === 'low' ? 0.3 : (matConfig.envMapIntensity ?? 0.8),
         transparent: matConfig.transparent,
         opacity: matConfig.opacity,
+        ...(matConfig.emissive ? { emissive: matConfig.emissive } : {}),
+        ...(matConfig.emissiveIntensity != null ? { emissiveIntensity: matConfig.emissiveIntensity } : {}),
       });
   }
 }
 
 /**
- * Product mesh component with animations.
+ * Map a feature type to the best-matching secondary material key.
+ * The registry defines secondaryMaterials with semantic keys like
+ * "buttons", "chrome", "lens", "screen", "speaker", etc.
+ * This maps procedural feature types to those keys.
+ */
+function resolveFeatureMaterial(
+  featureType: string,
+  secondaryMaterials?: Record<string, MaterialConfig>
+): MaterialConfig | null {
+  if (!secondaryMaterials) return null;
+
+  // Direct type match first (e.g. feature type "lens" -> key "lens")
+  if (secondaryMaterials[featureType]) return secondaryMaterials[featureType];
+
+  // Pluralized match (e.g. feature type "button" -> key "buttons")
+  const plural = featureType + 's';
+  if (secondaryMaterials[plural]) return secondaryMaterials[plural];
+
+  // Type-to-semantic-key mapping
+  const typeKeyMap: Record<string, string[]> = {
+    button: ['buttons', 'controls', 'accents', 'chrome'],
+    dial: ['dials', 'controls', 'chrome'],
+    screen: ['screen', 'display', 'screenGlow'],
+    slot: ['cassetteDoor', 'slot', 'accents'],
+    port: ['port', 'accents', 'chrome'],
+    lens: ['lens', 'glass'],
+    speaker: ['speaker', 'speakers', 'grille'],
+    antenna: ['antenna', 'chrome'],
+    custom: ['woodgrain', 'keys', 'badge', 'accents', 'vents'],
+  };
+
+  const candidates = typeKeyMap[featureType] ?? [];
+  for (const candidate of candidates) {
+    if (secondaryMaterials[candidate]) return secondaryMaterials[candidate];
+  }
+
+  return null;
+}
+
+/**
+ * Product mesh component with multi-material rendering and animations.
+ * Renders base body + each feature as separate <mesh> elements with
+ * distinct materials sourced from the registry's secondaryMaterials.
  */
 interface ProductMeshProps {
   config: ProductRendererConfig;
@@ -107,24 +155,51 @@ function ProductMesh({ config, tier, interactive, autoRotate }: ProductMeshProps
   
   const animationSettings = useMemo(() => getAnimationSettings(tier), [tier]);
   
-  // Generate geometry
-  const geometry = useMemo(() => {
-    if (!config.procedural || !config.proceduralConfig) {
-      return generateFallbackGeometry();
-    }
-    return generateProductGeometry(config.proceduralConfig, tier);
+  // Generate separate geometries for multi-material rendering
+  const separateGeo = useMemo<SeparateGeometryResult | null>(() => {
+    if (!config.procedural || !config.proceduralConfig) return null;
+    return generateSeparateGeometries(config.proceduralConfig, tier);
   }, [config, tier]);
 
-  // Create material
-  const material = useMemo(() => createMaterial(config, tier), [config, tier]);
+  // Fallback geometry for non-procedural or missing config
+  const fallbackGeo = useMemo(() => {
+    if (separateGeo) return null;
+    return generateFallbackGeometry();
+  }, [separateGeo]);
 
-  // Cleanup
+  // Create primary body material
+  const bodyMaterial = useMemo(
+    () => createMaterialFromConfig(config.material, tier),
+    [config.material, tier]
+  );
+
+  // Create per-feature materials from secondaryMaterials
+  const featureMaterials = useMemo(() => {
+    if (!separateGeo) return [];
+    return separateGeo.features.map((feat) => {
+      const matConfig = resolveFeatureMaterial(feat.type, config.secondaryMaterials);
+      if (matConfig) {
+        return createMaterialFromConfig(matConfig, tier);
+      }
+      // Fall back to body material for unmatched features
+      return bodyMaterial;
+    });
+  }, [separateGeo, config.secondaryMaterials, tier, bodyMaterial]);
+
+  // Cleanup geometries and materials
   useEffect(() => {
     return () => {
-      geometry.dispose();
-      material.dispose();
+      if (separateGeo) {
+        separateGeo.base.dispose();
+        separateGeo.features.forEach((f) => f.geometry.dispose());
+      }
+      if (fallbackGeo) fallbackGeo.dispose();
+      bodyMaterial.dispose();
+      featureMaterials.forEach((m) => {
+        if (m !== bodyMaterial) m.dispose();
+      });
     };
-  }, [geometry, material]);
+  }, [separateGeo, fallbackGeo, bodyMaterial, featureMaterials]);
 
   // Animation frame
   useFrame((state, delta) => {
@@ -173,7 +248,40 @@ function ProductMesh({ config, tier, interactive, autoRotate }: ProductMeshProps
       onPointerOver={handlePointerOver}
       onPointerOut={handlePointerOut}
     >
-      <mesh geometry={geometry} material={material} />
+      {separateGeo ? (
+        <>
+          {/* Base body mesh */}
+          <mesh
+            geometry={separateGeo.base}
+            material={bodyMaterial}
+            castShadow
+            receiveShadow
+          />
+          {/* Feature meshes with individual materials */}
+          {separateGeo.features.map((feat, i) => (
+            <mesh
+              key={i}
+              geometry={feat.geometry}
+              material={featureMaterials[i] ?? bodyMaterial}
+              position={feat.position}
+              rotation={
+                feat.rotation
+                  ? [feat.rotation[0], feat.rotation[1], feat.rotation[2]]
+                  : undefined
+              }
+              castShadow
+            />
+          ))}
+        </>
+      ) : (
+        /* Fallback single-mesh rendering */
+        <mesh
+          geometry={fallbackGeo!}
+          material={bodyMaterial}
+          castShadow
+          receiveShadow
+        />
+      )}
     </group>
   );
 }
@@ -248,15 +356,17 @@ function EnvironmentSetup({ config, tier }: EnvironmentSetupProps) {
   }
 
   // Use drei Environment for medium/high tiers
-  const preset = (lighting.environment as 'city' | 'sunset' | 'studio') || 'city';
+  // Prefer 'studio' for product renders; fall back to config value
+  const preset = (lighting.environment as 'city' | 'sunset' | 'studio') || 'studio';
   
   return (
     <>
       <Environment preset={preset} background={false} />
-      {tier === 'high' && (
+      {/* Contact shadows for medium + high tiers */}
+      {(tier === 'medium' || tier === 'high') && (
         <ContactShadows
           position={[0, -0.8, 0]}
-          opacity={0.4}
+          opacity={tier === 'high' ? 0.5 : 0.3}
           scale={5}
           blur={2.5}
         />
@@ -313,6 +423,7 @@ interface ProductSceneProps {
 
 function ProductScene({ slug, tier, interactive, autoRotate, onLoad }: ProductSceneProps) {
   const lookup = useMemo(() => lookupProduct(slug, tier), [slug, tier]);
+  const budget = useMemo(() => getPerformanceBudget(tier), [tier]);
   
   useEffect(() => {
     // Record telemetry
@@ -341,6 +452,16 @@ function ProductScene({ slug, tier, interactive, autoRotate, onLoad }: ProductSc
         interactive={interactive}
         autoRotate={autoRotate}
       />
+      {/* Post-processing: bloom for high tier only */}
+      {budget.enablePostProcessing && (
+        <EffectComposer>
+          <Bloom
+            luminanceThreshold={0.9}
+            luminanceSmoothing={0.4}
+            intensity={0.3}
+          />
+        </EffectComposer>
+      )}
     </>
   );
 }

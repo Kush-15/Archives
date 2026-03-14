@@ -152,108 +152,153 @@ export const GEOMETRY_PROFILES = {
 
 /**
  * Material presets following PBR standards.
+ * Realistic values based on actual vintage electronics materials.
  * Pooled/reused to avoid memory churn.
  */
 export const MATERIAL_PROFILES = {
-  // Metals
+  // Metals ──────────────────────────────────────────────────────────────────
   brushedAluminum: {
     type: 'standard' as const,
-    color: '#a0a0a0',
-    metalness: 0.9,
-    roughness: 0.4,
-    envMapIntensity: 0.8,
+    color: '#b0b0b0',
+    metalness: 0.95,
+    roughness: 0.35,
+    envMapIntensity: 0.7,
   },
   chrome: {
-    type: 'standard' as const,
-    color: '#c0c0c0',
+    type: 'physical' as const,
+    color: '#e0e0e0',
     metalness: 1.0,
-    roughness: 0.1,
+    roughness: 0.05,
+    envMapIntensity: 0.8,
+  },
+  polishedChrome: {
+    type: 'physical' as const,
+    color: '#f0f0f0',
+    metalness: 1.0,
+    roughness: 0.02,
     envMapIntensity: 1.0,
   },
   darkMetal: {
     type: 'standard' as const,
-    color: '#222226',
-    metalness: 0.6,
-    roughness: 0.5,
-    envMapIntensity: 0.6,
+    color: '#1a1a20',
+    metalness: 0.7,
+    roughness: 0.45,
+    envMapIntensity: 0.8,
+  },
+  brass: {
+    type: 'standard' as const,
+    color: '#c5a55a',
+    metalness: 0.9,
+    roughness: 0.3,
+    envMapIntensity: 1.2,
+  },
+  anodizedAluminum: {
+    type: 'standard' as const,
+    color: '#8a8a8a',
+    metalness: 0.85,
+    roughness: 0.25,
+    envMapIntensity: 1.0,
   },
 
-  // Plastics
+  // Plastics ────────────────────────────────────────────────────────────────
   mattePlastic: {
     type: 'standard' as const,
-    color: '#2a2a2a',
+    color: '#222222',
     metalness: 0.0,
-    roughness: 0.7,
-    envMapIntensity: 0.3,
+    roughness: 0.75,
+    envMapIntensity: 0.4,
   },
   glossyPlastic: {
     type: 'standard' as const,
-    color: '#1a1a1a',
+    color: '#111111',
     metalness: 0.0,
-    roughness: 0.2,
-    envMapIntensity: 0.5,
+    roughness: 0.15,
+    envMapIntensity: 0.7,
   },
   beigeComputer: {
     type: 'standard' as const,
     color: '#d4c4a8',
     metalness: 0.0,
-    roughness: 0.6,
-    envMapIntensity: 0.3,
+    roughness: 0.55,
+    envMapIntensity: 0.4,
   },
   grayPlastic: {
     type: 'standard' as const,
     color: '#6b7280',
     metalness: 0.0,
+    roughness: 0.55,
+    envMapIntensity: 0.4,
+  },
+  absPlastic: {
+    type: 'standard' as const,
+    color: '#2a2a2a',
+    metalness: 0.0,
     roughness: 0.6,
+    envMapIntensity: 0.5,
+  },
+
+  // Leather/Vinyl ──────────────────────────────────────────────────────────
+  leather: {
+    type: 'standard' as const,
+    color: '#5c4a32',
+    metalness: 0.0,
+    roughness: 0.85,
+    envMapIntensity: 0.25,
+  },
+  leatherette: {
+    type: 'standard' as const,
+    color: '#1a1a1a',
+    metalness: 0.0,
+    roughness: 0.9,
+    envMapIntensity: 0.15,
+  },
+
+  // Wood ───────────────────────────────────────────────────────────────────
+  woodgrain: {
+    type: 'standard' as const,
+    color: '#6d3a1a',
+    metalness: 0.0,
+    roughness: 0.65,
     envMapIntensity: 0.3,
   },
 
-  // Leather/Vinyl
-  leather: {
-    type: 'standard' as const,
-    color: '#8b7355',
-    metalness: 0.0,
-    roughness: 0.8,
-    envMapIntensity: 0.2,
-  },
-
-  // Wood
-  woodgrain: {
-    type: 'standard' as const,
-    color: '#78350f',
-    metalness: 0.0,
-    roughness: 0.7,
-    envMapIntensity: 0.2,
-  },
-
-  // Glass/Screens
+  // Glass/Screens ──────────────────────────────────────────────────────────
   screen: {
     type: 'standard' as const,
-    color: '#0a0a0a',
+    color: '#050508',
     metalness: 0.0,
-    roughness: 0.1,
-    envMapIntensity: 0.8,
+    roughness: 0.08,
+    envMapIntensity: 1.0,
   },
   screenGlow: {
     type: 'standard' as const,
-    color: '#1a1a2e',
+    color: '#0a0a14',
     metalness: 0.0,
-    roughness: 0.1,
-    emissive: '#2a4066',
-    emissiveIntensity: 0.3,
-    envMapIntensity: 0.4,
+    roughness: 0.08,
+    emissive: '#2a5088',
+    emissiveIntensity: 0.5,
+    envMapIntensity: 0.6,
   },
   lens: {
     type: 'physical' as const,
-    color: '#0a0a12',
+    color: '#06060e',
     metalness: 0.0,
-    roughness: 0.05,
-    envMapIntensity: 1.0,
+    roughness: 0.02,
+    envMapIntensity: 0.8,
     transparent: true,
-    opacity: 0.9,
+    opacity: 0.85,
   },
 
-  // Fallback
+  // Rubber ─────────────────────────────────────────────────────────────────
+  rubber: {
+    type: 'standard' as const,
+    color: '#1a1a1a',
+    metalness: 0.0,
+    roughness: 0.95,
+    envMapIntensity: 0.1,
+  },
+
+  // Fallback ───────────────────────────────────────────────────────────────
   fallback: {
     type: 'lambert' as const,
     color: '#404040',
@@ -270,21 +315,21 @@ export const MATERIAL_PROFILES = {
  * Lighting rigs optimized for cost by tier.
  * Low tier: ambient + single directional (no shadows)
  * Medium tier: three-point setup with soft shadows
- * High tier: full setup with environment lighting
+ * High tier: full setup with environment lighting + rim
  */
 export const LIGHTING_PROFILES = {
   studioSoft: {
-    ambientIntensity: 0.5,
-    ambientColor: '#ffffff',
+    ambientIntensity: 0.35,
+    ambientColor: '#f8f4f0',
     keyLight: {
-      intensity: 1.0,
-      color: '#ffffff',
+      intensity: 0.9,
+      color: '#fff8f0',
       position: [5, 5, 5] as [number, number, number],
       castShadow: true,
     },
     fillLight: {
-      intensity: 0.4,
-      color: '#e0e8ff',
+      intensity: 0.35,
+      color: '#d0d8ff',
       position: [-5, 3, 3] as [number, number, number],
     },
     rimLight: {
@@ -293,7 +338,7 @@ export const LIGHTING_PROFILES = {
       position: [0, 3, -5] as [number, number, number],
     },
     useEnvironment: true,
-    environment: 'city',
+    environment: 'studio',
   },
   studioMinimal: {
     ambientIntensity: 0.6,
@@ -307,11 +352,11 @@ export const LIGHTING_PROFILES = {
     useEnvironment: false,
   },
   dramatic: {
-    ambientIntensity: 0.2,
-    ambientColor: '#101020',
+    ambientIntensity: 0.15,
+    ambientColor: '#0a0a18',
     keyLight: {
-      intensity: 1.2,
-      color: '#fffaf0',
+      intensity: 1.0,
+      color: '#fff0e0',
       position: [4, 6, 3] as [number, number, number],
       castShadow: true,
     },
@@ -321,7 +366,7 @@ export const LIGHTING_PROFILES = {
       position: [-4, 2, 2] as [number, number, number],
     },
     rimLight: {
-      intensity: 0.5,
+      intensity: 0.4,
       color: '#ff8040',
       position: [-2, 4, -4] as [number, number, number],
     },
@@ -514,11 +559,16 @@ productRegistry.set('sony-walkman-tps-l2', {
   },
   material: {
     ...MATERIAL_PROFILES.darkMetal,
-    color: '#1a365d', // Sony blue
+    color: '#14305a', // Sony blue — deep metallic
+    metalness: 0.65,
+    roughness: 0.5,
   },
   secondaryMaterials: {
     buttons: MATERIAL_PROFILES.chrome,
-    cassetteDoor: MATERIAL_PROFILES.mattePlastic,
+    dials: MATERIAL_PROFILES.chrome,
+    cassetteDoor: { ...MATERIAL_PROFILES.mattePlastic, color: '#1a1a1a' },
+    slot: { ...MATERIAL_PROFILES.absPlastic, color: '#0d0d0d' },
+    port: MATERIAL_PROFILES.chrome,
   },
   lighting: LIGHTING_PROFILES.studioSoft,
   camera: CAMERA_PROFILES.standard,
@@ -549,12 +599,16 @@ productRegistry.set('braun-t1000', {
   },
   material: {
     ...MATERIAL_PROFILES.brushedAluminum,
-    color: '#374151',
+    color: '#3a3a42', // Braun dark anodized aluminum
+    metalness: 0.9,
+    roughness: 0.3,
   },
   secondaryMaterials: {
-    dials: MATERIAL_PROFILES.chrome,
-    speaker: MATERIAL_PROFILES.mattePlastic,
-    display: MATERIAL_PROFILES.screen,
+    dials: MATERIAL_PROFILES.polishedChrome,
+    dial: MATERIAL_PROFILES.polishedChrome,
+    speaker: { ...MATERIAL_PROFILES.mattePlastic, color: '#141414' },
+    display: MATERIAL_PROFILES.screenGlow,
+    screen: MATERIAL_PROFILES.screenGlow,
   },
   lighting: LIGHTING_PROFILES.studioSoft,
   camera: CAMERA_PROFILES.standard,
@@ -584,11 +638,16 @@ productRegistry.set('technics-sl1200', {
   },
   material: {
     ...MATERIAL_PROFILES.darkMetal,
-    color: '#111827',
+    color: '#0a0a10', // Technics deep black
+    metalness: 0.6,
+    roughness: 0.5,
   },
   secondaryMaterials: {
     platter: MATERIAL_PROFILES.brushedAluminum,
     controls: MATERIAL_PROFILES.chrome,
+    custom: MATERIAL_PROFILES.brushedAluminum,
+    button: MATERIAL_PROFILES.chrome,
+    dial: MATERIAL_PROFILES.chrome,
   },
   lighting: LIGHTING_PROFILES.dramatic,
   camera: CAMERA_PROFILES.hero,
@@ -621,11 +680,14 @@ productRegistry.set('polaroid-sx-70', {
   },
   material: {
     ...MATERIAL_PROFILES.leather,
-    color: '#8b7355',
+    color: '#6d4c2e', // Tan leather SX-70
+    roughness: 0.85,
   },
   secondaryMaterials: {
-    chrome: MATERIAL_PROFILES.chrome,
+    chrome: MATERIAL_PROFILES.polishedChrome,
+    button: MATERIAL_PROFILES.chrome,
     lens: MATERIAL_PROFILES.lens,
+    screen: MATERIAL_PROFILES.screen,
   },
   lighting: LIGHTING_PROFILES.studioSoft,
   camera: CAMERA_PROFILES.closeup,
@@ -655,12 +717,14 @@ productRegistry.set('hasselblad-500c', {
   },
   material: {
     ...MATERIAL_PROFILES.chrome,
-    color: '#c0c0c0',
+    color: '#d0d0d0', // Classic chrome body
   },
   secondaryMaterials: {
     body: MATERIAL_PROFILES.darkMetal,
+    custom: MATERIAL_PROFILES.darkMetal,
     lens: MATERIAL_PROFILES.lens,
-    leatherGrip: MATERIAL_PROFILES.leather,
+    dial: MATERIAL_PROFILES.polishedChrome,
+    leatherGrip: MATERIAL_PROFILES.leatherette,
   },
   lighting: LIGHTING_PROFILES.studioSoft,
   camera: CAMERA_PROFILES.standard,
@@ -691,13 +755,16 @@ productRegistry.set('leica-m3', {
   },
   material: {
     ...MATERIAL_PROFILES.chrome,
-    color: '#d4d4d8',
+    color: '#dcdce0', // Leica silver chrome
   },
   secondaryMaterials: {
-    topPlate: MATERIAL_PROFILES.chrome,
+    topPlate: MATERIAL_PROFILES.polishedChrome,
     body: MATERIAL_PROFILES.darkMetal,
-    leatherette: { ...MATERIAL_PROFILES.leather, color: '#27272a' },
+    leatherette: MATERIAL_PROFILES.leatherette,
     lens: MATERIAL_PROFILES.lens,
+    dial: MATERIAL_PROFILES.polishedChrome,
+    button: MATERIAL_PROFILES.chrome,
+    screen: MATERIAL_PROFILES.screen,
   },
   lighting: LIGHTING_PROFILES.studioSoft,
   camera: CAMERA_PROFILES.closeup,
@@ -730,11 +797,15 @@ productRegistry.set('apple-macintosh-128k', {
   },
   material: {
     ...MATERIAL_PROFILES.beigeComputer,
-    color: '#d4a574',
+    color: '#c8b690', // Apple Platinum beige
+    roughness: 0.5,
+    envMapIntensity: 0.5,
   },
   secondaryMaterials: {
     screen: MATERIAL_PROFILES.screenGlow,
-    vents: MATERIAL_PROFILES.mattePlastic,
+    vents: { ...MATERIAL_PROFILES.mattePlastic, color: '#b0a080' },
+    slot: { ...MATERIAL_PROFILES.darkMetal, color: '#2a2a2a' },
+    custom: { ...MATERIAL_PROFILES.mattePlastic, color: '#b0a080' },
   },
   lighting: LIGHTING_PROFILES.studioSoft,
   camera: CAMERA_PROFILES.standard,
@@ -763,10 +834,13 @@ productRegistry.set('ibm-model-m', {
   },
   material: {
     ...MATERIAL_PROFILES.beigeComputer,
-    color: '#d1d5db',
+    color: '#ccc4b0', // IBM warm ivory
+    roughness: 0.5,
+    envMapIntensity: 0.5,
   },
   secondaryMaterials: {
-    keys: MATERIAL_PROFILES.mattePlastic,
+    keys: { ...MATERIAL_PROFILES.mattePlastic, color: '#e0d8c8' },
+    custom: { ...MATERIAL_PROFILES.mattePlastic, color: '#e0d8c8' },
   },
   lighting: LIGHTING_PROFILES.studioSoft,
   camera: { ...CAMERA_PROFILES.hero, position: [1.5, 1, 2] },
@@ -799,10 +873,13 @@ productRegistry.set('commodore-64', {
   },
   material: {
     ...MATERIAL_PROFILES.beigeComputer,
-    color: '#a3a3a3',
+    color: '#8e8878', // C64 brownish grey
+    roughness: 0.55,
+    envMapIntensity: 0.45,
   },
   secondaryMaterials: {
-    keys: MATERIAL_PROFILES.mattePlastic,
+    keys: { ...MATERIAL_PROFILES.mattePlastic, color: '#3a3630' },
+    custom: { ...MATERIAL_PROFILES.mattePlastic, color: '#3a3630' },
     badge: MATERIAL_PROFILES.chrome,
   },
   lighting: LIGHTING_PROFILES.studioSoft,
@@ -836,11 +913,16 @@ productRegistry.set('nintendo-nes', {
   },
   material: {
     ...MATERIAL_PROFILES.grayPlastic,
-    color: '#6b7280',
+    color: '#b8b4aa', // NES warm grey
+    roughness: 0.5,
+    envMapIntensity: 0.45,
   },
   secondaryMaterials: {
-    accents: MATERIAL_PROFILES.mattePlastic,
+    accents: { ...MATERIAL_PROFILES.mattePlastic, color: '#1a1a1a' },
     buttons: { ...MATERIAL_PROFILES.mattePlastic, color: '#1f2937' },
+    button: { ...MATERIAL_PROFILES.mattePlastic, color: '#1f2937' },
+    slot: { ...MATERIAL_PROFILES.darkMetal, color: '#0d0d0d' },
+    custom: { ...MATERIAL_PROFILES.mattePlastic, color: '#d0ccc2' },
   },
   lighting: LIGHTING_PROFILES.studioSoft,
   camera: CAMERA_PROFILES.standard,
@@ -874,11 +956,14 @@ productRegistry.set('atari-2600', {
   },
   material: {
     ...MATERIAL_PROFILES.mattePlastic,
-    color: '#1c1917',
+    color: '#141210', // Atari black body
+    roughness: 0.7,
   },
   secondaryMaterials: {
     woodgrain: MATERIAL_PROFILES.woodgrain,
+    custom: MATERIAL_PROFILES.woodgrain,
     switches: MATERIAL_PROFILES.chrome,
+    slot: { ...MATERIAL_PROFILES.darkMetal, color: '#0a0a0a' },
   },
   lighting: LIGHTING_PROFILES.studioSoft,
   camera: CAMERA_PROFILES.standard,
@@ -911,13 +996,16 @@ productRegistry.set('sony-trinitron-kv1310', {
   },
   material: {
     ...MATERIAL_PROFILES.woodgrain,
-    color: '#78350f',
+    color: '#5c2e0e', // Rich walnut woodgrain
+    roughness: 0.6,
+    envMapIntensity: 0.35,
   },
   secondaryMaterials: {
     screen: MATERIAL_PROFILES.screenGlow,
-    bezel: MATERIAL_PROFILES.mattePlastic,
-    dials: MATERIAL_PROFILES.chrome,
-    speaker: { ...MATERIAL_PROFILES.mattePlastic, color: '#1f1f1f' },
+    bezel: { ...MATERIAL_PROFILES.mattePlastic, color: '#141414' },
+    dials: MATERIAL_PROFILES.polishedChrome,
+    dial: MATERIAL_PROFILES.polishedChrome,
+    speaker: { ...MATERIAL_PROFILES.mattePlastic, color: '#0d0d0d' },
   },
   lighting: LIGHTING_PROFILES.studioSoft,
   camera: CAMERA_PROFILES.standard,

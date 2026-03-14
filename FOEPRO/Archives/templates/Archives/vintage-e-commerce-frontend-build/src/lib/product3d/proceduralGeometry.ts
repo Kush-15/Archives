@@ -591,6 +591,91 @@ export function generateTelevisionGeometry(tier: QualityTier): THREE.BufferGeome
 }
 
 // =============================================================================
+// MULTI-MESH GENERATOR (separate geometry per feature for multi-material)
+// =============================================================================
+
+/**
+ * Result of generating separate geometries for multi-material rendering.
+ */
+export interface SeparateGeometryResult {
+  base: THREE.BufferGeometry;
+  features: {
+    geometry: THREE.BufferGeometry;
+    type: string;
+    position: [number, number, number];
+    rotation?: [number, number, number];
+  }[];
+}
+
+/**
+ * Generate separate geometries for base shape and each feature.
+ * Unlike generateProductGeometry, this does NOT merge — each feature
+ * returns as its own geometry so different materials can be assigned.
+ */
+export function generateSeparateGeometries(
+  config: ProceduralGeometryConfig,
+  tier: QualityTier
+): SeparateGeometryResult {
+  // Generate base geometry
+  const base = createBaseGeometry(config, tier);
+  base.computeVertexNormals();
+  base.computeBoundingBox();
+
+  const features: SeparateGeometryResult['features'] = [];
+
+  if (config.features && tier !== 'low') {
+    const maxFeatures = tier === 'medium' ? 5 : config.features.length;
+    const feats = config.features.slice(0, maxFeatures);
+
+    for (const feature of feats) {
+      // Create geometry WITHOUT translating — we'll position via JSX
+      let geo: THREE.BufferGeometry;
+      switch (feature.type) {
+        case 'button':
+          geo = createButtonGeometry(feature.scale, tier);
+          break;
+        case 'dial':
+          geo = createDialGeometry(feature.scale, tier);
+          break;
+        case 'screen':
+          geo = createScreenGeometry(feature.scale, tier);
+          break;
+        case 'slot':
+          geo = createSlotGeometry(feature.scale, tier);
+          break;
+        case 'port':
+          geo = createPortGeometry(feature.scale, tier);
+          break;
+        case 'lens':
+          geo = createLensGeometry(feature.scale, tier);
+          break;
+        case 'speaker':
+          geo = createSpeakerGeometry(feature.scale, tier);
+          break;
+        case 'antenna':
+          geo = createAntennaGeometry(feature.scale, tier);
+          break;
+        case 'custom':
+        default:
+          geo = createCustomFeatureGeometry(feature.scale, tier);
+          break;
+      }
+
+      geo.computeVertexNormals();
+
+      features.push({
+        geometry: geo,
+        type: feature.type,
+        position: feature.position,
+        rotation: feature.rotation,
+      });
+    }
+  }
+
+  return { base, features };
+}
+
+// =============================================================================
 // TRIANGLE COUNT ESTIMATION
 // =============================================================================
 
