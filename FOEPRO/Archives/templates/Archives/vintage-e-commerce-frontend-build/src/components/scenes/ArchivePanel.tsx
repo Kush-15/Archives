@@ -3,6 +3,8 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 import { useInViewCanvas } from '@/hooks/useInViewCanvas';
+import { usePerformance } from '@/context/PerformanceContext';
+import { recordFrame, shouldDowngradeTier } from '@/lib/product3d/tierDetection';
 
 /* ─────────────────────────────────────────────────────────
    Camera registry for the archive section
@@ -36,14 +38,41 @@ const ARCHIVE_CAMERAS: ArchiveCamera[] = [
 ];
 
 /* ─────────────────────────────────────────────────────────
+   FPS monitor — wired to runtimeDowngrade
+   ───────────────────────────────────────────────────────── */
+
+function FrameMonitor({ onDowngrade }: { onDowngrade: () => void }) {
+  const frameCount = useRef(0);
+  useFrame((_, delta) => {
+    recordFrame(delta * 1000);
+    frameCount.current++;
+    if (frameCount.current >= 60) {
+      frameCount.current = 0;
+      if (shouldDowngradeTier()) onDowngrade();
+    }
+  });
+  return null;
+}
+
+/* ─────────────────────────────────────────────────────────
    Procedural camera for archive viewer
    ───────────────────────────────────────────────────────── */
 
-function ArchiveCameraModel({ name, color = '#1C1C1C', metalness = 0.35, roughness = 0.65 }: {
+function ArchiveCameraModel({
+  name,
+  color = '#1C1C1C',
+  metalness = 0.35,
+  roughness = 0.65,
+  shadowLight,
+  onDowngrade,
+}: {
   name: string;
   color?: string;
   metalness?: number;
   roughness?: number;
+  /** Whether the directional light casts shadows (medium = false, high = true) */
+  shadowLight: boolean;
+  onDowngrade: () => void;
 }) {
   const groupRef = useRef<THREE.Group>(null);
   const controlsActive = useRef(false);
@@ -64,6 +93,8 @@ function ArchiveCameraModel({ name, color = '#1C1C1C', metalness = 0.35, roughne
 
   return (
     <>
+      <FrameMonitor onDowngrade={onDowngrade} />
+
       <group ref={groupRef} scale={0.9}>
 
         {/* ── Olympus OM-1 — compact 35mm SLR ── */}
@@ -154,7 +185,9 @@ function ArchiveCameraModel({ name, color = '#1C1C1C', metalness = 0.35, roughne
         onStart={() => { controlsActive.current = true; }}
       />
 
-      <directionalLight position={[-5, 5, 5]} intensity={2.2} castShadow />
+      {/* Key light — shadow on high tier only */}
+      <directionalLight position={[-5, 5, 5]} intensity={2.2} castShadow={shadowLight} />
+      {/* Fill light — always */}
       <directionalLight position={[4, 1, 2]} intensity={0.22} />
     </>
   );
@@ -165,9 +198,13 @@ function ArchiveCameraModel({ name, color = '#1C1C1C', metalness = 0.35, roughne
    ───────────────────────────────────────────────────────── */
 
 export default function ArchivePanel() {
+  const { use3D, dpr, maxShadowLights, runtimeDowngrade } = usePerformance();
   const [activeIndex, setActiveIndex] = useState(0);
   const { inView, containerRef } = useInViewCanvas();
   const activeCamera = ARCHIVE_CAMERAS[activeIndex];
+
+  // On low tier, has3D cameras fall back to text art (same as non-3D cameras)
+  const show3D = activeCamera.has3D && use3D;
 
   return (
     <section className="archive-act" id="archive" data-cursor-zone="dark">
@@ -208,9 +245,9 @@ export default function ArchivePanel() {
 
       {/* Right — Viewer */}
       <div className="archive-viewer" ref={containerRef}>
-        {activeCamera.has3D ? (
+        {show3D ? (
           <Canvas
-            dpr={[1, 1.5]}
+            dpr={dpr}
             frameloop={inView ? 'demand' : 'never'}
             gl={{ antialias: false }}
             camera={{ position: [0, 0.5, 5], fov: 40 }}
@@ -221,6 +258,8 @@ export default function ArchivePanel() {
                 color={activeCamera.color}
                 metalness={activeCamera.metalness}
                 roughness={activeCamera.roughness}
+                shadowLight={maxShadowLights >= 1}
+                onDowngrade={runtimeDowngrade}
               />
             </Suspense>
           </Canvas>

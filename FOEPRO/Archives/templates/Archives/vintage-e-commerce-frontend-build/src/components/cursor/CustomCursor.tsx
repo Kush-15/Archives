@@ -1,53 +1,96 @@
 import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { useCursorZone } from '@/hooks/useCursorZone';
+import { usePerformance } from '@/context/PerformanceContext';
 
 export default function CustomCursor() {
   const cursorRef = useRef<HTMLDivElement>(null);
   const zone = useCursorZone();
+  const { useCustomCursor } = usePerformance();
   const [hoverType, setHoverType] = useState<'none' | 'interactive' | 'grab'>('none');
+  const [isTouch, setIsTouch] = useState(false);
+
   const posRef = useRef({ x: 0, y: 0 });
   const quickX = useRef<ReturnType<typeof gsap.quickTo> | null>(null);
   const quickY = useRef<ReturnType<typeof gsap.quickTo> | null>(null);
 
-  // Initialize quickTo for sub-frame cursor response
   useEffect(() => {
-    if (!cursorRef.current) return;
-    quickX.current = gsap.quickTo(cursorRef.current, 'x', {
-      duration: 0.15,
-      ease: 'power3.out',
-    });
-    quickY.current = gsap.quickTo(cursorRef.current, 'y', {
-      duration: 0.15,
-      ease: 'power3.out',
-    });
+    const mq = window.matchMedia('(pointer: coarse)');
+    const update = () => setIsTouch(mq.matches);
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
   }, []);
 
-  // Track mouse position
+  const enabled = useCustomCursor && !isTouch;
+
+  // Toggle native cursor visibility via body class.
+  useEffect(() => {
+    if (enabled) {
+      document.body.classList.add('hide-native-cursor');
+    } else {
+      document.body.classList.remove('hide-native-cursor');
+    }
+    return () => {
+      document.body.classList.remove('hide-native-cursor');
+    };
+  }, [enabled]);
+
+  // Initialize GSAP quickTo setters whenever custom cursor is enabled.
+  useEffect(() => {
+    if (!enabled || !cursorRef.current) {
+      quickX.current = null;
+      quickY.current = null;
+      return;
+    }
+
+    const el = cursorRef.current;
+    quickX.current = gsap.quickTo(el, 'x', {
+      duration: 0.15,
+      ease: 'power3.out',
+    });
+    quickY.current = gsap.quickTo(el, 'y', {
+      duration: 0.15,
+      ease: 'power3.out',
+    });
+
+    gsap.set(el, { x: posRef.current.x, y: posRef.current.y });
+
+    return () => {
+      quickX.current = null;
+      quickY.current = null;
+    };
+  }, [enabled]);
+
+  // Track mouse position continuously; animate only when enabled.
   useEffect(() => {
     const onMove = (e: MouseEvent) => {
       posRef.current = { x: e.clientX, y: e.clientY };
+      if (!enabled) return;
       quickX.current?.(e.clientX);
       quickY.current?.(e.clientY);
     };
 
     window.addEventListener('mousemove', onMove, { passive: true });
     return () => window.removeEventListener('mousemove', onMove);
-  }, []);
+  }, [enabled]);
 
-  // Detect hover targets
+  // Detect hover targets only while custom cursor is active.
   useEffect(() => {
+    if (!enabled) {
+      setHoverType('none');
+      return;
+    }
+
     const onOver = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       if (!target) return;
 
-      // Check for 3D canvas hover
       if (target.tagName === 'CANVAS' || target.closest('[data-cursor="grab"]')) {
         setHoverType('grab');
         return;
       }
 
-      // Check for interactive elements
       if (
         target.tagName === 'A' ||
         target.tagName === 'BUTTON' ||
@@ -64,15 +107,9 @@ export default function CustomCursor() {
 
     window.addEventListener('mouseover', onOver, { passive: true });
     return () => window.removeEventListener('mouseover', onOver);
-  }, []);
+  }, [enabled]);
 
-  // Check for touch device
-  const [isTouch, setIsTouch] = useState(false);
-  useEffect(() => {
-    setIsTouch(window.matchMedia('(pointer: coarse)').matches);
-  }, []);
-
-  if (isTouch) return null;
+  if (!enabled) return null;
 
   const zoneClass = zone === 'dark' ? 'custom-cursor--dark-zone' : 'custom-cursor--light-zone';
   const hoverClass =

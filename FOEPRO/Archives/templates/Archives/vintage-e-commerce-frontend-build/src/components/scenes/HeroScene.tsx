@@ -1,14 +1,24 @@
 import { useRef, useEffect } from 'react';
 import gsap from 'gsap';
+import { usePerformance } from '@/context/PerformanceContext';
 
 interface HeroSceneProps {
   startAnimation?: boolean;
 }
 
+const HERO_IMAGE_URLS = {
+  low:    'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=800&q=60',
+  medium: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=1400&q=75',
+  high:   'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=2400&q=80',
+};
+
 export default function HeroScene({ startAnimation = true }: HeroSceneProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const photoRef = useRef<HTMLImageElement>(null);
   const hasAnimated = useRef(false);
+
+  const { tier, useHeavyAnimations, reducedMotion } = usePerformance();
+  const imgSrc = HERO_IMAGE_URLS[tier];
 
   useEffect(() => {
     if (!startAnimation) {
@@ -21,13 +31,44 @@ export default function HeroScene({ startAnimation = true }: HeroSceneProps) {
     if (hasAnimated.current) return;
     hasAnimated.current = true;
 
-    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReduced) {
+    // Low tier or reduced-motion: skip GSAP, set final state immediately
+    if (!useHeavyAnimations || reducedMotion) {
       gsap.set('.hero-headline-line span', { y: 0, opacity: 1 });
-      gsap.set(scrollRef.current, { opacity: 1 });
+      gsap.set(scrollRef.current, { opacity: 1, y: 0 });
+      gsap.set(photoRef.current, { scale: 1, opacity: 0.95 });
       return;
     }
 
+    if (tier === 'medium') {
+      // Faster, simplified animation for medium tier
+      gsap.to('.hero-headline-line span', {
+        y: 0,
+        opacity: 1,
+        duration: 0.55,
+        stagger: 0.08,
+        ease: 'power2.out',
+        delay: 0.1,
+        overwrite: 'auto',
+      });
+
+      gsap.to(scrollRef.current, {
+        opacity: 1,
+        y: 0,
+        duration: 0.5,
+        delay: 0.6,
+        ease: 'power2.out',
+        overwrite: 'auto',
+      });
+
+      gsap.fromTo(
+        photoRef.current,
+        { scale: 1.04, opacity: 0.7 },
+        { scale: 1, opacity: 0.95, duration: 1.0, ease: 'power2.out' }
+      );
+      return;
+    }
+
+    // High tier — full experience
     gsap.to('.hero-headline-line span', {
       y: 0,
       opacity: 1,
@@ -52,7 +93,7 @@ export default function HeroScene({ startAnimation = true }: HeroSceneProps) {
       { scale: 1.08, opacity: 0.65 },
       { scale: 1, opacity: 0.95, duration: 1.8, ease: 'power2.out' }
     );
-  }, [startAnimation]);
+  }, [startAnimation, tier, useHeavyAnimations, reducedMotion]);
 
   return (
     <section className="hero-act" data-cursor-zone="dark" id="hero">
@@ -60,7 +101,7 @@ export default function HeroScene({ startAnimation = true }: HeroSceneProps) {
         <img
           ref={photoRef}
           className="hero-photo"
-          src="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=2400&q=80"
+          src={imgSrc}
           alt="Vintage camera in studio lighting"
           loading="eager"
           fetchPriority="high"

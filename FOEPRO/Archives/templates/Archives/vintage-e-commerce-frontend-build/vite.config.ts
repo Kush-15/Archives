@@ -26,10 +26,28 @@ export default defineConfig(({ command }) => ({
     sourcemap: true,
     rollupOptions: {
       output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom'],
+        manualChunks(id: string) {
+          // Three.js + React Three Fiber ecosystem → vendor-3d
+          if (
+            id.includes('node_modules/three') ||
+            id.includes('node_modules/@react-three')
+          ) {
+            return 'vendor-3d';
+          }
+          // GSAP → vendor-gsap (deferred; not needed on first paint)
+          if (id.includes('node_modules/gsap')) {
+            return 'vendor-gsap';
+          }
+          // React core → vendor-react
+          if (
+            id.includes('node_modules/react/') ||
+            id.includes('node_modules/react-dom/') ||
+            id.includes('node_modules/react-router-dom/')
+          ) {
+            return 'vendor-react';
+          }
         },
-      }
-    }
-  }
+      },
+    },
+  },
 }));

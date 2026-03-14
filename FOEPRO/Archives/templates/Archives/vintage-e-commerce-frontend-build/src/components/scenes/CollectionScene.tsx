@@ -4,6 +4,11 @@ import { useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useInViewCanvas } from '@/hooks/useInViewCanvas';
 import CollectionSpec from '@/components/ui/CollectionSpec';
+import { usePerformance } from '@/context/PerformanceContext';
+import {
+  recordFrame,
+  shouldDowngradeTier,
+} from '@/lib/product3d/tierDetection';
 
 /* ─────────────────────────────────────────────────────────
    Camera data for the three collection pieces
@@ -63,6 +68,122 @@ const CAMERAS: CameraData[] = [
     ],
   },
 ];
+
+/* ─────────────────────────────────────────────────────────
+   Low-tier static poster fallback
+   No Canvas, no three.js download required.
+   ───────────────────────────────────────────────────────── */
+
+function CollectionScenePoster() {
+  return (
+    <section
+      className="collection-act"
+      id="collection"
+      data-cursor-zone="dark"
+    >
+      <div className="collection-title">
+        <div className="typo-label" style={{ opacity: 0.4, marginBottom: '1.5rem' }}>
+          Act III
+        </div>
+        <h2 className="typo-section">The Collection</h2>
+      </div>
+
+      {/* Static camera cards — on-brand, no WebGL */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: '2rem',
+          padding: '3rem 2rem 4rem',
+          maxWidth: '900px',
+          margin: '0 auto',
+        }}
+      >
+        {CAMERAS.map((cam) => (
+          <div
+            key={cam.id}
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '1rem',
+              padding: '1.5rem',
+              border: '1px solid rgba(248,247,244,0.08)',
+              borderRadius: '2px',
+            }}
+          >
+            {/* Camera silhouette — purely decorative SVG rectangle */}
+            <div
+              aria-hidden="true"
+              style={{
+                width: '100%',
+                aspectRatio: '4/3',
+                background: cam.color,
+                borderRadius: '2px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                opacity: 0.7,
+              }}
+            >
+              <div
+                style={{
+                  width: '60%',
+                  height: '50%',
+                  border: `1px solid rgba(${cam.metalness > 0.5 ? '200,200,200' : '255,255,255'},0.25)`,
+                  borderRadius: '1px',
+                  position: 'relative',
+                }}
+              >
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: '25%',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    width: '28%',
+                    aspectRatio: '1',
+                    borderRadius: '50%',
+                    border: `1px solid rgba(${cam.metalness > 0.5 ? '180,180,180' : '255,255,255'},0.3)`,
+                  }}
+                />
+              </div>
+            </div>
+
+            <div>
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: '1rem', color: '#F8F7F4', marginBottom: '0.25rem' }}>
+                {cam.name}
+              </div>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.55rem', letterSpacing: '0.15em', opacity: 0.4 }}>
+                {cam.year}
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+              {cam.specs.map((s) => (
+                <div
+                  key={s.label}
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '0.6rem',
+                    letterSpacing: '0.08em',
+                    color: 'rgba(248,247,244,0.6)',
+                    borderBottom: '1px solid rgba(248,247,244,0.06)',
+                    paddingBottom: '0.3rem',
+                  }}
+                >
+                  <span style={{ opacity: 0.5 }}>{s.label}</span>
+                  <span>{s.value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
 
 /* ─────────────────────────────────────────────────────────
    Procedural camera mesh for collection
@@ -246,6 +367,23 @@ function CollectionCamera({
 }
 
 /* ─────────────────────────────────────────────────────────
+   FPS monitor — wired to runtimeDowngrade
+   ───────────────────────────────────────────────────────── */
+
+function FrameMonitor({ onDowngrade }: { onDowngrade: () => void }) {
+  const frameCount = useRef(0);
+  useFrame((_, delta) => {
+    recordFrame(delta * 1000);
+    frameCount.current++;
+    if (frameCount.current >= 60) {
+      frameCount.current = 0;
+      if (shouldDowngradeTier()) onDowngrade();
+    }
+  });
+  return null;
+}
+
+/* ─────────────────────────────────────────────────────────
    Three cameras in scene
    ───────────────────────────────────────────────────────── */
 
@@ -255,12 +393,14 @@ function CollectionSceneInner({
   onHoverIndex,
   onSelect,
   xray,
+  shadowLights,
 }: {
   selectedIndex: number;
   hoveredIndex: number | null;
   onHoverIndex: (idx: number | null) => void;
   onSelect: (i: number) => void;
   xray: boolean;
+  shadowLights: number;
 }) {
   const { size } = useThree();
   const isCompact = size.width < 1100;
@@ -280,7 +420,13 @@ function CollectionSceneInner({
 
   return (
     <>
-      <directionalLight position={[-5, 5, 5]} intensity={2.2} castShadow />
+      {/* Key light — shadow only allowed on high tier */}
+      <directionalLight
+        position={[-5, 5, 5]}
+        intensity={2.2}
+        castShadow={shadowLights >= 1}
+      />
+      {/* Fill light — always present */}
       <directionalLight position={[4, 1, 2]} intensity={0.22} />
 
       {CAMERAS.map((cam, i) => (
@@ -304,6 +450,23 @@ function CollectionSceneInner({
    ───────────────────────────────────────────────────────── */
 
 export default function CollectionScene() {
+  const { use3D, dpr, maxShadowLights, runtimeDowngrade } = usePerformance();
+
+  // Low tier: serve static poster — three.js never runs
+  if (!use3D) return <CollectionScenePoster />;
+
+  return <CollectionSceneCanvas dpr={dpr} maxShadowLights={maxShadowLights} runtimeDowngrade={runtimeDowngrade} />;
+}
+
+function CollectionSceneCanvas({
+  dpr,
+  maxShadowLights,
+  runtimeDowngrade,
+}: {
+  dpr: [number, number];
+  maxShadowLights: number;
+  runtimeDowngrade: () => void;
+}) {
   const [selectedIndex, setSelectedIndex] = useState(1);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [xray, setXray] = useState(false);
@@ -348,18 +511,20 @@ export default function CollectionScene() {
       <div className="collection-stage" ref={containerRef}>
         <div className="collection-canvas-wrap" data-cursor="grab">
           <Canvas
-            dpr={[1, 1.5]}
+            dpr={dpr}
             frameloop={inView ? 'demand' : 'never'}
             gl={{ antialias: false }}
             camera={{ position: [0, 1, 8], fov: 40 }}
           >
             <Suspense fallback={null}>
+              <FrameMonitor onDowngrade={runtimeDowngrade} />
               <CollectionSceneInner
                 selectedIndex={selectedIndex}
                 hoveredIndex={hoveredIndex}
                 onHoverIndex={setHoveredIndex}
                 onSelect={handleSelect}
                 xray={xray}
+                shadowLights={maxShadowLights}
               />
             </Suspense>
           </Canvas>

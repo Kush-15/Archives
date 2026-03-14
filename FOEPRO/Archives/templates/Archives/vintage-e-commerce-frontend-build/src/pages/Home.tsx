@@ -7,12 +7,16 @@ import RevealScene from '../components/scenes/RevealScene';
 import CollectionScene from '@/components/scenes/CollectionScene';
 import CraftsmanshipStack, { STATIONS } from '@/components/ui/CraftsmanshipStation';
 import Loader from '@/components/Loader';
+import { usePerformance } from '@/context/PerformanceContext';
 import '@/styles/home-new.css';
 
 gsap.registerPlugin(ScrollTrigger);
 
 export function Home() {
-  const [loading, setLoading] = useState(true);
+  const { tier, useLoader } = usePerformance();
+
+  // On low tier, skip the loader entirely — start as not-loading
+  const [loading, setLoading] = useState(() => useLoader);
 
   // Refresh ScrollTrigger after layout settles
   useEffect(() => {
@@ -23,7 +27,7 @@ export function Home() {
 
   return (
     <>
-      {loading && <Loader onDone={() => setLoading(false)} />}
+      {loading && <Loader onDone={() => setLoading(false)} tier={tier} />}
       <div className="archives-home">
       <SiteNav />
 
@@ -34,7 +38,7 @@ export function Home() {
         {/* ACT II — The Reveal (scroll-driven disassembly) */}
         <RevealScene />
 
-        {/* ACT III — The Collection */}
+        {/* ACT III — The Collection (3D on medium/high; static poster on low) */}
         <CollectionScene />
 
         {/* ACT IV — The Craftsmanship (scattered card stack) */}

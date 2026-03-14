@@ -4,6 +4,9 @@ import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 import type { Group } from 'three';
 import gsap from 'gsap';
+import { useInViewCanvas } from '@/hooks/useInViewCanvas';
+import { usePerformance } from '@/context/PerformanceContext';
+import { recordFrame, shouldDowngradeTier } from '@/lib/product3d/tierDetection';
 
 /* ── Types ──────────────────────────────────────────────── */
 
@@ -399,15 +402,44 @@ function CameraSculpture({ style }: { style: CameraStyle }) {
   );
 }
 
+/* ── FPS monitor — wired to runtimeDowngrade ──────────── */
+
+function FrameMonitor({ onDowngrade }: { onDowngrade: () => void }) {
+  const frameCount = useRef(0);
+  useFrame((_, delta) => {
+    recordFrame(delta * 1000);
+    frameCount.current++;
+    if (frameCount.current >= 60) {
+      frameCount.current = 0;
+      if (shouldDowngradeTier()) onDowngrade();
+    }
+  });
+  return null;
+}
+
 /* ── Placeholder panel for cameras without a model ───── */
 
-function CameraPlaceholder({ camera }: { camera: ArchiveCameraEntry }) {
+function CameraPlaceholder({
+  camera,
+  animate,
+}: {
+  camera: ArchiveCameraEntry;
+  animate: boolean;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const { style } = camera;
 
   useEffect(() => {
+    if (!animate) {
+      // Skip GSAP — set final state immediately
+      if (ref.current) {
+        ref.current.style.opacity = '1';
+        ref.current.style.transform = 'none';
+      }
+      return;
+    }
     gsap.from(ref.current, { opacity: 0, y: 16, duration: 0.55, ease: 'power3.out' });
-  }, [camera.name]);
+  }, [camera.name, animate]);
 
   return (
     <div
@@ -459,8 +491,16 @@ export default function ArchiveSection() {
   const panelRef = useRef<HTMLDivElement>(null);
   const active = CAMERAS[activeIndex];
 
+  const { use3D, dpr, useHeavyAnimations, runtimeDowngrade } = usePerformance();
+  const { inView, containerRef } = useInViewCanvas();
+
   const handleSelect = (i: number) => {
     if (i === activeIndex) return;
+    if (!useHeavyAnimations) {
+      // Skip GSAP transition on low/reduced-motion tier
+      setActiveIndex(i);
+      return;
+    }
     gsap.to(panelRef.current, {
       opacity: 0, scale: 0.97, duration: 0.22, ease: 'power2.in',
       onComplete: () => {
@@ -471,6 +511,9 @@ export default function ArchiveSection() {
       },
     });
   };
+
+  // On low tier, always render placeholder (even for cameras with hasModel)
+  const showCanvas = use3D && active.hasModel;
 
   return (
     <section id="global" className="archive-section">
@@ -510,15 +553,16 @@ export default function ArchiveSection() {
 
       {/* Right col — model viewer or placeholder */}
       <div className="archive-panel" ref={panelRef}>
-        {active.hasModel ? (
-          <>
+        {showCanvas ? (
+          <div ref={containerRef} style={{ width: '100%', height: '100%' }}>
             <Canvas
               camera={{ fov: 45, position: active.style.cameraPosition }}
-              dpr={Math.min(window.devicePixelRatio, 1.5)}
+              dpr={dpr}
               gl={{ antialias: false, powerPreference: 'high-performance' }}
-              frameloop="always"
+              frameloop={inView ? 'always' : 'never'}
               className="archive-canvas"
             >
+              <FrameMonitor onDowngrade={runtimeDowngrade} />
               <SceneFog    style={active.style} />
               <CameraRig   style={active.style} />
               <SceneLights style={active.style} />
@@ -532,9 +576,13 @@ export default function ArchiveSection() {
               />
             </Canvas>
             <p className="archive-panel-hint t-eyebrow">— Drag to rotate —</p>
-          </>
+          </div>
         ) : (
-          <CameraPlaceholder camera={active} key={active.name} />
+          <CameraPlaceholder
+            camera={active}
+            key={active.name}
+            animate={useHeavyAnimations}
+          />
         )}
       </div>
 

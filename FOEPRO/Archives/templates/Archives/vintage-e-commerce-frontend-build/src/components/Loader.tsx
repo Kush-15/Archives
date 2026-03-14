@@ -1,23 +1,38 @@
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
+import type { QualityTier } from '@/lib/product3d/types';
 
 interface LoaderProps {
   onDone: () => void;
+  /** Quality tier from PerformanceContext — controls image size and MIN_MS */
+  tier?: QualityTier;
 }
 
-const LENS_URL =
-  'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=2400&q=80';
+// Tier-dependent image resolution and minimum display time
+const LENS_URLS: Record<QualityTier, string> = {
+  low:    'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=800&q=60',
+  medium: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=1200&q=70',
+  high:   'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=2400&q=80',
+};
 const LENS_FALLBACK =
   'https://images.pexels.com/photos/90946/pexels-photo-90946.jpeg?w=800';
 
-const PREFETCH = [
+const MIN_MS_MAP: Record<QualityTier, number> = {
+  low:    0,
+  medium: 1200,
+  high:   2200,
+};
+
+const PREFETCH_HIGH = [
   'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=2400&q=80',
   'https://images.unsplash.com/photo-1510127034890-ba27508e9f1c?auto=format&fit=crop&w=2200&q=80',
 ];
+const PREFETCH_MEDIUM = [
+  'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=1200&q=70',
+  'https://images.unsplash.com/photo-1510127034890-ba27508e9f1c?auto=format&fit=crop&w=1200&q=70',
+];
 
-const MIN_MS = 2200;
-
-export default function Loader({ onDone }: LoaderProps) {
+export default function Loader({ onDone, tier = 'high' }: LoaderProps) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
   const percentRef = useRef<HTMLSpanElement>(null);
@@ -29,6 +44,10 @@ export default function Loader({ onDone }: LoaderProps) {
   useEffect(() => {
     if (started.current) return;
     started.current = true;
+
+    const LENS_URL = LENS_URLS[tier];
+    const MIN_MS   = MIN_MS_MAP[tier];
+    const PREFETCH = tier === 'high' ? PREFETCH_HIGH : PREFETCH_MEDIUM;
 
     const startTime = Date.now();
     let assetsReady = false;
@@ -83,7 +102,7 @@ export default function Loader({ onDone }: LoaderProps) {
       }
 
       const elapsed = Date.now() - startTime;
-      const timeProgress = Math.min((elapsed / MIN_MS) * 100, 100);
+      const timeProgress = MIN_MS > 0 ? Math.min((elapsed / MIN_MS) * 100, 100) : 100;
       const assetProgress = assetsReady ? 100 : Math.min(timeProgress, 85);
       const progress = Math.min(timeProgress, assetProgress);
 
@@ -137,7 +156,7 @@ export default function Loader({ onDone }: LoaderProps) {
       cancelAnimationFrame(rafId.current);
       started.current = false;
     };
-  }, [onDone]);
+  }, [onDone, tier]);
 
   /* ── all styles inline, self-contained ── */
 

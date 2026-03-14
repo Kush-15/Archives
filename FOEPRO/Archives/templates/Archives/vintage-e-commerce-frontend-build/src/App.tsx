@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { CartProvider } from '@/context/CartContext';
 import { AuthProvider } from '@/context/AuthContext';
+import { PerformanceProvider, usePerformance } from '@/context/PerformanceContext';
 import SiteNav from '@/components/ui/SiteNav';
 import { Footer } from '@/components/Footer';
 import { CartSlide } from '@/components/CartSlide';
@@ -8,6 +9,7 @@ import { AuthModal } from '@/components/AuthModal';
 import { OtpModal } from '@/components/OtpModal';
 import { SearchOverlay } from '@/components/SearchOverlay';
 import CustomCursor from '@/components/cursor/CustomCursor';
+import PerformanceToggle from '@/components/PerformanceToggle';
 import { Home } from '@/pages/Home';
 import { Catalog } from '@/pages/Catalog';
 import { ProductDetail } from '@/pages/ProductDetail';
@@ -29,6 +31,7 @@ function ScrollToTop() {
 
 function AppContent() {
   const { pathname } = useLocation();
+  const { tier } = usePerformance();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const isHome = pathname === '/';
@@ -43,7 +46,8 @@ function AppContent() {
 
   return (
     <>
-      <CustomCursor />
+      <CustomCursor key={tier} />
+      <PerformanceToggle />
       <ScrollToTop />
       {/* All position:fixed elements live outside arc-dark-page so CSS transform
           on the page-enter animation never creates a new containing block for them */}
@@ -79,11 +83,13 @@ function AppContent() {
 export function App() {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <CartProvider>
-          <AppContent />
-        </CartProvider>
-      </AuthProvider>
+      <PerformanceProvider>
+        <AuthProvider>
+          <CartProvider>
+            <AppContent />
+          </CartProvider>
+        </AuthProvider>
+      </PerformanceProvider>
     </BrowserRouter>
   );
 }

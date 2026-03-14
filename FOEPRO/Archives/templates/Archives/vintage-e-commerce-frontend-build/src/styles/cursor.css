@@ -74,10 +74,10 @@
   }
 }
 
-/* Hide native cursor on fine pointer devices */
+/* Hide native cursor ONLY when the hide-native-cursor class is active on body */
 @media (pointer: fine) {
-  body,
-  body * {
+  body.hide-native-cursor,
+  body.hide-native-cursor * {
     cursor: none !important;
   }
 }
