@@ -17,6 +17,10 @@ import { Profile } from '@/pages/Profile';
 import { GoogleAuthCallback } from '@/pages/GoogleAuthCallback';
 import { TermsAndConditions } from '@/pages/TermsAndConditions';
 import { PrivacyPolicy } from '@/pages/PrivacyPolicy';
+import { Checkout } from '@/pages/Checkout';
+import { OrderConfirmation } from '@/pages/OrderConfirmation';
+import { Orders } from '@/pages/Orders';
+import { OrderDetails } from '@/pages/OrderDetails';
 import { useState, useEffect } from 'react';
 
 function ScrollToTop() {
@@ -69,6 +73,10 @@ function AppContent() {
             <Route path="/catalog" element={<Catalog />} />
             <Route path="/product/:id" element={<ProductDetail />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/checkout" element={<Checkout />} />
+            <Route path="/order-confirmation" element={<OrderConfirmation />} />
+            <Route path="/orders" element={<Orders />} />
+            <Route path="/orders/:orderId" element={<OrderDetails />} />
             <Route path="/auth/callback" element={<GoogleAuthCallback />} />
             <Route path="/terms" element={<TermsAndConditions />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />

@@ -184,3 +184,89 @@ class User(AbstractBaseUser, PermissionsMixin):
         expiry_time = self.otp_created_at + timedelta(minutes=10)
         return timezone.now() < expiry_time
 
+
+class Address(models.Model):
+    user = models.ForeignKey('User', on_delete=models.CASCADE, related_name='addresses')
+    full_name = models.CharField(max_length=255)
+    phone = models.CharField(max_length=20)
+    line1 = models.CharField(max_length=255)
+    line2 = models.CharField(max_length=255, blank=True, default='')
+    city = models.CharField(max_length=100)
+    state = models.CharField(max_length=100)
+    pincode = models.CharField(max_length=10)
+    is_default = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-is_default', '-created_at']
+
+    def __str__(self):
+        return f'{self.full_name}, {self.city}'
+
+    def save(self, *args, **kwargs):
+        if self.is_default:
+            Address.objects.filter(user=self.user, is_default=True).update(is_default=False)
+        super().save(*args, **kwargs)
+
+
+class Order(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('paid', 'Paid'),
+        ('failed', 'Failed'),
+        ('cancelled', 'Cancelled'),
+    ]
+
+    order_id = models.CharField(max_length=50, unique=True)
+    user = models.ForeignKey('User', on_delete=models.CASCADE, related_name='orders')
+    address = models.ForeignKey(Address, on_delete=models.SET_NULL, null=True, related_name='orders')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    razorpay_order_id = models.CharField(max_length=100, blank=True, default='')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'Order {self.order_id} - {self.status}'
+
+    def save(self, *args, **kwargs):
+        if not self.order_id:
+            self.order_id = f'ORD-{uuid.uuid4().hex[:10].upper()}'
+        super().save(*args, **kwargs)
+
+
+class OrderItem(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    product_name = models.CharField(max_length=255)
+    product_price = models.DecimalField(max_digits=10, decimal_places=2)
+    quantity = models.PositiveIntegerField(default=1)
+
+    def __str__(self):
+        return f'{self.quantity} x {self.product_name}'
+
+    @property
+    def subtotal(self):
+        return self.product_price * self.quantity
+
+
+class Payment(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('success', 'Success'),
+        ('failed', 'Failed'),
+    ]
+
+    order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name='payment')
+    razorpay_payment_id = models.CharField(max_length=100, blank=True, default='')
+    razorpay_signature = models.CharField(max_length=255, blank=True, default='')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f'Payment for {self.order.order_id} - {self.status}'
+

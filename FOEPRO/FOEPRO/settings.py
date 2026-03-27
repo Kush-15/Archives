@@ -405,3 +405,15 @@ CORS_ALLOW_CREDENTIALS = True
 # Also trust the frontend origin for CSRF
 if FRONTEND_BASE_URL not in CSRF_TRUSTED_ORIGINS:
     CSRF_TRUSTED_ORIGINS.append(FRONTEND_BASE_URL)
+
+# ---------------------------------------------------------------------------
+# Razorpay
+# ---------------------------------------------------------------------------
+RAZORPAY_KEY_ID = get_env('RAZORPAY_KEY_ID', '')
+RAZORPAY_KEY_SECRET = get_env('RAZORPAY_KEY_SECRET', '')
+
+if not RAZORPAY_KEY_ID or not RAZORPAY_KEY_SECRET:
+    warnings.warn(
+        'RAZORPAY_KEY_ID or RAZORPAY_KEY_SECRET not set; payment features will not work.',
+        RuntimeWarning,
+    )

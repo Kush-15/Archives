@@ -10,14 +10,14 @@ import { usePerformance } from '@/context/PerformanceContext';
 // ── Accent color from tokens.css ────────────────────────────
 const INDIGO = '#5C6EFF';
 
-// ── Color palettes ──────────────────────────────────────────
+// ── Color palettes (always white) ──────────────────────────
 const DARK_ZONE = {
-  stroke: 'rgba(237,232,223,0.55)',
-  dot:    'rgba(237,232,223,0.8)',
+  stroke: 'rgba(255,255,255,0.55)',
+  dot:    'rgba(255,255,255,0.8)',
 };
 const LIGHT_ZONE = {
-  stroke: 'rgba(8,8,9,0.5)',
-  dot:    'rgba(8,8,9,0.8)',
+  stroke: 'rgba(255,255,255,0.5)',
+  dot:    'rgba(255,255,255,0.8)',
 };
 
 // ── Mutable animated state ──────────────────────────────────
@@ -66,9 +66,9 @@ export default function CustomCursor(): JSX.Element | null {
   const blob = useRef<BlobState>(createDefaultState());
 
   // Current stroke/fill color refs (GSAP tweens these strings)
-  const strokeColor = useRef('rgba(237,232,223,0.55)');
-  const fillColor   = useRef('rgba(237,232,223,0)');
-  const dotColor    = useRef('rgba(237,232,223,0.8)');
+  const strokeColor = useRef('rgba(255,255,255,0.55)');
+  const fillColor   = useRef('rgba(255,255,255,0)');
+  const dotColor    = useRef('rgba(255,255,255,0.8)');
 
   // Zone colors (updated on mousemove, not in RAF)
   const zoneColors = useRef(DARK_ZONE);
@@ -180,7 +180,6 @@ export default function CustomCursor(): JSX.Element | null {
   const toIdle = () => {
     killTweens();
     locked.current = false;
-    const zone = zoneColors.current;
 
     tweenRef.current = gsap.to(blob.current, {
       w: 14, h: 14, rx: 7,
@@ -193,9 +192,9 @@ export default function CustomCursor(): JSX.Element | null {
     // Color proxy object for smooth lerp
     const colorProxy = { stroke: strokeColor.current, fill: fillColor.current, dot: dotColor.current };
     colorTweenRef.current = gsap.to(colorProxy, {
-      stroke: zone.stroke,
-      fill: 'rgba(237,232,223,0)',
-      dot: zone.dot,
+      stroke: 'rgba(255,255,255,0.55)',
+      fill: 'rgba(255,255,255,0)',
+      dot: 'rgba(255,255,255,0.8)',
       duration: 0.5,
       ease: 'power3.out',
       overwrite: true,
@@ -224,12 +223,11 @@ export default function CustomCursor(): JSX.Element | null {
       overwrite: true,
     });
 
-    const zone = zoneColors.current;
     const colorProxy = { stroke: strokeColor.current, fill: fillColor.current, dot: dotColor.current };
     colorTweenRef.current = gsap.to(colorProxy, {
-      stroke: `rgba(237,232,223,0.65)`,
-      fill: 'rgba(237,232,223,0)',
-      dot: zone.dot,
+      stroke: 'rgba(255,255,255,0.65)',
+      fill: 'rgba(255,255,255,0)',
+      dot: 'rgba(255,255,255,0.8)',
       duration: 0.45,
       ease: 'power3.out',
       overwrite: true,
@@ -260,9 +258,9 @@ export default function CustomCursor(): JSX.Element | null {
 
     const colorProxy = { stroke: strokeColor.current, fill: fillColor.current, dot: dotColor.current };
     colorTweenRef.current = gsap.to(colorProxy, {
-      stroke: INDIGO,
-      fill: `rgba(92,110,255,0.08)`,
-      dot: DARK_ZONE.dot,
+      stroke: 'rgba(255,255,255,0.9)',
+      fill: 'rgba(255,255,255,0.08)',
+      dot: 'rgba(255,255,255,0.8)',
       duration: 0.4,
       ease: 'power3.out',
       overwrite: true,
@@ -293,9 +291,9 @@ export default function CustomCursor(): JSX.Element | null {
 
     const colorProxy = { stroke: strokeColor.current, fill: fillColor.current, dot: dotColor.current };
     colorTweenRef.current = gsap.to(colorProxy, {
-      stroke: 'rgba(237,232,223,0.7)',
-      fill: 'rgba(237,232,223,0)',
-      dot: DARK_ZONE.dot,
+      stroke: 'rgba(255,255,255,0.7)',
+      fill: 'rgba(255,255,255,0)',
+      dot: 'rgba(255,255,255,0.8)',
       duration: 0.38,
       ease: 'power3.out',
       overwrite: true,
@@ -321,9 +319,9 @@ export default function CustomCursor(): JSX.Element | null {
 
     const colorProxy = { stroke: strokeColor.current, fill: fillColor.current, dot: dotColor.current };
     colorTweenRef.current = gsap.to(colorProxy, {
-      stroke: INDIGO,
-      fill: `rgba(92,110,255,0.04)`,
-      dot: DARK_ZONE.dot,
+      stroke: 'rgba(255,255,255,0.7)',
+      fill: 'rgba(255,255,255,0.04)',
+      dot: 'rgba(255,255,255,0.8)',
       duration: 0.5,
       ease: 'back.out(1.4)',
       overwrite: true,
@@ -514,9 +512,9 @@ export default function CustomCursor(): JSX.Element | null {
           height="12.5"
           rx="7"
           ry="7"
-          fill="rgba(237,232,223,0)"
+          fill="rgba(255,255,255,0)"
           fillOpacity={0}
-          stroke="rgba(237,232,223,0.55)"
+          stroke="rgba(255,255,255,0.55)"
           strokeOpacity={0.55}
           strokeWidth="1.5"
         />
@@ -525,7 +523,7 @@ export default function CustomCursor(): JSX.Element | null {
           cx="7"
           cy="7"
           r="2.5"
-          fill="rgba(237,232,223,0.8)"
+          fill="rgba(255,255,255,0.8)"
         />
       </svg>
     </div>

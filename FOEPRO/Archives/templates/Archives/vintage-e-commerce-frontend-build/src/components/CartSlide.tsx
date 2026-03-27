@@ -1,10 +1,23 @@
 import { useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/context/AuthContext';
 
 export function CartSlide() {
   const { items, isCartOpen, setIsCartOpen, removeFromCart, updateQuantity, totalPrice } = useCart();
+  const { isLoggedIn, setIsAuthModalOpen, setAuthModalMode } = useAuth();
   const slideRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
+
+  const handleCheckout = () => {
+    setIsCartOpen(false);
+    if (!isLoggedIn) {
+      setAuthModalMode('login');
+      setIsAuthModalOpen(true);
+      return;
+    }
+    navigate('/checkout');
+  };
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -153,6 +166,7 @@ export function CartSlide() {
               Shipping and authentication calculated at checkout
             </p>
             <button
+              onClick={handleCheckout}
               className="w-full py-4 text-cream text-sm uppercase tracking-wider transition-colors"
               style={{ background: 'var(--arc-indigo)' }}
             >

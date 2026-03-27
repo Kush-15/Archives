@@ -39,7 +39,6 @@ export function ProductCard({ product, variant = 'default' }: ProductCardProps) 
     <Link
       to={`/product/${product.id}`}
       className="group block card-lift"
-      data-cursor="card"
     >
       <div className={`relative overflow-hidden bg-archive-100 rounded-lg ${
         variant === 'compact' ? 'aspect-square' : 'aspect-[4/5]'

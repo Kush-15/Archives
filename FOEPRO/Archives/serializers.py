@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Category, Product, Cart, CartItem, ProductReview
+from .models import Category, Product, Cart, CartItem, ProductReview, Address, Order, OrderItem, Payment
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -54,3 +54,37 @@ class CartSerializer(serializers.ModelSerializer):
     
     def get_total(self, obj):
         return sum(item.quantity * item.product.price for item in obj.items.all())
+
+
+class AddressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Address
+        fields = ['id', 'full_name', 'phone', 'line1', 'line2', 'city', 'state', 'pincode', 'is_default', 'created_at']
+        read_only_fields = ['id', 'created_at']
+
+
+class OrderItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderItem
+        fields = ['id', 'product', 'product_name', 'product_price', 'quantity', 'subtotal']
+        read_only_fields = ['id', 'subtotal']
+
+
+class PaymentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Payment
+        fields = ['id', 'razorpay_payment_id', 'status', 'created_at']
+        read_only_fields = ['id', 'created_at']
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    items = OrderItemSerializer(many=True, read_only=True)
+    payment = PaymentSerializer(read_only=True)
+    address_detail = AddressSerializer(source='address', read_only=True)
+
+    class Meta:
+        model = Order
+        fields = ['id', 'order_id', 'status', 'total_amount', 'razorpay_order_id',
+                  'address', 'address_detail', 'items', 'payment', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'order_id', 'status', 'total_amount', 'razorpay_order_id',
+                            'created_at', 'updated_at']
