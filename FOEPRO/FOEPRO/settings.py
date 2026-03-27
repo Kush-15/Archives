@@ -13,11 +13,13 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 # near top of settings.py
 import os
+import socket
 import sys
 import dj_database_url
 from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 import warnings
+from urllib.parse import urlparse
 
 # Project base directory
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -187,6 +189,47 @@ if database_url and ('<user>' in database_url or '<pass>' in database_url or '<p
 # Use remote DB if USE_REMOTE_DB=1 is explicitly set (even with runserver),
 # or if RUNSERVER_REMOTE_DB=1 is set, otherwise fall back to SQLite locally.
 _want_remote = use_remote_db or runserver_remote_db
+
+
+def _is_remote_db_reachable(db_url, host, port, timeout_seconds):
+    """Best-effort TCP probe so local runserver doesn't hang on unreachable remote DB."""
+    probe_host = host
+    probe_port = int(port) if str(port).isdigit() else 5432
+
+    if db_url:
+        parsed = urlparse(db_url)
+        if parsed.hostname:
+            probe_host = parsed.hostname
+        if parsed.port:
+            probe_port = parsed.port
+
+    if not probe_host:
+        return False
+
+    try:
+        with socket.create_connection((probe_host, probe_port), timeout=timeout_seconds):
+            return True
+    except OSError:
+        return False
+
+
+if is_runserver and _want_remote:
+    _probe_enabled = os.environ.get("RUNSERVER_DB_PROBE", "1").lower() in ("1", "true", "yes", "on")
+    if _probe_enabled:
+        try:
+            _probe_timeout = int(os.environ.get("RUNSERVER_DB_PROBE_TIMEOUT", "3"))
+        except ValueError:
+            _probe_timeout = 3
+
+        if not _is_remote_db_reachable(database_url, db_host, db_port, _probe_timeout):
+            warnings.warn(
+                "Remote DB host is unreachable from this machine. "
+                "Falling back to local SQLite for runserver. "
+                "Set RUNSERVER_DB_PROBE=0 to disable this probe.",
+                RuntimeWarning,
+            )
+            _want_remote = False
+
 _force_sqlite = is_runserver and not _want_remote
 
 if _force_sqlite:
@@ -240,6 +283,16 @@ else:
             "NAME": BASE_DIR / "db.sqlite3",
         }
     }
+
+# Avoid apparent runserver hangs when remote Postgres is unreachable.
+# psycopg respects this in seconds and fails fast with a clear error.
+if DATABASES.get("default", {}).get("ENGINE") == "django.db.backends.postgresql":
+    try:
+        _connect_timeout = int(os.environ.get("DB_CONNECT_TIMEOUT", "8"))
+    except ValueError:
+        _connect_timeout = 8
+    DATABASES["default"].setdefault("OPTIONS", {})
+    DATABASES["default"]["OPTIONS"].setdefault("connect_timeout", _connect_timeout)
 
 
 # Password validation

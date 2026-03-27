@@ -111,22 +111,24 @@ export default function SiteNav({ onSearchClick }: SiteNavProps = {}) {
       <div className="arc-nav-links" ref={navLinksRef}>
         {isHome ? (
           <>
-            <a href="#reveal"        className="arc-nav-link"><ScrambleText text="About" /></a>
-            <a href="#collection"    className="arc-nav-link"><ScrambleText text="Collection" /></a>
-            <a href="#craftsmanship" className="arc-nav-link"><ScrambleText text="Craftsmanship" /></a>
-            <a href="#archive"       className="arc-nav-link"><ScrambleText text="Archive" /></a>
+            <a href="#reveal"        className="arc-nav-link" data-cursor="pill"><ScrambleText text="About" /></a>
+            <a href="#collection"    className="arc-nav-link" data-cursor="pill"><ScrambleText text="Collection" /></a>
+            <a href="#craftsmanship" className="arc-nav-link" data-cursor="pill"><ScrambleText text="Craftsmanship" /></a>
+            <a href="#archive"       className="arc-nav-link" data-cursor="pill"><ScrambleText text="Archive" /></a>
           </>
         ) : (
           <>
             <Link
               to="/catalog"
               className={`arc-nav-link ${isActivePath('/catalog') ? 'arc-nav-link--active' : ''}`}
+              data-cursor="pill"
             >
               <ScrambleText text="Collection" />
             </Link>
             <Link
               to="/profile"
               className={`arc-nav-link ${isActivePath('/profile') ? 'arc-nav-link--active' : ''}`}
+              data-cursor="pill"
             >
               <ScrambleText text="Account" />
             </Link>
@@ -142,6 +144,7 @@ export default function SiteNav({ onSearchClick }: SiteNavProps = {}) {
             className="arc-nav-icon-btn"
             onClick={onSearchClick}
             aria-label="Search"
+            data-cursor="button"
           >
             <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -157,6 +160,7 @@ export default function SiteNav({ onSearchClick }: SiteNavProps = {}) {
               onClick={() => setDropdownOpen(v => !v)}
               aria-label="Account menu"
               aria-expanded={dropdownOpen}
+              data-cursor="button"
             >
               <span className="arc-nav-avatar">{initial}</span>
               <span className="arc-nav-user-name">{displayName}</span>
@@ -184,9 +188,9 @@ export default function SiteNav({ onSearchClick }: SiteNavProps = {}) {
           </div>
         ) : (
           <div className="arc-nav-auth">
-            <button className="arc-nav-auth-link" onClick={handleSignIn}>Sign in</button>
+            <button className="arc-nav-auth-link" onClick={handleSignIn} data-cursor="button">Sign in</button>
             <span className="arc-nav-auth-divider" aria-hidden="true" />
-            <button className="arc-nav-auth-link" onClick={handleRegister}>Register</button>
+            <button className="arc-nav-auth-link" onClick={handleRegister} data-cursor="button">Register</button>
           </div>
         )}
 
@@ -195,6 +199,7 @@ export default function SiteNav({ onSearchClick }: SiteNavProps = {}) {
           className="arc-nav-icon-btn arc-nav-cart-btn"
           onClick={() => setIsCartOpen(true)}
           aria-label={`Cart: ${totalItems} items`}
+          data-cursor="button"
         >
           <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
@@ -209,8 +214,7 @@ export default function SiteNav({ onSearchClick }: SiteNavProps = {}) {
           <a
             href="/catalog"
             className="arc-nav-cta"
-            data-cursor="magnetic"
-            data-cursor-label="ENTER"
+            data-cursor="button"
           >
             <span className="arc-nav-cta-text">Enter the Shop</span>
             <span className="arc-nav-cta-arrow">→</span>
@@ -223,6 +227,7 @@ export default function SiteNav({ onSearchClick }: SiteNavProps = {}) {
           onClick={() => setMenuOpen(v => !v)}
           aria-label={menuOpen ? 'Close menu' : 'Open menu'}
           aria-expanded={menuOpen}
+          data-cursor="button"
         >
           <span className={`arc-nav-hamburger-bar ${menuOpen ? 'arc-nav-hamburger-bar--open-top' : ''}`} />
           <span className={`arc-nav-hamburger-bar ${menuOpen ? 'arc-nav-hamburger-bar--open-mid' : ''}`} />

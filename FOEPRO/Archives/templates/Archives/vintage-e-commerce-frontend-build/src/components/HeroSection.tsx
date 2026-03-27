@@ -84,7 +84,7 @@ export default function HeroSection() {
         </h1>
       </div>
 
-      <a href="#about" className="hero-scroll-cta">
+      <a href="#about" className="hero-scroll-cta" data-cursor="button">
         <span className="hero-scroll-label">Scroll to explore</span>
         <span className="hero-scroll-sub">To enter the archive</span>
         <div className="hero-scroll-line" />

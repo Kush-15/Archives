@@ -123,7 +123,7 @@ export function Catalog() {
           {/* Desktop Filters */}
           <div className="hidden md:flex flex-wrap items-center gap-4">
             {/* Category */}
-            <div className="relative">
+            <div className="relative" data-cursor="pill">
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
@@ -140,7 +140,7 @@ export function Catalog() {
             </div>
 
             {/* Era */}
-            <div className="relative">
+            <div className="relative" data-cursor="pill">
               <select
                 value={selectedEra}
                 onChange={(e) => setSelectedEra(e.target.value)}
@@ -176,7 +176,7 @@ export function Catalog() {
             </div>
 
             {/* Ratings */}
-            <div className="relative">
+            <div className="relative" data-cursor="pill">
               <select
                 value={selectedRating}
                 onChange={(e) => setSelectedRating(e.target.value)}
@@ -199,6 +199,7 @@ export function Catalog() {
               <button
                 onClick={clearFilters}
                 className="text-sm text-archive-500 hover:text-archive-900 transition-colors"
+                data-cursor="button"
               >
                 Clear all
               </button>
@@ -206,7 +207,7 @@ export function Catalog() {
           </div>
 
           {/* Sort */}
-          <div className="relative">
+          <div className="relative" data-cursor="pill">
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as SortOption)}
@@ -315,6 +316,7 @@ export function Catalog() {
             <button
               onClick={clearFilters}
               className="text-sm uppercase tracking-wider text-archive-900 border-b border-archive-900 pb-1"
+              data-cursor="button"
             >
               Clear Filters
             </button>

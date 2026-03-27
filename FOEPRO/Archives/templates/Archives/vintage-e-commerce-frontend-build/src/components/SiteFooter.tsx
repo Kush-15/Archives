@@ -8,7 +8,7 @@ export default function SiteFooter() {
             Own the archive
           </h2>
           <div className="footer-contacts">
-            <a href="mailto:hello@thearchives.com" className="footer-contact-link">
+            <a href="mailto:hello@thearchives.com" className="footer-contact-link" data-cursor="pill">
               <span className="t-eyebrow">Email</span>
               <span className="footer-contact-val">hello@thearchives.com</span>
             </a>
@@ -30,7 +30,7 @@ export default function SiteFooter() {
               <label className="t-eyebrow">Interest</label>
               <input type="text" placeholder="e.g. Leica M6, SLRs..." />
             </div>
-            <button type="submit" className="btn-submit">
+            <button type="submit" className="btn-submit" data-cursor="button">
               Submit Enquiry {'->'}
             </button>
           </form>
@@ -39,7 +39,7 @@ export default function SiteFooter() {
 
       <div className="footer-bottom">
         <span className="t-eyebrow">© {new Date().getFullYear()} The Archives. All rights reserved.</span>
-        <a href="/catalog" className="t-eyebrow footer-link">
+        <a href="/catalog" className="t-eyebrow footer-link" data-cursor="pill">
           Collection
         </a>
       </div>

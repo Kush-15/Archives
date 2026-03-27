@@ -35,7 +35,7 @@ export default function CraftsmanshipSection() {
 
       <div className="craft-grid">
         {BENEFITS.map((benefit) => (
-          <div key={benefit.number} className="craft-card">
+          <div key={benefit.number} className="craft-card" data-cursor="card">
             <div className="craft-card-img">
               <span className="craft-card-number t-eyebrow">{benefit.number}</span>
             </div>

@@ -25,22 +25,22 @@ export function Footer() {
             <h4 className="text-sm uppercase tracking-wider text-archive-500 mb-6">Navigate</h4>
             <ul className="space-y-3">
               <li>
-                <Link to="/catalog" className="text-archive-300 hover:text-cream transition-colors duration-300">
+                <Link to="/catalog" className="text-archive-300 hover:text-cream transition-colors duration-300" data-cursor="pill">
                   Collection
                 </Link>
               </li>
               <li>
-                <Link to="/catalog?category=audio" className="text-archive-300 hover:text-cream transition-colors duration-300">
+                <Link to="/catalog?category=audio" className="text-archive-300 hover:text-cream transition-colors duration-300" data-cursor="pill">
                   Audio
                 </Link>
               </li>
               <li>
-                <Link to="/catalog?category=computing" className="text-archive-300 hover:text-cream transition-colors duration-300">
+                <Link to="/catalog?category=computing" className="text-archive-300 hover:text-cream transition-colors duration-300" data-cursor="pill">
                   Computing
                 </Link>
               </li>
               <li>
-                <Link to="/catalog?category=photography" className="text-archive-300 hover:text-cream transition-colors duration-300">
+                <Link to="/catalog?category=photography" className="text-archive-300 hover:text-cream transition-colors duration-300" data-cursor="pill">
                   Photography
                 </Link>
               </li>
@@ -52,22 +52,22 @@ export function Footer() {
             <h4 className="text-sm uppercase tracking-wider text-archive-500 mb-6">Information</h4>
             <ul className="space-y-3">
               <li>
-                <span className="text-archive-300 hover:text-cream transition-colors duration-300 cursor-pointer">
+                <span className="text-archive-300 hover:text-cream transition-colors duration-300 cursor-pointer" data-cursor="pill">
                   About
                 </span>
               </li>
               <li>
-                <span className="text-archive-300 hover:text-cream transition-colors duration-300 cursor-pointer">
+                <span className="text-archive-300 hover:text-cream transition-colors duration-300 cursor-pointer" data-cursor="pill">
                   Shipping
                 </span>
               </li>
               <li>
-                <span className="text-archive-300 hover:text-cream transition-colors duration-300 cursor-pointer">
+                <span className="text-archive-300 hover:text-cream transition-colors duration-300 cursor-pointer" data-cursor="pill">
                   Returns
                 </span>
               </li>
               <li>
-                <span className="text-archive-300 hover:text-cream transition-colors duration-300 cursor-pointer">
+                <span className="text-archive-300 hover:text-cream transition-colors duration-300 cursor-pointer" data-cursor="pill">
                   Contact
                 </span>
               </li>
@@ -85,6 +85,7 @@ export function Footer() {
               to="/terms"
               className="text-archive-500 hover:text-cream transition-colors duration-300"
               style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6rem', letterSpacing: '0.12em', textTransform: 'uppercase', textDecoration: 'none' }}
+              data-cursor="pill"
             >
               Terms &amp; Conditions
             </Link>
@@ -92,6 +93,7 @@ export function Footer() {
               to="/privacy"
               className="text-archive-500 hover:text-cream transition-colors duration-300"
               style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6rem', letterSpacing: '0.12em', textTransform: 'uppercase', textDecoration: 'none' }}
+              data-cursor="pill"
             >
               Privacy Policy
             </Link>

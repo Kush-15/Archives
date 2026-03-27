@@ -107,6 +107,7 @@ export default function CollectionSection() {
             key={camera.model}
             className={`collection-tab ${active === i ? 'collection-tab--active' : ''}`}
             onClick={() => setActive(i)}
+            data-cursor="pill"
           >
             {camera.brand} {camera.model}
           </button>
@@ -132,7 +133,7 @@ export default function CollectionSection() {
             ))}
           </div>
 
-          <a href="/catalog" className="btn-primary">
+          <a href="/catalog" className="btn-primary" data-cursor="button">
             View in Collection {'->'}
           </a>
         </div>

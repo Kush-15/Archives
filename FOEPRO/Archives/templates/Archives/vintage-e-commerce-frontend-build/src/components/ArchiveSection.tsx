@@ -1063,6 +1063,7 @@ export default function ArchiveSection() {
             className={`archive-list-item ${activeIndex === i ? 'archive-list-item--active' : ''}`}
             onClick={() => handleSelect(i)}
             aria-pressed={activeIndex === i}
+            data-cursor="pill"
           >
             <span className="archive-item-name">{cam.name}</span>
             <span className="archive-item-year t-eyebrow">{cam.year}</span>
@@ -1073,7 +1074,7 @@ export default function ArchiveSection() {
       {/* Right col — model viewer or placeholder */}
       <div className="archive-panel" ref={panelRef}>
         {showCanvas ? (
-          <div ref={containerRef} style={{ width: '100%', height: '100%' }}>
+          <div ref={containerRef} style={{ width: '100%', height: '100%' }} data-cursor="model">
             <Canvas
               camera={{ fov: 45, position: active.style.cameraPosition }}
               dpr={dpr}
