@@ -5,6 +5,11 @@ __pycache__/
 .env.example
 credentials.json
 googleauth.json
+
+# Dependencies and build artifacts
+node_modules/
+dist/
+
 # Windows reserved device names
 nul
 con
