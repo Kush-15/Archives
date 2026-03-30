@@ -127,7 +127,13 @@ export function Checkout() {
         setShowAddressForm(false);
         setAddressForm(emptyAddress);
       } else {
-        setError(data.error || 'Failed to save address.');
+        if (res.status === 401) {
+          setError('Session expired. Please log in again.');
+          setIsAuthModalOpen(true);
+          setAuthModalMode('login');
+        } else {
+          setError(data.error || 'Failed to save address.');
+        }
       }
     } catch {
       setError('Network error.');
@@ -171,10 +177,16 @@ export function Checkout() {
       const orderData = await orderRes.json();
 
       if (!orderRes.ok) {
-        setError(orderData.error || 'Failed to create order.');
-        if (orderData.details) {
-          setError(orderData.details.map((d: { product_name: string; requested: number; available: number }) =>
-            `${d.product_name}: requested ${d.requested}, available ${d.available}`).join('; '));
+        if (orderRes.status === 401) {
+          setError('Session expired. Please log in again.');
+          setIsAuthModalOpen(true);
+          setAuthModalMode('login');
+        } else {
+          setError(orderData.error || 'Failed to create order.');
+          if (orderData.details) {
+            setError(orderData.details.map((d: { product_name: string; requested: number; available: number }) =>
+              `${d.product_name}: requested ${d.requested}, available ${d.available}`).join('; '));
+          }
         }
         setLoading(false);
         return;
@@ -374,13 +386,13 @@ export function Checkout() {
                   <p className="text-xs" style={{ color: 'var(--arc-text-muted)' }}>Qty: {item.quantity}</p>
                 </div>
                 <p className="text-sm font-medium whitespace-nowrap" style={{ color: 'var(--arc-text-light)' }}>
-                  ${(item.product.price * item.quantity).toLocaleString()}
+                  ₹{(item.product.price * item.quantity).toLocaleString()}
                 </p>
               </div>
             ))}
             <div className="flex justify-between items-center p-4">
               <span className="text-lg" style={{ color: 'var(--arc-text-body)' }}>Total</span>
-              <span className="font-display text-2xl" style={{ color: 'var(--arc-text-light)' }}>${totalPrice.toLocaleString()}</span>
+              <span className="font-display text-2xl" style={{ color: 'var(--arc-text-light)' }}>₹{totalPrice.toLocaleString()}</span>
             </div>
           </div>
         </div>
@@ -392,7 +404,7 @@ export function Checkout() {
           className="w-full py-4 text-sm uppercase tracking-wider rounded-md transition-colors disabled:opacity-50"
           style={{ background: 'var(--arc-indigo)', color: 'var(--arc-text-light)' }}
         >
-          {loading ? 'Processing...' : `Pay $${totalPrice.toLocaleString()}`}
+          {loading ? 'Processing...' : `Pay ₹${totalPrice.toLocaleString()}`}
         </button>
       </div>
     </div>

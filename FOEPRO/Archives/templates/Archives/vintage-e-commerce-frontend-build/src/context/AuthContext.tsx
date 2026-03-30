@@ -50,6 +50,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authModalMode, setAuthModalMode] = useState<'login' | 'signup'>('login');
+  const [hasToken, setHasToken] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return !!localStorage.getItem('archives-token');
+    }
+    return false;
+  });
 
   useEffect(() => {
     setIsAuthLoading(false);
@@ -80,6 +86,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const savedItems = JSON.parse(localStorage.getItem(`archives-saved-${email}`) || '[]');
         if (data.token) {
           localStorage.setItem('archives-token', data.token);
+          setHasToken(true);
         }
         setUser({ email: userObj.email || email, name, savedItems });
         setIsAuthModalOpen(false);
@@ -146,6 +153,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const savedItems = JSON.parse(localStorage.getItem(`archives-saved-${email}`) || '[]');
         if (data.token) {
           localStorage.setItem('archives-token', data.token);
+          setHasToken(true);
         }
         setUser({ email: userObj.email || email, name, savedItems });
         setIsOtpModalOpen(false);
@@ -183,6 +191,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Network error should not block local logout
     }
     localStorage.removeItem('archives-token');
+    setHasToken(false);
     setUser(null);
   };
 
@@ -206,6 +215,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (token) {
       return { 'Authorization': `Token ${token}` };
     }
+    setHasToken(false);
     return {};
   };
 
@@ -232,6 +242,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const userData: User = { email, name, savedItems };
         if (data.token) {
           localStorage.setItem('archives-token', data.token);
+          setHasToken(true);
         }
         localStorage.setItem('archives-user', JSON.stringify(userData));
         setUser(userData);
@@ -249,7 +260,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider
       value={{
         user,
-        isLoggedIn: !!user,
+        isLoggedIn: !!(user && hasToken),
         isAuthLoading,
         login,
         signup,

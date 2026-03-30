@@ -55,8 +55,10 @@ def verify_payment_signature(razorpay_order_id, razorpay_payment_id, razorpay_si
             'razorpay_payment_id': razorpay_payment_id,
             'razorpay_signature': razorpay_signature,
         })
+        logger.info('Razorpay signature verified OK for order %s / payment %s',
+                     razorpay_order_id, razorpay_payment_id)
         return True
-    except Exception:
-        logger.warning('Razorpay signature verification failed for order %s / payment %s',
-                       razorpay_order_id, razorpay_payment_id)
+    except Exception as e:
+        logger.error('Razorpay signature verification FAILED for order %s / payment %s: %s (type: %s)',
+                     razorpay_order_id, razorpay_payment_id, str(e), type(e).__name__, exc_info=True)
         return False

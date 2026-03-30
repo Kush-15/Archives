@@ -411,6 +411,7 @@ if FRONTEND_BASE_URL not in CSRF_TRUSTED_ORIGINS:
 # ---------------------------------------------------------------------------
 RAZORPAY_KEY_ID = get_env('RAZORPAY_KEY_ID', '')
 RAZORPAY_KEY_SECRET = get_env('RAZORPAY_KEY_SECRET', '')
+RAZORPAY_WEBHOOK_SECRET = get_env('RAZORPAY_WEBHOOK_SECRET', '')
 
 if not RAZORPAY_KEY_ID or not RAZORPAY_KEY_SECRET:
     warnings.warn(

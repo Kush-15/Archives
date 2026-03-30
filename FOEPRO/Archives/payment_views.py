@@ -1,8 +1,14 @@
+import hashlib
+import hmac
+import json
 import logging
 from decimal import Decimal
 
 from django.conf import settings
 from django.db import transaction
+from django.db.models import F
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework import permissions, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -95,11 +101,15 @@ def create_order(request):
     total_paise = int(total * 100)
 
     with transaction.atomic():
-        # Reserve stock
+        # Reserve stock (atomic F() expression to prevent race conditions)
         for item in cart_items:
-            Product.objects.filter(id=item['product'].id).update(
-                stock=item['product'].stock - item['quantity']
-            )
+            updated = Product.objects.filter(
+                id=item['product'].id, stock__gte=item['quantity']
+            ).update(stock=F('stock') - item['quantity'])
+            if not updated:
+                return Response({
+                    'error': f"Insufficient stock for {item['product'].name}",
+                }, status=status.HTTP_400_BAD_REQUEST)
 
         # Create Order
         order = Order.objects.create(
@@ -142,16 +152,23 @@ def create_order(request):
 @permission_classes([permissions.IsAuthenticated])
 def verify_payment(request):
     """Verify Razorpay payment signature. On success: mark paid, clear cart. On failure: restore stock."""
-    razorpay_order_id = request.data.get('razorpay_order_id', '').strip()
-    razorpay_payment_id = request.data.get('razorpay_payment_id', '').strip()
-    razorpay_signature = request.data.get('razorpay_signature', '').strip()
+    razorpay_order_id = (request.data.get('razorpay_order_id') or '').strip()
+    razorpay_payment_id = (request.data.get('razorpay_payment_id') or '').strip()
+    razorpay_signature = (request.data.get('razorpay_signature') or '').strip()
+
+    logger.info('verify_payment called: order_id=%s, payment_id=%s, sig_len=%s',
+                razorpay_order_id, razorpay_payment_id, len(razorpay_signature))
 
     if not all([razorpay_order_id, razorpay_payment_id, razorpay_signature]):
+        logger.warning('verify_payment: missing payment details - order_id=%s, payment_id=%s, sig=%s',
+                       bool(razorpay_order_id), bool(razorpay_payment_id), bool(razorpay_signature))
         return Response({'error': 'Missing payment details'}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
         order = Order.objects.get(razorpay_order_id=razorpay_order_id, user=request.user)
     except Order.DoesNotExist:
+        logger.error('verify_payment: Order not found for razorpay_order_id=%s, user=%s',
+                     razorpay_order_id, request.user)
         return Response({'error': 'Order not found'}, status=status.HTTP_404_NOT_FOUND)
 
     payment = order.payment
@@ -166,12 +183,14 @@ def verify_payment(request):
             order.status = 'paid'
             order.save(update_fields=['status', 'updated_at'])
 
+        logger.info('verify_payment: SUCCESS for order %s', order.order_id)
         return Response({
             'status': 'success',
             'order_id': order.order_id,
         })
     else:
         # Signature verification failed - restore stock
+        logger.error('verify_payment: SIGNATURE FAILED for order %s', order.order_id)
         with transaction.atomic():
             payment.razorpay_payment_id = razorpay_payment_id
             payment.razorpay_signature = razorpay_signature
@@ -182,9 +201,9 @@ def verify_payment(request):
             order.save(update_fields=['status', 'updated_at'])
 
             # Restore stock
-            for item in order.items.select_related('product'):
+            for item in order.items.all():
                 Product.objects.filter(id=item.product_id).update(
-                    stock=item.product.stock + item.quantity
+                    stock=F('stock') + item.quantity
                 )
 
         return Response({
@@ -219,9 +238,9 @@ def cancel_order(request):
         payment.save(update_fields=['status', 'updated_at'])
 
         # Restore stock
-        for item in order.items.select_related('product'):
+        for item in order.items.all():
             Product.objects.filter(id=item.product_id).update(
-                stock=item.product.stock + item.quantity
+                stock=F('stock') + item.quantity
             )
 
     return Response({'status': 'cancelled', 'order_id': order.order_id})
@@ -249,3 +268,82 @@ def order_detail(request, order_id):
 
     serializer = OrderSerializer(order)
     return Response(serializer.data)
+
+
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes([permissions.AllowAny])
+def razorpay_webhook(request):
+    """Handle Razorpay webhook events for payment status updates.
+
+    This is a server-side fallback for payment verification.
+    Set the webhook secret in settings.RAZORPAY_WEBHOOK_SECRET.
+    """
+    # Verify webhook signature
+    webhook_secret = getattr(settings, 'RAZORPAY_WEBHOOK_SECRET', '')
+    if webhook_secret:
+        signature = request.META.get('HTTP_X_RAZORPAY_SIGNATURE', '')
+        body = request.body
+        expected_signature = hmac.new(
+            webhook_secret.encode('utf-8'),
+            body,
+            hashlib.sha256
+        ).hexdigest()
+        if not hmac.compare_digest(signature, expected_signature):
+            logger.warning('Invalid Razorpay webhook signature')
+            return Response({'error': 'Invalid signature'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        payload = json.loads(request.body)
+    except json.JSONDecodeError:
+        return Response({'error': 'Invalid JSON'}, status=status.HTTP_400_BAD_REQUEST)
+
+    event = payload.get('event', '')
+    payment_entity = payload.get('payload', {}).get('payment', {}).get('entity', {})
+
+    if not payment_entity:
+        return Response({'status': 'ignored'}, status=status.HTTP_200_OK)
+
+    razorpay_order_id = payment_entity.get('order_id', '')
+    razorpay_payment_id = payment_entity.get('id', '')
+    payment_status = payment_entity.get('status', '')
+
+    if not razorpay_order_id:
+        return Response({'status': 'ignored'}, status=status.HTTP_200_OK)
+
+    try:
+        order = Order.objects.get(razorpay_order_id=razorpay_order_id)
+    except Order.DoesNotExist:
+        logger.warning('Webhook: Order not found for razorpay_order_id=%s', razorpay_order_id)
+        return Response({'status': 'order not found'}, status=status.HTTP_200_OK)
+
+    # Skip if already processed
+    if order.status in ('paid', 'failed', 'cancelled'):
+        return Response({'status': 'already processed'}, status=status.HTTP_200_OK)
+
+    payment = order.payment
+
+    if event == 'payment.captured' and payment_status == 'captured':
+        with transaction.atomic():
+            payment.razorpay_payment_id = razorpay_payment_id
+            payment.status = 'success'
+            payment.save()
+            order.status = 'paid'
+            order.save(update_fields=['status', 'updated_at'])
+        logger.info('Webhook: Payment captured for order %s', order.order_id)
+
+    elif event == 'payment.failed' or payment_status == 'failed':
+        with transaction.atomic():
+            payment.razorpay_payment_id = razorpay_payment_id
+            payment.status = 'failed'
+            payment.save()
+            order.status = 'failed'
+            order.save(update_fields=['status', 'updated_at'])
+            # Restore stock
+            for item in order.items.all():
+                Product.objects.filter(id=item.product_id).update(
+                    stock=F('stock') + item.quantity
+                )
+        logger.info('Webhook: Payment failed for order %s, stock restored', order.order_id)
+
+    return Response({'status': 'ok'}, status=status.HTTP_200_OK)
