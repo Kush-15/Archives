@@ -30,23 +30,24 @@ def _get_auth_backend():
         return backends[0]
     return 'django.contrib.auth.backends.ModelBackend'
 
-# Serve the frontend using Django's template engine (so template tags like {% static %} are resolved)
 @ensure_csrf_cookie
 def _serve_spa(request):
-    """Serve the built SPA index from frontend dist, fallback to Django template."""
-    frontend_dist_index = Path(settings.BASE_DIR) / 'Archives' / 'templates' / 'Archives' / 'vintage-e-commerce-frontend-build' / 'dist' / 'index.html'
+    """Serve the built SPA index.html for all routes."""
+    # Try static/dist first (Vite build output in collectstatic root)
+    static_index = settings.STATIC_ROOT / 'index.html'
+    if static_index.exists():
+        return HttpResponse(static_index.read_text(encoding='utf-8'))
 
-    if frontend_dist_index.exists():
-        try:
-            return HttpResponse(frontend_dist_index.read_text(encoding='utf-8'))
-        except OSError:
-            logger.exception("Failed to read frontend dist index at %s", frontend_dist_index)
+    # Fallback: dist folder in source tree (local dev)
+    dist_index = Path(settings.BASE_DIR) / 'Archives' / 'templates' / 'Archives' / 'vintage-e-commerce-frontend-build' / 'dist' / 'index.html'
+    if dist_index.exists():
+        return HttpResponse(dist_index.read_text(encoding='utf-8'))
 
+    # Fallback: try Django template
     try:
         return render(request, 'index.html')
     except TemplateDoesNotExist:
-        logger.warning("SPA template 'index.html' not found; ensure the frontend is built and copied to Archives/static and Archives/templates.")
-        return HttpResponse("Frontend not built yet. Run 'npm run build' in the frontend directory.", status=503)
+        return HttpResponse("Frontend not built yet. Run 'npm run build'.", status=503)
 
 # Create your views here.
 def home(request):
