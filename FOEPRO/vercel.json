@@ -1,7 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "bash build.sh",
-  "outputDirectory": ".vercel/output",
+  "installCommand": "bash build.sh",
   "builds": [
     { "src": "api/index.py", "use": "@vercel/python" }
   ],
