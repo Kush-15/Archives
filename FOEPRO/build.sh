@@ -12,10 +12,20 @@ npm run build
 cd ../../../..
 
 echo "=== Running collectstatic ==="
-# Use SQLite for collectstatic (psycopg2 fails on Vercel serverless)
 export DATABASE_URL=""
 export USE_REMOTE_DB="0"
 export RUNSERVER_REMOTE_DB="0"
 python manage.py collectstatic --noinput
+
+echo "=== Creating Vercel output structure ==="
+# Create the output structure for Vercel
+mkdir -p .vercel/output/static
+mkdir -p .vercel/output/functions/api
+
+# Copy static files to output
+cp -r Archives/static/* .vercel/output/static/ 2>/dev/null || true
+
+# Copy Python function to output  
+cp api/index.py .vercel/output/functions/api/index.py
 
 echo "=== Build complete ==="
