@@ -418,3 +418,10 @@ if not RAZORPAY_KEY_ID or not RAZORPAY_KEY_SECRET:
         'RAZORPAY_KEY_ID or RAZORPAY_KEY_SECRET not set; payment features will not work.',
         RuntimeWarning,
     )
+
+# ---------------------------------------------------------------------------
+# Stripe
+# ---------------------------------------------------------------------------
+STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY")
+STRIPE_PUBLISHABLE_KEY = os.environ.get("STRIPE_PUBLISHABLE_KEY")
+STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET")

@@ -15,7 +15,7 @@ POOLER_HOST = "aws-0-ap-south-1.pooler.supabase.com"
 # Common Credentials
 DB_NAME = "postgres"
 DB_USER = "postgres.fqsyfscypmzsqupnegfu"
-DB_PASS = "fDp4WJkBwkpZRhKK" # Ensure this is your current password
+DB_PASS = "FCHJo8Q5qr33MWWf" # Ensure this is your current password
 
 print("\n" + "="*60)
 print("🔎 SUPABASE CONNECTION DIAGNOSTIC")

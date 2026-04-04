@@ -73,7 +73,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
 class PaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Payment
-        fields = ['id', 'razorpay_payment_id', 'status', 'created_at']
+        fields = ['id', 'status', 'created_at']
         read_only_fields = ['id', 'created_at']
 
 
@@ -84,7 +84,7 @@ class OrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ['id', 'order_id', 'status', 'total_amount', 'razorpay_order_id',
+        fields = ['id', 'order_id', 'status', 'total_amount', 'stripe_payment_intent_id',
                   'address', 'address_detail', 'items', 'payment', 'created_at', 'updated_at']
-        read_only_fields = ['id', 'order_id', 'status', 'total_amount', 'razorpay_order_id',
+        read_only_fields = ['id', 'order_id', 'status', 'total_amount', 'stripe_payment_intent_id',
                             'created_at', 'updated_at']

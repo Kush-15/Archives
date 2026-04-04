@@ -45,8 +45,8 @@ urlpatterns = [
     path('api/', include(router.urls)),
 
     # Payment & Orders
-    path('api/payment/webhook/', payment_views.razorpay_webhook, name='payment_webhook'),
-    path('api/payment/key/', payment_views.get_razorpay_key, name='payment_key'),
+    path('api/payment/webhook/', payment_views.stripe_webhook, name='payment_webhook'),
+    path('api/payment/key/', payment_views.get_stripe_key, name='payment_key'),
     path('api/payment/create-order/', payment_views.create_order, name='payment_create_order'),
     path('api/payment/verify/', payment_views.verify_payment, name='payment_verify'),
     path('api/orders/cancel/', payment_views.cancel_order, name='order_cancel'),

@@ -2,6 +2,7 @@ import hashlib
 import hmac
 import json
 import logging
+import stripe
 from decimal import Decimal
 
 from django.conf import settings
@@ -15,18 +16,17 @@ from rest_framework.response import Response
 
 from .models import Address, Order, OrderItem, Payment, Product
 from .serializers import AddressSerializer, OrderSerializer
-from .services.razorpay_service import create_order as rzp_create_order, verify_payment_signature
 
 logger = logging.getLogger(__name__)
 
 
 @api_view(['GET'])
 @permission_classes([permissions.IsAuthenticated])
-def get_razorpay_key(request):
-    """Return the Razorpay key_id for the frontend checkout modal."""
-    if not settings.RAZORPAY_KEY_ID:
-        return Response({'error': 'Razorpay not configured'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    return Response({'key_id': settings.RAZORPAY_KEY_ID})
+def get_stripe_key(request):
+    """Return the Stripe publishable key for the frontend checkout."""
+    if not settings.STRIPE_PUBLISHABLE_KEY:
+        return Response({'error': 'Stripe not configured'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    return Response({'publishable_key': settings.STRIPE_PUBLISHABLE_KEY})
 
 
 @api_view(['POST'])
@@ -129,54 +129,59 @@ def create_order(request):
                 quantity=item['quantity'],
             )
 
-        # Create Razorpay order
-        rzp_order = rzp_create_order(
-            amount_in_paise=total_paise,
-            receipt=order.order_id,
-        )
-        order.razorpay_order_id = rzp_order['id']
-        order.save(update_fields=['razorpay_order_id'])
+        # Create Stripe PaymentIntent
+        stripe.api_key = settings.STRIPE_SECRET_KEY
+        try:
+            intent = stripe.PaymentIntent.create(
+                amount=total_paise,
+                currency='inr',
+                metadata={'order_id': order.order_id}
+            )
+            order.stripe_payment_intent_id = intent.id
+            order.save(update_fields=['stripe_payment_intent_id'])
+            
+            # Create Payment record (pending)
+            Payment.objects.create(order=order, status='pending')
 
-        # Create Payment record (pending)
-        Payment.objects.create(order=order, status='pending')
-
-    return Response({
-        'order_id': order.order_id,
-        'razorpay_order_id': rzp_order['id'],
-        'amount': total_paise,
-        'currency': rzp_order.get('currency', 'INR'),
-    }, status=status.HTTP_201_CREATED)
+            return Response({
+                'order_id': order.order_id,
+                'clientSecret': intent.client_secret,
+                'amount': total_paise,
+                'currency': 'inr',
+            }, status=status.HTTP_201_CREATED)
+            
+        except stripe.error.StripeError as e:
+            return Response({'error': str(e.user_message)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
 def verify_payment(request):
-    """Verify Razorpay payment signature. On success: mark paid, clear cart. On failure: restore stock."""
-    razorpay_order_id = (request.data.get('razorpay_order_id') or '').strip()
-    razorpay_payment_id = (request.data.get('razorpay_payment_id') or '').strip()
-    razorpay_signature = (request.data.get('razorpay_signature') or '').strip()
+    """Verify Stripe PaymentIntent. On success: mark paid, clear cart. On failure: restore stock."""
+    stripe.api_key = settings.STRIPE_SECRET_KEY
+    payment_intent_id = (request.data.get('payment_intent_id') or '').strip()
 
-    logger.info('verify_payment called: order_id=%s, payment_id=%s, sig_len=%s',
-                razorpay_order_id, razorpay_payment_id, len(razorpay_signature))
+    logger.info('verify_payment called: payment_intent_id=%s', payment_intent_id)
 
-    if not all([razorpay_order_id, razorpay_payment_id, razorpay_signature]):
-        logger.warning('verify_payment: missing payment details - order_id=%s, payment_id=%s, sig=%s',
-                       bool(razorpay_order_id), bool(razorpay_payment_id), bool(razorpay_signature))
-        return Response({'error': 'Missing payment details'}, status=status.HTTP_400_BAD_REQUEST)
+    if not payment_intent_id:
+        return Response({'error': 'Missing payment_intent_id'}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
-        order = Order.objects.get(razorpay_order_id=razorpay_order_id, user=request.user)
+        intent = stripe.PaymentIntent.retrieve(payment_intent_id)
+    except stripe.error.StripeError as e:
+        logger.error('verify_payment: StripeError - %s', str(e))
+        return Response({'error': 'Invalid payment intent'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        order = Order.objects.get(stripe_payment_intent_id=payment_intent_id, user=request.user)
     except Order.DoesNotExist:
-        logger.error('verify_payment: Order not found for razorpay_order_id=%s, user=%s',
-                     razorpay_order_id, request.user)
+        logger.error('verify_payment: Order not found for payment_intent_id=%s', payment_intent_id)
         return Response({'error': 'Order not found'}, status=status.HTTP_404_NOT_FOUND)
 
     payment = order.payment
 
-    if verify_payment_signature(razorpay_order_id, razorpay_payment_id, razorpay_signature):
+    if intent.status == 'succeeded':
         with transaction.atomic():
-            payment.razorpay_payment_id = razorpay_payment_id
-            payment.razorpay_signature = razorpay_signature
             payment.status = 'success'
             payment.save()
 
@@ -189,11 +194,9 @@ def verify_payment(request):
             'order_id': order.order_id,
         })
     else:
-        # Signature verification failed - restore stock
-        logger.error('verify_payment: SIGNATURE FAILED for order %s', order.order_id)
+        # Verification failed
+        logger.error('verify_payment: PAYMENT NOT SUCCEEDED for order %s - Status: %s', order.order_id, intent.status)
         with transaction.atomic():
-            payment.razorpay_payment_id = razorpay_payment_id
-            payment.razorpay_signature = razorpay_signature
             payment.status = 'failed'
             payment.save()
 
@@ -273,77 +276,64 @@ def order_detail(request, order_id):
 @csrf_exempt
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
-def razorpay_webhook(request):
-    """Handle Razorpay webhook events for payment status updates.
+def stripe_webhook(request):
+    """Handle Stripe webhook events for payment status updates.
 
     This is a server-side fallback for payment verification.
-    Set the webhook secret in settings.RAZORPAY_WEBHOOK_SECRET.
+    Set the webhook secret in settings.STRIPE_WEBHOOK_SECRET.
     """
-    # Verify webhook signature
-    webhook_secret = getattr(settings, 'RAZORPAY_WEBHOOK_SECRET', '')
-    if webhook_secret:
-        signature = request.META.get('HTTP_X_RAZORPAY_SIGNATURE', '')
-        body = request.body
-        expected_signature = hmac.new(
-            webhook_secret.encode('utf-8'),
-            body,
-            hashlib.sha256
-        ).hexdigest()
-        if not hmac.compare_digest(signature, expected_signature):
-            logger.warning('Invalid Razorpay webhook signature')
-            return Response({'error': 'Invalid signature'}, status=status.HTTP_400_BAD_REQUEST)
+    import stripe
+    payload = request.body
+    sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
+    webhook_secret = getattr(settings, 'STRIPE_WEBHOOK_SECRET', '')
 
     try:
-        payload = json.loads(request.body)
+        if webhook_secret:
+            event = stripe.Webhook.construct_event(
+                payload, sig_header, webhook_secret
+            )
+        else: # Fallback purely for testing
+            event = json.loads(payload)
+    except ValueError:
+        return Response({'error': 'Invalid payload'}, status=status.HTTP_400_BAD_REQUEST)
+    except stripe.error.SignatureVerificationError:
+        return Response({'error': 'Invalid signature'}, status=status.HTTP_400_BAD_REQUEST)
     except json.JSONDecodeError:
         return Response({'error': 'Invalid JSON'}, status=status.HTTP_400_BAD_REQUEST)
 
-    event = payload.get('event', '')
-    payment_entity = payload.get('payload', {}).get('payment', {}).get('entity', {})
+    if event['type'] == 'payment_intent.succeeded':
+        payment_intent = event['data']['object']
+        intent_id = payment_intent['id']
+        try:
+            order = Order.objects.get(stripe_payment_intent_id=intent_id)
+            if order.status != 'paid':
+                with transaction.atomic():
+                    order.payment.status = 'success'
+                    order.payment.save()
+                    order.status = 'paid'
+                    order.save(update_fields=['status', 'updated_at'])
+                logger.info(f"Webhook: Payment captured for order {order.order_id}")
+        except Order.DoesNotExist:
+            logger.warning(f"Webhook: Order not found for intent {intent_id}")
 
-    if not payment_entity:
-        return Response({'status': 'ignored'}, status=status.HTTP_200_OK)
-
-    razorpay_order_id = payment_entity.get('order_id', '')
-    razorpay_payment_id = payment_entity.get('id', '')
-    payment_status = payment_entity.get('status', '')
-
-    if not razorpay_order_id:
-        return Response({'status': 'ignored'}, status=status.HTTP_200_OK)
-
-    try:
-        order = Order.objects.get(razorpay_order_id=razorpay_order_id)
-    except Order.DoesNotExist:
-        logger.warning('Webhook: Order not found for razorpay_order_id=%s', razorpay_order_id)
-        return Response({'status': 'order not found'}, status=status.HTTP_200_OK)
-
-    # Skip if already processed
-    if order.status in ('paid', 'failed', 'cancelled'):
-        return Response({'status': 'already processed'}, status=status.HTTP_200_OK)
-
-    payment = order.payment
-
-    if event == 'payment.captured' and payment_status == 'captured':
-        with transaction.atomic():
-            payment.razorpay_payment_id = razorpay_payment_id
-            payment.status = 'success'
-            payment.save()
-            order.status = 'paid'
-            order.save(update_fields=['status', 'updated_at'])
-        logger.info('Webhook: Payment captured for order %s', order.order_id)
-
-    elif event == 'payment.failed' or payment_status == 'failed':
-        with transaction.atomic():
-            payment.razorpay_payment_id = razorpay_payment_id
-            payment.status = 'failed'
-            payment.save()
-            order.status = 'failed'
-            order.save(update_fields=['status', 'updated_at'])
-            # Restore stock
-            for item in order.items.all():
-                Product.objects.filter(id=item.product_id).update(
-                    stock=F('stock') + item.quantity
-                )
-        logger.info('Webhook: Payment failed for order %s, stock restored', order.order_id)
+    elif event['type'] == 'payment_intent.payment_failed':
+        payment_intent = event['data']['object']
+        intent_id = payment_intent['id']
+        try:
+            order = Order.objects.get(stripe_payment_intent_id=intent_id)
+            if order.status not in ('paid', 'failed', 'cancelled'):
+                with transaction.atomic():
+                    order.payment.status = 'failed'
+                    order.payment.save()
+                    order.status = 'failed'
+                    order.save(update_fields=['status', 'updated_at'])
+                    # Restore stock
+                    for item in order.items.all():
+                        Product.objects.filter(id=item.product_id).update(
+                            stock=F('stock') + item.quantity
+                        )
+                logger.info(f"Webhook: Payment failed for order {order.order_id}, stock restored")
+        except Order.DoesNotExist:
+            logger.warning(f"Webhook: Order not found for failed intent {intent_id}")
 
     return Response({'status': 'ok'}, status=status.HTTP_200_OK)
