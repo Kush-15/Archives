@@ -38,7 +38,7 @@ export const products: Product[] = [
       { label: 'Condition', value: 'Restored, Excellent' },
       { label: 'Origin', value: 'Tokyo, Japan' }
     ],
-    images: ['https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Original_Sony_Walkman_TPS-L2.JPG/800px-Original_Sony_Walkman_TPS-L2.JPG'],
+    images: ['/media/products/sony-walkman-tps-l2.jpg'],
     featured: true,
     new: false,
     color: '#1a365d'
@@ -63,7 +63,7 @@ export const products: Product[] = [
       { label: 'Condition', value: 'Museum Quality' },
       { label: 'Origin', value: 'Cupertino, California' }
     ],
-    images: ['https://upload.wikimedia.org/wikipedia/commons/thumb/1/1f/Apple_Macintosh_128K.png/800px-Apple_Macintosh_128K.png'],
+    images: ['/media/products/apple-macintosh-128k.jpg'],
     featured: true,
     new: true,
     color: '#d4a574'
@@ -88,7 +88,7 @@ export const products: Product[] = [
       { label: 'Condition', value: 'Serviced, Excellent' },
       { label: 'Origin', value: 'Massachusetts, USA' }
     ],
-    images: ['https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Vintage_Polaroid_SX-70_Land_Camera_-_Design_Museum_-_DSC01627.jpg/800px-Vintage_Polaroid_SX-70_Land_Camera_-_Design_Museum_-_DSC01627.jpg'],
+    images: ['/media/products/polaroid-sx-70.jpg'],
     featured: true,
     new: false,
     color: '#8b7355'
@@ -113,7 +113,7 @@ export const products: Product[] = [
       { label: 'Condition', value: 'Restored, Tested' },
       { label: 'Origin', value: 'Kyoto, Japan' }
     ],
-    images: ['https://upload.wikimedia.org/wikipedia/commons/thumb/7/7d/Nintendo-Entertainment-System-NES-Console-FL.jpg/800px-Nintendo-Entertainment-System-NES-Console-FL.jpg'],
+    images: ['/media/products/nintendo-nes.jpg'],
     featured: false,
     new: true,
     color: '#6b7280'
@@ -138,7 +138,7 @@ export const products: Product[] = [
       { label: 'Condition', value: 'Museum Quality' },
       { label: 'Origin', value: 'Frankfurt, Germany' }
     ],
-    images: ['https://upload.wikimedia.org/wikipedia/commons/thumb/d/d9/Braun_T-1000_radio.jpg/800px-Braun_T-1000_radio.jpg'],
+    images: ['/media/products/braun-t1000.jpg'],
     featured: true,
     new: false,
     color: '#374151'
@@ -163,7 +163,7 @@ export const products: Product[] = [
       { label: 'Condition', value: 'Restored, Working' },
       { label: 'Origin', value: 'Tokyo, Japan' }
     ],
-    images: ['https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Trinitron_KV-1320UB_back.jpg/800px-Trinitron_KV-1320UB_back.jpg'],
+    images: ['/media/products/sony-trinitron-kv1310.jpg'],
     featured: false,
     new: false,
     color: '#78350f'
@@ -188,7 +188,7 @@ export const products: Product[] = [
       { label: 'Condition', value: 'CLA\'d, Excellent' },
       { label: 'Origin', value: 'Gothenburg, Sweden' }
     ],
-    images: ['https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Hasselblad_500_c_camera.jpg/800px-Hasselblad_500_c_camera.jpg'],
+    images: ['/media/products/hasselblad-500c.jpg'],
     featured: false,
     new: true,
     color: '#1f2937'
@@ -213,7 +213,7 @@ export const products: Product[] = [
       { label: 'Condition', value: 'Bolt-modded, Restored' },
       { label: 'Origin', value: 'Lexington, Kentucky' }
     ],
-    images: ['https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/IBM_Model_M_keyboard_%28US_layout_with_101_keys%29.jpg/800px-IBM_Model_M_keyboard_%28US_layout_with_101_keys%29.jpg'],
+    images: ['/media/products/ibm-model-m.jpg'],
     featured: false,
     new: false,
     color: '#d1d5db'
@@ -238,7 +238,7 @@ export const products: Product[] = [
       { label: 'Condition', value: 'Restored, AV-modded' },
       { label: 'Origin', value: 'Sunnyvale, California' }
     ],
-    images: ['https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/Atari-2600-Console.jpg/800px-Atari-2600-Console.jpg'],
+    images: ['/media/products/atari-2600.jpg'],
     featured: false,
     new: false,
     color: '#92400e'
@@ -263,7 +263,7 @@ export const products: Product[] = [
       { label: 'Condition', value: 'Serviced, Excellent' },
       { label: 'Origin', value: 'Osaka, Japan' }
     ],
-    images: ['https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/Technics_SL-1200MK2-2.jpg/800px-Technics_SL-1200MK2-2.jpg'],
+    images: ['/media/products/technics-sl1200.jpg'],
     featured: true,
     new: true,
     color: '#111827'
@@ -288,7 +288,7 @@ export const products: Product[] = [
       { label: 'Condition', value: 'Recapped, Tested' },
       { label: 'Origin', value: 'West Chester, PA' }
     ],
-    images: ['https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Commodore-64-Computer-FL.jpg/800px-Commodore-64-Computer-FL.jpg'],
+    images: ['/media/products/commodore-64.jpg'],
     featured: false,
     new: false,
     color: '#a3a3a3'
@@ -313,7 +313,7 @@ export const products: Product[] = [
       { label: 'Condition', value: 'CLA\'d, Museum Quality' },
       { label: 'Origin', value: 'Wetzlar, Germany' }
     ],
-    images: ['https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Leica_M3.jpg/800px-Leica_M3.jpg'],
+    images: ['/media/products/leica-m3.jpg'],
     featured: true,
     new: false,
     color: '#27272a'

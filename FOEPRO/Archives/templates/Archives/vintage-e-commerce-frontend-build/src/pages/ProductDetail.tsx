@@ -224,6 +224,7 @@ export function ProductDetail() {
             category: product.category,
             description: product.description,
             price: product.price,
+            image_url: product.images?.[0] ?? null,
           }),
         });
 

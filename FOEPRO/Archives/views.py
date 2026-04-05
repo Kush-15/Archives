@@ -80,6 +80,7 @@ def product_detail(request, slug):
             'name': product.name,
             'slug': product.slug,
             'description': product.description,
+            'image_url': product.image_url,
             'price': str(product.price),
             'stock': product.stock,
             'rating_avg': float(product.rating_avg),
@@ -221,6 +222,7 @@ def api_link_product(request):
         name = (data.get('name') or '').strip()
         category_name = (data.get('category') or 'uncategorized').strip().lower()
         description = (data.get('description') or '').strip()
+        image_url = (data.get('image_url') or '').strip()
         price = data.get('price', 0)
 
         if not slug or not name:
@@ -235,6 +237,7 @@ def api_link_product(request):
                 'category': category,
                 'name': name,
                 'description': description or f'{name} artifact',
+                'image_url': image_url or None,
                 'price': price or 0,
                 'stock': 10,
             },
@@ -245,6 +248,7 @@ def api_link_product(request):
             'id': product.id,
             'slug': product.slug,
             'name': product.name,
+            'image_url': product.image_url,
             'rating_avg': float(product.rating_avg),
             'rating_count': int(product.rating_count),
         })
