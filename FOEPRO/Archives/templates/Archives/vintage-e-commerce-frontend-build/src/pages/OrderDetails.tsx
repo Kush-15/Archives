@@ -14,7 +14,7 @@ interface OrderItem {
 
 interface PaymentInfo {
   id: number;
-  razorpay_payment_id: string;
+  stripe_payment_intent_id: string;
   status: string;
   created_at: string;
 }
@@ -33,7 +33,7 @@ interface OrderDetail {
   order_id: string;
   status: string;
   total_amount: string;
-  razorpay_order_id: string;
+  stripe_payment_intent_id: string;
   created_at: string;
   updated_at: string;
   items: OrderItem[];
@@ -185,7 +185,7 @@ export function OrderDetails() {
             <h3 className="text-xs uppercase tracking-wider mb-3" style={{ color: 'var(--arc-text-muted)' }}>Payment</h3>
             <div className="flex justify-between text-sm">
               <span style={{ color: 'var(--arc-text-body)' }}>Payment ID</span>
-              <span className="font-mono" style={{ color: 'var(--arc-text-light)' }}>{order.payment.razorpay_payment_id || 'N/A'}</span>
+              <span className="font-mono" style={{ color: 'var(--arc-text-light)' }}>{order.payment.stripe_payment_intent_id || 'N/A'}</span>
             </div>
             <div className="flex justify-between text-sm mt-2">
               <span style={{ color: 'var(--arc-text-body)' }}>Status</span>

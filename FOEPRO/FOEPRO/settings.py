@@ -407,19 +407,6 @@ if FRONTEND_BASE_URL not in CSRF_TRUSTED_ORIGINS:
     CSRF_TRUSTED_ORIGINS.append(FRONTEND_BASE_URL)
 
 # ---------------------------------------------------------------------------
-# Razorpay
-# ---------------------------------------------------------------------------
-RAZORPAY_KEY_ID = get_env('RAZORPAY_KEY_ID', '')
-RAZORPAY_KEY_SECRET = get_env('RAZORPAY_KEY_SECRET', '')
-RAZORPAY_WEBHOOK_SECRET = get_env('RAZORPAY_WEBHOOK_SECRET', '')
-
-if not RAZORPAY_KEY_ID or not RAZORPAY_KEY_SECRET:
-    warnings.warn(
-        'RAZORPAY_KEY_ID or RAZORPAY_KEY_SECRET not set; payment features will not work.',
-        RuntimeWarning,
-    )
-
-# ---------------------------------------------------------------------------
 # Stripe
 # ---------------------------------------------------------------------------
 STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY")

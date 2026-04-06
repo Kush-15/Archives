@@ -115,7 +115,7 @@ const StripeCheckoutForm = ({
 
 // --- Main Checkout Component ---
 export function Checkout() {
-  const { items, totalPrice, clearCart, setIsCartOpen } = useCart();
+  const { items, totalPrice, clearCart, closeCart } = useCart();
   const { isLoggedIn, getAuthHeaders, setIsAuthModalOpen, setAuthModalMode } = useAuth();
   const navigate = useNavigate();
 
@@ -131,8 +131,8 @@ export function Checkout() {
   const [clientSecret, setClientSecret] = useState('');
 
   useEffect(() => {
-    setIsCartOpen(false);
-  }, [setIsCartOpen]);
+    closeCart();
+  }, [closeCart]);
 
   useEffect(() => {
     if (!isLoggedIn) {

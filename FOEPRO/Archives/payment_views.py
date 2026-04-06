@@ -51,7 +51,7 @@ def list_addresses(request):
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
 def create_order(request):
-    """Accept cart items from frontend, validate stock, create Order + OrderItems, create Razorpay order."""
+    """Accept cart items from frontend, validate stock, create Order + OrderItems, create Stripe payment intent."""
     address_id = request.data.get('address_id')
     if not address_id:
         return Response({'error': 'address_id is required'}, status=status.HTTP_400_BAD_REQUEST)

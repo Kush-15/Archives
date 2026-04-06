@@ -4,7 +4,7 @@ import { AuthProvider } from '@/context/AuthContext';
 import { PerformanceProvider, usePerformance } from '@/context/PerformanceContext';
 import SiteNav from '@/components/ui/SiteNav';
 import { Footer } from '@/components/Footer';
-import { CartSlide } from '@/components/CartSlide';
+import { CartPanel } from '@/components/CartPanel';
 import { AuthModal } from '@/components/AuthModal';
 import { OtpModal } from '@/components/OtpModal';
 import { SearchOverlay } from '@/components/SearchOverlay';
@@ -17,6 +17,10 @@ import { Profile } from '@/pages/Profile';
 import { GoogleAuthCallback } from '@/pages/GoogleAuthCallback';
 import { TermsAndConditions } from '@/pages/TermsAndConditions';
 import { PrivacyPolicy } from '@/pages/PrivacyPolicy';
+import { About } from '@/pages/About';
+import { Shipping } from '@/pages/Shipping';
+import { Returns } from '@/pages/Returns';
+import { Contact } from '@/pages/Contact';
 import { Checkout } from '@/pages/Checkout';
 import { OrderConfirmation } from '@/pages/OrderConfirmation';
 import { Orders } from '@/pages/Orders';
@@ -58,7 +62,7 @@ function AppContent() {
       {!isHome && (
         <SiteNav onSearchClick={() => setIsSearchOpen(true)} />
       )}
-      <CartSlide />
+      <CartPanel />
       <AuthModal />
       <OtpModal />
       <SearchOverlay isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
@@ -80,6 +84,10 @@ function AppContent() {
             <Route path="/auth/callback" element={<GoogleAuthCallback />} />
             <Route path="/terms" element={<TermsAndConditions />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/shipping" element={<Shipping />} />
+            <Route path="/returns" element={<Returns />} />
+            <Route path="/contact" element={<Contact />} />
           </Routes>
         </main>
         {!isHome && <Footer />}

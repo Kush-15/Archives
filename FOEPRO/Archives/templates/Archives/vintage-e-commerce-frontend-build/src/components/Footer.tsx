@@ -52,24 +52,24 @@ export function Footer() {
             <h4 className="text-sm uppercase tracking-wider text-archive-500 mb-6">Information</h4>
             <ul className="space-y-3">
               <li>
-                <span className="text-archive-300 hover:text-cream transition-colors duration-300 cursor-pointer" data-cursor="pill">
+                <Link to="/about" className="text-archive-300 hover:text-cream transition-colors duration-300" data-cursor="pill">
                   About
-                </span>
+                </Link>
               </li>
               <li>
-                <span className="text-archive-300 hover:text-cream transition-colors duration-300 cursor-pointer" data-cursor="pill">
+                <Link to="/shipping" className="text-archive-300 hover:text-cream transition-colors duration-300" data-cursor="pill">
                   Shipping
-                </span>
+                </Link>
               </li>
               <li>
-                <span className="text-archive-300 hover:text-cream transition-colors duration-300 cursor-pointer" data-cursor="pill">
+                <Link to="/returns" className="text-archive-300 hover:text-cream transition-colors duration-300" data-cursor="pill">
                   Returns
-                </span>
+                </Link>
               </li>
               <li>
-                <span className="text-archive-300 hover:text-cream transition-colors duration-300 cursor-pointer" data-cursor="pill">
+                <Link to="/contact" className="text-archive-300 hover:text-cream transition-colors duration-300" data-cursor="pill">
                   Contact
-                </span>
+                </Link>
               </li>
             </ul>
           </div>

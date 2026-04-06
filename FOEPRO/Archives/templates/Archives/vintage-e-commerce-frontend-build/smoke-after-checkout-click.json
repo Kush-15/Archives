@@ -1,0 +1,8 @@
+{
+  "href": "http://127.0.0.1:8000/catalog",
+  "pathname": "/catalog",
+  "cartDialogExists": false,
+  "authDialogExists": true,
+  "authDialogVisible": true,
+  "authDialogText": "Welcome Back"
+}

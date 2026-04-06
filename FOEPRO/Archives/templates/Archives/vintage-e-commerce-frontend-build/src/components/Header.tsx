@@ -9,8 +9,9 @@ interface HeaderProps {
 
 export function Header({ onSearchClick }: HeaderProps) {
   const { totalItems, setIsCartOpen } = useCart();
-  const { isLoggedIn, setIsAuthModalOpen, setAuthModalMode } = useAuth();
+  const { isLoggedIn, logout, setIsAuthModalOpen, setAuthModalMode } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
@@ -115,17 +116,97 @@ export function Header({ onSearchClick }: HeaderProps) {
             )}
           </button>
 
-          {/* Mobile Menu */}
+          {/* Mobile Menu Toggle */}
           <button
             className="md:hidden p-2 text-archive-700 hover:text-archive-900 transition-colors"
-            aria-label="Menu"
-            onClick={handleAuthClick}
+            aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
+            {isMobileMenuOpen ? (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            ) : (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            )}
           </button>
         </div>
+      </div>
+
+      {/* Mobile Menu Drawer */}
+      <div
+        className={`md:hidden overflow-hidden transition-all duration-500 ease-[var(--ease-expo)] ${
+          isMobileMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+        }`}
+      >
+        <nav className="glass border-t border-archive-200/50 px-6 py-6 flex flex-col gap-4">
+          <Link
+            to="/"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className={`text-sm tracking-wide uppercase py-2 transition-colors duration-300 ${
+              location.pathname === '/' ? 'text-archive-900' : 'text-archive-600 hover:text-archive-900'
+            }`}
+          >
+            Home
+          </Link>
+          <Link
+            to="/catalog"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className={`text-sm tracking-wide uppercase py-2 transition-colors duration-300 ${
+              location.pathname === '/catalog' ? 'text-archive-900' : 'text-archive-600 hover:text-archive-900'
+            }`}
+          >
+            Catalog
+          </Link>
+          {isLoggedIn && (
+            <>
+              <Link
+                to="/profile"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={`text-sm tracking-wide uppercase py-2 transition-colors duration-300 ${
+                  location.pathname === '/profile' ? 'text-archive-900' : 'text-archive-600 hover:text-archive-900'
+                }`}
+              >
+                Profile
+              </Link>
+              <Link
+                to="/orders"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={`text-sm tracking-wide uppercase py-2 transition-colors duration-300 ${
+                  location.pathname === '/orders' ? 'text-archive-900' : 'text-archive-600 hover:text-archive-900'
+                }`}
+              >
+                Orders
+              </Link>
+            </>
+          )}
+          <div className="border-t border-archive-200/50 pt-4 mt-2">
+            {isLoggedIn ? (
+              <button
+                onClick={() => {
+                  logout();
+                  setIsMobileMenuOpen(false);
+                }}
+                className="text-sm tracking-wide uppercase text-archive-600 hover:text-archive-900 transition-colors duration-300"
+              >
+                Sign Out
+              </button>
+            ) : (
+              <button
+                onClick={() => {
+                  setAuthModalMode('login');
+                  setIsAuthModalOpen(true);
+                  setIsMobileMenuOpen(false);
+                }}
+                className="text-sm tracking-wide uppercase text-archive-600 hover:text-archive-900 transition-colors duration-300"
+              >
+                Sign In
+              </button>
+            )}
+          </div>
+        </nav>
       </div>
     </header>
   );
