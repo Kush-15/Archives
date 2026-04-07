@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useAuth } from '@/context/AuthContext';
 
 export function OtpModal() {
@@ -7,6 +8,18 @@ export function OtpModal() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
+
+  // Manage body class for blend mode override
+  useEffect(() => {
+    if (isOtpModalOpen) {
+      document.body.classList.add('otp-modal-open');
+    } else {
+      document.body.classList.remove('otp-modal-open');
+    }
+    return () => {
+      document.body.classList.remove('otp-modal-open');
+    };
+  }, [isOtpModalOpen]);
 
   if (!isOtpModalOpen) return null;
 
@@ -35,8 +48,8 @@ export function OtpModal() {
     setResendLoading(false);
   };
 
-  return (
-    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+  const otpContent = (
+    <div className="fixed inset-0 z-[120000] flex items-center justify-center p-4">
       <div className="auth-overlay absolute inset-0 animate-fade-in" onClick={() => setIsOtpModalOpen(false)} />
 
       <div className="auth-panel relative w-full max-w-md rounded-lg animate-scale-in" role="dialog" aria-labelledby="otp-title">
@@ -72,4 +85,6 @@ export function OtpModal() {
       </div>
     </div>
   );
+
+  return createPortal(otpContent, document.body);
 }

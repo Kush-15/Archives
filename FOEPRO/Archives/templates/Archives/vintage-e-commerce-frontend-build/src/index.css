@@ -340,6 +340,36 @@ img[data-loading="true"] {
   color: #E0C090;
 }
 
+body.auth-modal-open .arc-nav {
+  mix-blend-mode: normal !important;
+}
+
+body.cart-panel-open .arc-nav {
+  mix-blend-mode: normal !important;
+}
+
+body.search-overlay-open .arc-nav {
+  mix-blend-mode: normal !important;
+}
+
+body.otp-modal-open .arc-nav {
+  mix-blend-mode: normal !important;
+}
+
+body.auth-modal-open .auth-overlay {
+  background:
+    radial-gradient(circle at top, rgba(201, 165, 116, 0.08), transparent 35%),
+    rgba(5, 5, 5, 0.88);
+  -webkit-backdrop-filter: blur(22px) saturate(145%);
+  backdrop-filter: blur(22px) saturate(145%);
+}
+
+body.auth-modal-open .auth-panel {
+  background: linear-gradient(180deg, rgba(14, 14, 14, 0.97) 0%, rgba(8, 8, 8, 0.99) 100%);
+  border-color: rgba(248, 247, 244, 0.18);
+  box-shadow: 0 36px 96px rgba(0, 0, 0, 0.62);
+}
+
 .auth-gate {
   max-width: 42rem;
   margin: 0 auto;

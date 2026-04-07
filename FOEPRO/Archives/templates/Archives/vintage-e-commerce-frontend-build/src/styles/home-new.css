@@ -842,6 +842,11 @@ body::-webkit-scrollbar {
   mix-blend-mode: difference;
 }
 
+.arc-nav--home {
+  z-index: 1200;
+  isolation: isolate;
+}
+
 .arc-nav--scrolled {
   mix-blend-mode: normal;
   background: rgba(10, 10, 10, 0.80);
@@ -900,6 +905,8 @@ body::-webkit-scrollbar {
   padding: 0.5rem 1rem;
   border: 1px solid rgba(248, 247, 244, 0.2);
   transition: all 0.25s ease;
+  position: relative;
+  z-index: 9999;
 }
 
 .arc-nav-cta:hover {
@@ -912,6 +919,8 @@ body::-webkit-scrollbar {
   display: flex;
   align-items: center;
   gap: 1rem;
+  position: relative;
+  z-index: 9999;
 }
 
 /* ── Non-home solid background ── */
@@ -935,6 +944,7 @@ body::-webkit-scrollbar {
   align-items: center;
   justify-content: center;
   transition: color 0.22s ease;
+  z-index: 9999;
 }
 
 .arc-nav-icon-btn:hover {
@@ -970,6 +980,8 @@ body::-webkit-scrollbar {
   display: flex;
   align-items: center;
   gap: 0.9rem;
+  position: relative;
+  z-index: 9999;
 }
 
 .arc-nav-auth-link {
@@ -983,10 +995,35 @@ body::-webkit-scrollbar {
   cursor: pointer;
   padding: 0;
   transition: color 0.22s ease;
+  position: relative;
+  z-index: 9999;
 }
 
 .arc-nav-auth-link:hover {
   color: var(--arc-text-light);
+}
+
+/* Force normal blend mode for auth elements on home page to prevent hero washout */
+body:not(.auth-modal-open):not(.cart-panel-open):not(.search-overlay-open):not(.otp-modal-open) .arc-nav--home .arc-nav-auth,
+body:not(.auth-modal-open):not(.cart-panel-open):not(.search-overlay-open):not(.otp-modal-open) .arc-nav--home .arc-nav-auth-link {
+  mix-blend-mode: normal !important;
+  position: relative;
+  z-index: 9999;
+  isolation: isolate;
+}
+
+body:not(.auth-modal-open):not(.cart-panel-open):not(.search-overlay-open):not(.otp-modal-open) .arc-nav--home .arc-nav-right,
+body:not(.auth-modal-open):not(.cart-panel-open):not(.search-overlay-open):not(.otp-modal-open) .arc-nav--home .arc-nav-icon-btn,
+body:not(.auth-modal-open):not(.cart-panel-open):not(.search-overlay-open):not(.otp-modal-open) .arc-nav--home .arc-nav-cta,
+body:not(.auth-modal-open):not(.cart-panel-open):not(.search-overlay-open):not(.otp-modal-open) .arc-nav--home .arc-nav-hamburger {
+  mix-blend-mode: normal !important;
+  position: relative;
+  z-index: 9999;
+  isolation: isolate;
+}
+
+body.auth-modal-open .arc-nav--home {
+  mix-blend-mode: normal !important;
 }
 
 /* ── Avatar + dropdown ── */
@@ -1311,6 +1348,7 @@ body::-webkit-scrollbar {
   cursor: pointer;
   padding: 4px;
   flex-shrink: 0;
+  z-index: 9999;
 }
 
 .arc-nav-hamburger-bar {

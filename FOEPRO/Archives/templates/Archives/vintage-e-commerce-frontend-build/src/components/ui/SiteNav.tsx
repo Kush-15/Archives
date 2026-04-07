@@ -83,6 +83,7 @@ export default function SiteNav({ onSearchClick }: SiteNavProps = {}) {
 
   const navClass = [
     'arc-nav',
+    isHome ? 'arc-nav--home' : '',
     (scrolled || !isHome) ? 'arc-nav--scrolled' : '',
     !isHome  ? 'arc-nav--page' : '',
     menuOpen ? 'arc-nav--menu-open' : '',
@@ -138,19 +139,31 @@ export default function SiteNav({ onSearchClick }: SiteNavProps = {}) {
 
       {/* ── Right cluster ── */}
       <div className="arc-nav-right">
-        {/* Search */}
-        {!isHome && onSearchClick && (
-          <button
-            className="arc-nav-icon-btn"
-            onClick={onSearchClick}
-            aria-label="Search"
-            data-cursor="button"
-          >
-            <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </button>
-        )}
+        {/* Search - ALWAYS render, check onSearchClick inside */}
+        <button
+          className="arc-nav-icon-btn"
+          onClick={() => {
+            console.log('[SiteNav] Search button clicked, onSearchClick exists:', !!onSearchClick);
+            if (onSearchClick) {
+              onSearchClick();
+            } else {
+              console.error('[SiteNav] onSearchClick is not defined!');
+            }
+          }}
+          aria-label="Search"
+          data-cursor="button"
+          style={{
+            display: 'flex',
+            pointerEvents: 'auto',
+            cursor: 'pointer',
+            zIndex: 100,
+            position: 'relative',
+          }}
+        >
+          <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </button>
 
         {/* Auth */}
         {isLoggedIn ? (

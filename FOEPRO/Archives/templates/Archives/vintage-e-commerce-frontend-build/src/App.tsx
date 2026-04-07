@@ -45,6 +45,9 @@ function AppContent() {
   const isHome = pathname === '/';
   const appIsLoading = isHome ? false : isLoading;
 
+  // Debug log for search state
+  console.log('[App] isSearchOpen:', isSearchOpen, '| isHome:', isHome);
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoading(false);
@@ -73,7 +76,7 @@ function AppContent() {
       >
         <main className="flex-1">
           <Routes>
-            <Route path="/" element={<Home />} />
+            <Route path="/" element={<Home onSearchClick={() => setIsSearchOpen(true)} />} />
             <Route path="/catalog" element={<Catalog />} />
             <Route path="/product/:id" element={<ProductDetail />} />
             <Route path="/profile" element={<Profile />} />

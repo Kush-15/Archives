@@ -33,15 +33,20 @@ def _get_auth_backend():
 @ensure_csrf_cookie
 def _serve_spa(request):
     """Serve the built SPA index.html for all routes."""
-    # Try static/dist first (Vite build output in collectstatic root)
+    # Prefer the source dist build during local development so the latest
+    # Vite output is served without relying on stale STATIC_ROOT copies.
+    dist_index = Path(settings.BASE_DIR) / 'Archives' / 'templates' / 'Archives' / 'vintage-e-commerce-frontend-build' / 'dist' / 'index.html'
+    if settings.DEBUG and dist_index.exists():
+        return HttpResponse(dist_index.read_bytes(), content_type='text/html; charset=utf-8')
+
+    # Production fallback: use collectstatic output in STATIC_ROOT.
     static_index = settings.STATIC_ROOT / 'index.html'
     if static_index.exists():
-        return HttpResponse(static_index.read_text(encoding='utf-8'))
+        return HttpResponse(static_index.read_bytes(), content_type='text/html; charset=utf-8')
 
-    # Fallback: dist folder in source tree (local dev)
-    dist_index = Path(settings.BASE_DIR) / 'Archives' / 'templates' / 'Archives' / 'vintage-e-commerce-frontend-build' / 'dist' / 'index.html'
+    # Final dev fallback if STATIC_ROOT is empty.
     if dist_index.exists():
-        return HttpResponse(dist_index.read_text(encoding='utf-8'))
+        return HttpResponse(dist_index.read_bytes(), content_type='text/html; charset=utf-8')
 
     # Fallback: try Django template
     try:

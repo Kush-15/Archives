@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useAuth } from '@/context/AuthContext';
 import { apiFetch } from '@/lib/api';
 
@@ -21,10 +22,12 @@ export function AuthModal() {
     if (isAuthModalOpen) {
       document.addEventListener('keydown', handleEscape);
       document.body.style.overflow = 'hidden';
+      document.body.classList.add('auth-modal-open');
     }
     return () => {
       document.removeEventListener('keydown', handleEscape);
       document.body.style.overflow = '';
+      document.body.classList.remove('auth-modal-open');
     };
   }, [isAuthModalOpen, setIsAuthModalOpen]);
 
@@ -70,24 +73,26 @@ export function AuthModal() {
 
   const isSignup = authModalMode === 'signup';
 
-  if (!isAuthModalOpen) return null;
+  if (!isAuthModalOpen || typeof document === 'undefined') return null;
 
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+  return createPortal(
+    <div className="fixed inset-0 z-[120000] flex items-center justify-center p-4">
       {/* Backdrop */}
-      <div 
+      <div
         className="auth-overlay absolute inset-0 animate-fade-in"
         onClick={() => setIsAuthModalOpen(false)}
       />
-      
+
       {/* Modal */}
-      <div 
+      <div
         className={`auth-panel relative w-full max-w-md rounded-lg animate-scale-in ${isSignup ? 'auth-panel--signup' : ''}`}
         role="dialog"
+        aria-modal="true"
         aria-labelledby="auth-title"
       >
         {/* Close */}
         <button
+          type="button"
           onClick={() => setIsAuthModalOpen(false)}
           className="auth-close absolute top-4 right-4 p-2 z-10 transition-colors"
           aria-label="Close"
@@ -105,8 +110,8 @@ export function AuthModal() {
               {authModalMode === 'login' ? 'Welcome Back' : 'Join The Archives'}
             </h2>
             <p className="auth-copy">
-              {authModalMode === 'login' 
-                ? 'Sign in to access your collection' 
+              {authModalMode === 'login'
+                ? 'Sign in to access your collection'
                 : 'Create an account to start collecting'}
             </p>
           </div>
@@ -123,7 +128,10 @@ export function AuthModal() {
                     type="text"
                     id="username"
                     value={username}
-                    onChange={(e) => { setUsername(e.target.value); setUsernameAvailable(null); }}
+                    onChange={(e) => {
+                      setUsername(e.target.value);
+                      setUsernameAvailable(null);
+                    }}
                     onBlur={async () => {
                       const u = username.trim();
                       if (!u) return;
@@ -134,9 +142,11 @@ export function AuthModal() {
                         });
                         const data = await res.json();
                         setUsernameAvailable(!!data.available);
-                      } catch (e) {
+                      } catch {
                         setUsernameAvailable(null);
-                      } finally { setCheckingUsername(false); }
+                      } finally {
+                        setCheckingUsername(false);
+                      }
                     }}
                     className="auth-input px-4 py-3"
                     placeholder="Choose a username"
@@ -252,6 +262,7 @@ export function AuthModal() {
           <p className="auth-copy mt-6 text-center">
             {authModalMode === 'login' ? "Don't have an account?" : 'Already have an account?'}
             <button
+              type="button"
               onClick={switchMode}
               className="auth-link ml-1"
             >
@@ -260,6 +271,7 @@ export function AuthModal() {
           </p>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

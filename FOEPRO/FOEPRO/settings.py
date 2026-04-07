@@ -350,7 +350,7 @@ LOGGING = {
 }
 
 STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'Archives' / 'static'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [
     BASE_DIR / 'Archives' / 'templates' / 'Archives' / 'vintage-e-commerce-frontend-build' / 'dist',
 ]

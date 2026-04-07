@@ -12,7 +12,11 @@ import '@/styles/home-new.css';
 
 gsap.registerPlugin(ScrollTrigger);
 
-export function Home() {
+interface HomeProps {
+  onSearchClick?: () => void;
+}
+
+export function Home({ onSearchClick }: HomeProps = {}) {
   const { tier, useLoader } = usePerformance();
 
   // On low tier, skip the loader entirely — start as not-loading
@@ -29,7 +33,7 @@ export function Home() {
     <>
       {loading && <Loader onDone={() => setLoading(false)} tier={tier} />}
       <div className="archives-home">
-      <SiteNav />
+      <SiteNav onSearchClick={onSearchClick} />
 
       <main>
         {/* ACT I — The Arrival */}

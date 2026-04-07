@@ -1,6 +1,13 @@
-import { useEffect, useState, useRef, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { products, Product } from '@/data/products';
+import { usePerformance } from '@/context/PerformanceContext';
+
+/* ═══════════════════════════════════════════════════════════
+   THE ARCHIVES — Search Overlay (REWRITTEN FROM SCRATCH)
+   100% functional search with tier-aware styling
+   ═══════════════════════════════════════════════════════════ */
 
 interface SearchOverlayProps {
   isOpen: boolean;
@@ -8,65 +15,164 @@ interface SearchOverlayProps {
 }
 
 export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
+  const { tier } = usePerformance();
+  const navigate = useNavigate();
+  
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<Product[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Debug log
+  console.log('[SearchOverlay] isOpen:', isOpen);
+
+  // Focus input when opened and manage body scroll/class
   useEffect(() => {
     if (isOpen) {
-      inputRef.current?.focus();
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 50);
       document.body.style.overflow = 'hidden';
+      document.body.classList.add('search-overlay-open');
     } else {
+      // Reset state when closed
       setQuery('');
       setResults([]);
       setSelectedIndex(0);
+      document.body.style.overflow = '';
+      document.body.classList.remove('search-overlay-open');
     }
+    
     return () => {
       document.body.style.overflow = '';
+      document.body.classList.remove('search-overlay-open');
     };
   }, [isOpen]);
 
+  // Search products
   useEffect(() => {
-    if (query.length > 0) {
-      const searchTerms = query.toLowerCase().split(' ');
+    if (query.trim().length > 0) {
+      const searchTerms = query.toLowerCase().trim().split(/\s+/);
       const filtered = products.filter(product => {
-        const searchText = `${product.name} ${product.description} ${product.category} ${product.era}`.toLowerCase();
-        return searchTerms.every(term => searchText.includes(term));
+        const searchableText = [
+          product.name,
+          product.description,
+          product.tagline,
+          product.category,
+          product.era,
+          product.year.toString(),
+        ].join(' ').toLowerCase();
+        
+        return searchTerms.every(term => searchableText.includes(term));
       });
+      
       setResults(filtered);
       setSelectedIndex(0);
     } else {
       setResults([]);
+      setSelectedIndex(0);
     }
   }, [query]);
 
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+  // Keyboard navigation
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Escape') {
+      e.preventDefault();
       onClose();
     } else if (e.key === 'ArrowDown') {
       e.preventDefault();
-      setSelectedIndex(prev => Math.min(prev + 1, results.length - 1));
+      if (results.length > 0) {
+        setSelectedIndex(prev => Math.min(prev + 1, results.length - 1));
+      }
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
-      setSelectedIndex(prev => Math.max(prev - 1, 0));
+      if (results.length > 0) {
+        setSelectedIndex(prev => Math.max(prev - 1, 0));
+      }
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (results.length > 0 && results[selectedIndex]) {
+        navigate(`/product/${results[selectedIndex].id}`);
+        onClose();
+      }
     }
-  }, [onClose, results.length]);
+  };
+
+  // Auto-scroll selected item into view
+  useEffect(() => {
+    if (selectedIndex >= 0 && results.length > 0) {
+      const element = document.querySelector(`[data-search-result-index="${selectedIndex}"]`);
+      if (element) {
+        element.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }
+    }
+  }, [selectedIndex, results]);
+
+  // Handle backdrop click
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
 
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 z-[100]">
+  // Tier-aware blur
+  const blurAmount = tier === 'low' ? 'none' : tier === 'medium' ? 'blur(8px)' : 'blur(12px)';
+
+  const searchContent = (
+    <div
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 120000,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        paddingTop: '80px',
+        pointerEvents: 'auto',
+      }}
+      onClick={handleBackdropClick}
+      aria-modal="true"
+      role="dialog"
+      aria-label="Search"
+    >
       {/* Backdrop */}
-      <div 
-        className="absolute inset-0 arc-glass-backdrop animate-fade-in"
-        onClick={onClose}
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.85)',
+          backdropFilter: blurAmount,
+          WebkitBackdropFilter: blurAmount,
+          zIndex: 1,
+          pointerEvents: 'none',
+        }}
       />
-      
+
       {/* Search Container */}
-      <div className="relative max-w-3xl mx-auto mt-[15vh] px-4 animate-slide-up">
-        {/* Search Input */}
-        <div className="relative">
+      <div
+        style={{
+          position: 'relative',
+          zIndex: 2,
+          width: '100%',
+          maxWidth: '700px',
+          padding: '0 20px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '16px',
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Search Input Box */}
+        <div style={{ position: 'relative' }}>
           <input
             ref={inputRef}
             type="text"
@@ -74,79 +180,235 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Search the archives..."
-            className="w-full px-6 py-5 text-xl font-light rounded-lg shadow-2xl focus:outline-none placeholder:text-archive-400 arc-glass-panel"
-            style={{ background: 'var(--arc-glass-strong)' }}
-            aria-label="Search"
-            role="combobox"
-            aria-expanded={results.length > 0}
-            aria-controls="search-results"
+            autoComplete="off"
+            spellCheck="false"
+            style={{
+              width: '100%',
+              padding: '20px 60px 20px 24px',
+              fontSize: '18px',
+              fontWeight: 300,
+              color: '#FFFFFF',
+              backgroundColor: 'rgba(20, 20, 20, 0.95)',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              borderRadius: '12px',
+              outline: 'none',
+              backdropFilter: tier === 'low' ? 'none' : 'blur(16px)',
+              WebkitBackdropFilter: tier === 'low' ? 'none' : 'blur(16px)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+              transition: 'border-color 0.2s ease',
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+            }}
           />
+          
+          {/* Close Button */}
           <button
             onClick={onClose}
-            className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-archive-400 hover:text-archive-900 transition-colors"
+            style={{
+              position: 'absolute',
+              right: '16px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              padding: '8px',
+              color: 'rgba(255, 255, 255, 0.6)',
+              backgroundColor: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+              borderRadius: '6px',
+              transition: 'all 0.2s ease',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = '#FFFFFF';
+              e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = 'rgba(255, 255, 255, 0.6)';
+              e.currentTarget.style.backgroundColor = 'transparent';
+            }}
             aria-label="Close search"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
 
-        {/* Results */}
-        {query.length > 0 && (
-          <div 
-            id="search-results"
-            className="mt-4 rounded-lg shadow-xl max-h-[60vh] overflow-y-auto arc-glass-panel"
-            style={{ background: 'var(--arc-glass-strong)' }}
-            role="listbox"
+        {/* Results Container */}
+        {query.trim().length > 0 && (
+          <div
+            style={{
+              backgroundColor: 'rgba(20, 20, 20, 0.95)',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              borderRadius: '12px',
+              backdropFilter: tier === 'low' ? 'none' : 'blur(16px)',
+              WebkitBackdropFilter: tier === 'low' ? 'none' : 'blur(16px)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+              maxHeight: '60vh',
+              overflowY: 'auto',
+            }}
           >
             {results.length === 0 ? (
-              <div className="p-8 text-center">
-                <p className="text-archive-500">No artifacts found for "{query}"</p>
-                <p className="text-sm text-archive-400 mt-2">Try searching for a category, era, or product name</p>
+              // No Results
+              <div
+                style={{
+                  padding: '40px 24px',
+                  textAlign: 'center',
+                  color: 'rgba(255, 255, 255, 0.5)',
+                }}
+              >
+                <p style={{ fontSize: '16px', marginBottom: '8px' }}>
+                  No artifacts found for "{query}"
+                </p>
+                <p style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.3)' }}>
+                  Try searching for a category, era, or product name
+                </p>
               </div>
             ) : (
-              <ul className="divide-y divide-archive-100">
-                {results.map((product, index) => (
-                  <li key={product.id}>
+              // Results List
+              <div>
+                {results.map((product, index) => {
+                  const isSelected = index === selectedIndex;
+                  
+                  return (
                     <Link
+                      key={product.id}
                       to={`/product/${product.id}`}
                       onClick={onClose}
-                      className={`flex items-center gap-4 p-4 transition-colors ${
-                        index === selectedIndex ? 'bg-archive-100' : 'hover:bg-archive-50'
-                      }`}
-                      role="option"
-                      aria-selected={index === selectedIndex}
+                      data-search-result-index={index}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '16px',
+                        padding: '16px',
+                        borderBottom: index < results.length - 1 ? '1px solid rgba(255, 255, 255, 0.05)' : 'none',
+                        backgroundColor: isSelected ? 'rgba(255, 255, 255, 0.08)' : 'transparent',
+                        color: '#FFFFFF',
+                        textDecoration: 'none',
+                        transition: 'background-color 0.15s ease',
+                        cursor: 'pointer',
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isSelected) {
+                          e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isSelected) {
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                        }
+                      }}
                     >
-                      <div className="w-16 h-16 bg-archive-100 rounded overflow-hidden flex-shrink-0">
+                      {/* Product Image */}
+                      <div
+                        style={{
+                          width: '64px',
+                          height: '64px',
+                          backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                          borderRadius: '8px',
+                          overflow: 'hidden',
+                          flexShrink: 0,
+                        }}
+                      >
                         <img
                           src={product.images[0]}
                           alt={product.name}
-                          className="w-full h-full object-cover"
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                          }}
                         />
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-medium text-archive-900 truncate">{product.name}</h4>
-                        <p className="text-sm text-archive-500">{product.era} · {product.category}</p>
+
+                      {/* Product Info */}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div
+                          style={{
+                            fontSize: '16px',
+                            fontWeight: 500,
+                            color: '#FFFFFF',
+                            marginBottom: '4px',
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                          }}
+                        >
+                          {product.name}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: '13px',
+                            color: 'rgba(255, 255, 255, 0.5)',
+                          }}
+                        >
+                          {product.era} · {product.category}
+                        </div>
                       </div>
-                      <span className="text-archive-600">${product.price.toLocaleString()}</span>
+
+                      {/* Price */}
+                      <div
+                        style={{
+                          fontSize: '15px',
+                          fontWeight: 500,
+                          color: 'rgba(255, 255, 255, 0.7)',
+                          flexShrink: 0,
+                        }}
+                      >
+                        ${product.price.toLocaleString()}
+                      </div>
                     </Link>
-                  </li>
-                ))}
-              </ul>
+                  );
+                })}
+              </div>
             )}
           </div>
         )}
 
-        {/* Hint */}
-        {query.length === 0 && (
-          <div className="mt-8 text-center">
-            <p className="text-archive-400 text-sm">
-              Press <kbd className="px-2 py-1 rounded text-archive-500" style={{ background: 'var(--arc-glass)' }}>↑</kbd> <kbd className="px-2 py-1 rounded text-archive-500" style={{ background: 'var(--arc-glass)' }}>↓</kbd> to navigate · <kbd className="px-2 py-1 rounded text-archive-500" style={{ background: 'var(--arc-glass)' }}>ESC</kbd> to close
-            </p>
+        {/* Keyboard Hints */}
+        {query.trim().length === 0 && (
+          <div
+            style={{
+              textAlign: 'center',
+              padding: '20px',
+              color: 'rgba(255, 255, 255, 0.4)',
+              fontSize: '14px',
+            }}
+          >
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+              <kbd style={{ 
+                padding: '4px 8px', 
+                backgroundColor: 'rgba(255, 255, 255, 0.1)', 
+                borderRadius: '4px',
+                fontSize: '12px',
+              }}>↑</kbd>
+              <kbd style={{ 
+                padding: '4px 8px', 
+                backgroundColor: 'rgba(255, 255, 255, 0.1)', 
+                borderRadius: '4px',
+                fontSize: '12px',
+              }}>↓</kbd>
+              <span style={{ marginLeft: '4px' }}>to navigate</span>
+              <span style={{ margin: '0 8px', opacity: 0.3 }}>·</span>
+              <kbd style={{ 
+                padding: '4px 8px', 
+                backgroundColor: 'rgba(255, 255, 255, 0.1)', 
+                borderRadius: '4px',
+                fontSize: '12px',
+              }}>ESC</kbd>
+              <span style={{ marginLeft: '4px' }}>to close</span>
+            </span>
           </div>
         )}
       </div>
     </div>
   );
+
+  return createPortal(searchContent, document.body);
 }
