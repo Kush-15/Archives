@@ -22,8 +22,8 @@ mkdir -p .vercel/output/static
 # Copy frontend build to static
 cp -r Archives/templates/Archives/vintage-e-commerce-frontend-build/dist/* .vercel/output/static/
 # Copy Django static files
-cp -r staticfiles/admin .vercel/output/static/ 2>/dev/null || true
-cp -r staticfiles/rest_framework .vercel/output/static/ 2>/dev/null || true
+cp -r staticfiles/admin .vercel/output/static/admin 2>/dev/null || true
+cp -r staticfiles/rest_framework .vercel/output/static/rest_framework 2>/dev/null || true
 cp -r media .vercel/output/static/media/ 2>/dev/null || true
 # Copy API function
 cp api/index.py .vercel/output/functions/api/index.py
@@ -45,11 +45,16 @@ cat > .vercel/output/config.json << 'EOF'
       "continue": true
     },
     {
+      "src": "/assets/(.*)",
+      "continue": true
+    },
+    {
       "handle": "filesystem"
     },
     {
-      "src": "^/(.*)",
-      "dest": "/static/index.html"
+      "src": "/(.*)",
+      "status": 200,
+      "dest": "/index.html"
     }
   ]
 }
