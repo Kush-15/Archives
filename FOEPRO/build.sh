@@ -19,6 +19,7 @@ echo "=== Creating Vercel output structure ==="
 mkdir -p .vercel/output/static
 mkdir -p .vercel/output/functions/api
 
+cp -r Archives/templates/Archives/vintage-e-commerce-frontend-build/dist/* .vercel/output/static/ 2>/dev/null || true
 cp -r Archives/static/* .vercel/output/static/ 2>/dev/null || true
 cp -r media/* .vercel/output/static/media/ 2>/dev/null || true
 cp api/index.py .vercel/output/functions/api/index.py
@@ -28,31 +29,9 @@ cat > .vercel/output/config.json << 'EOF'
   "version": 3,
   "functions": {
     "api/index.py": {
-      "runtime": "python3.9",
-      "handler": "api/index.py"
+      "runtime": "python3.9"
     }
-  },
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/index.py"
-    },
-    {
-      "src": "/static/(.*)",
-      "dest": "/static/$1"
-    },
-    {
-      "src": "/media/(.*)",
-      "dest": "/static/media/$1"
-    },
-    {
-      "handle": "filesystem"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/api/index.py"
-    }
-  ]
+  }
 }
 EOF
 
