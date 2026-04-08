@@ -28,7 +28,8 @@ cat > .vercel/output/config.json << 'EOF'
   "version": 3,
   "functions": {
     "api/index.py": {
-      "runtime": "python3.9"
+      "runtime": "python3.9",
+      "handler": "api/index.py"
     }
   },
   "routes": [
@@ -43,6 +44,9 @@ cat > .vercel/output/config.json << 'EOF'
     {
       "src": "/media/(.*)",
       "dest": "/static/media/$1"
+    },
+    {
+      "handle": "filesystem"
     },
     {
       "src": "/(.*)",

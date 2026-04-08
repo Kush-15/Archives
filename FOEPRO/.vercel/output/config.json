@@ -2,7 +2,8 @@
   "version": 3,
   "functions": {
     "api/index.py": {
-      "runtime": "python3.9"
+      "runtime": "python3.9",
+      "handler": "api/index.py"
     }
   },
   "routes": [
@@ -17,6 +18,9 @@
     {
       "src": "/media/(.*)",
       "dest": "/static/media/$1"
+    },
+    {
+      "handle": "filesystem"
     },
     {
       "src": "/(.*)",
