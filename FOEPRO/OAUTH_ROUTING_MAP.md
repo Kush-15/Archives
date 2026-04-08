@@ -11,9 +11,9 @@
 ## 2. VERCEL ROUTING (build.sh:35-48)
 
 ```json
-{ "src": "/api/auth/google/(.*)", "dest": "/api/index" }     // Routes to Django
 { "src": "/api/(.*)", "dest": "/api/index" }                 // API fallback
-{ "src": "/(.*)", "status": 200, "dest": "/index.html" }     // SPA fallback
+{ "src": "/auth/google/callback", "dest": "/index.html" }    // SPA callback
+{ "src": "/(.*)", "status": 200, "dest": "/index.html" }   // SPA fallback
 ```
 
 ## 3. REACT ROUTE (App.tsx:87)
@@ -60,10 +60,10 @@ Step 7: Django creates/links user
         - Store in session
         
 Step 8: Django redirects to React callback
-        302 Location: /auth/callback?hcode=rF3+WxM...
+        302 Location: /auth/google/callback?hcode=rF3+WxM...
         
 Step 9: Browser navigates to /auth/callback
-        GET /auth/callback?hcode=rF3+WxM...
+        GET /auth/google/callback?hcode=rF3+WxM...
         ↓ (Routes: /(.*) → /index.html → React)
         
 Step 10: React GoogleAuthCallback component
@@ -199,7 +199,7 @@ CALLBACK HIT! Received request:
 | Issue | Cause | Fix |
 |-------|-------|-----|
 | `state_mismatch` | Session cookie not sent or persisted | Add `SESSION_COOKIE_SAMESITE='Lax'` + `request.session.save()` |
-| 404 on `/api/auth/callback` | Wrong routing rule | Remove incorrect rule from build.sh ✅ (DONE) |
+| 404 on `/api/auth/google/callback/` | Wrong routing rule or stale deployment | Rebuild after updating `build.sh` route config |
 | `redirect_uri_mismatch` | Google URI doesn't match Cloud Console | Exact match: `https://thearchives-chi.vercel.app/api/auth/google/callback/` |
 | Cookie not sent on callback | Domain or SameSite restriction | Set `DOMAIN=None`, `SAMESITE='Lax'` |
 
