@@ -28,11 +28,19 @@ cp api/index.py .vercel/output/functions/api/index.py
 cat > .vercel/output/config.json << 'EOF'
 {
   "version": 3,
-  "functions": {
-    "api/index.py": {
-      "runtime": "python3.9"
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api"
+    },
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/api"
     }
-  }
+  ]
 }
 EOF
 
