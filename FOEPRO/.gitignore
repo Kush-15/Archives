@@ -17,3 +17,5 @@ prn
 aux
 lpt*
 com*
+.vercel
+.env*.local
