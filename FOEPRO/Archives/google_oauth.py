@@ -200,19 +200,22 @@ def google_auth_start(request):
             status=503,
         )
 
-    # Canonicalize loopback host to match redirect_uri host (localhost vs 127.0.0.1).
-    # If start uses one loopback host and callback uses another, session cookies do not
-    # carry over and state validation fails with `state_mismatch`.
+    # Canonicalize start host to the redirect_uri host so OAuth start and callback
+    # always occur on the same deployment/domain.
     redirect_parts = urlparse(redirect_uri)
     redirect_host, redirect_port = _split_host_port(redirect_parts.netloc)
     current_host, current_port = _split_host_port(request.get_host())
-    loopback_hosts = {'127.0.0.1', 'localhost'}
     if (
         redirect_parts.scheme
-        and redirect_host in loopback_hosts
-        and current_host in loopback_hosts
+        and redirect_host
+        and current_host
         and (redirect_host != current_host or (redirect_port and redirect_port != current_port))
     ):
+        logger.info(
+            'Google OAuth start host mismatch: current_host=%s redirect_host=%s; redirecting start request',
+            request.get_host(),
+            redirect_parts.netloc,
+        )
         canonical_start = f'{redirect_parts.scheme}://{redirect_parts.netloc}{request.path}'
         query_string = request.META.get('QUERY_STRING', '')
         if query_string:
