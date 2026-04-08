@@ -25,7 +25,37 @@ mkdir -p .vercel/output/functions/api
 # Copy static files to output
 cp -r Archives/static/* .vercel/output/static/ 2>/dev/null || true
 
-# Copy Python function to output  
+# Copy media files to output/static/media
+cp -r media/* .vercel/output/static/media/ 2>/dev/null || true
+
+# Copy Python function to output
 cp api/index.py .vercel/output/functions/api/index.py
+
+# Create config.json for Vercel build output API
+cat > .vercel/output/config.json << EOF
+{
+  "functions": {
+    ".vercel/output/functions/api/index.py": {
+      "runtime": "python3.9"
+    }
+  },
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/functions/api/index.py"
+    },
+    {
+      "src": "/static/(.*)"
+    },
+    {
+      "src": "/media/(.*)"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/functions/api/index.py"
+    }
+  ]
+}
+EOF
 
 echo "=== Build complete ==="
