@@ -16,12 +16,13 @@ export RUNSERVER_REMOTE_DB="0"
 python manage.py collectstatic --noinput
 
 echo "=== Creating Vercel output structure ==="
-mkdir -p .vercel/output/static
+rm -rf .vercel/output
 mkdir -p .vercel/output/functions/api
 
-cp -r Archives/templates/Archives/vintage-e-commerce-frontend-build/dist/* .vercel/output/static/ 2>/dev/null || true
-cp -r Archives/static/* .vercel/output/static/ 2>/dev/null || true
-cp -r media/* .vercel/output/static/media/ 2>/dev/null || true
+cp -r Archives/templates/Archives/vintage-e-commerce-frontend-build/dist/* .vercel/output/
+cp -r staticfiles/admin .vercel/output/static/ 2>/dev/null || true
+cp -r staticfiles/rest_framework .vercel/output/static/ 2>/dev/null || true
+cp -r media .vercel/output/static/ 2>/dev/null || true
 cp api/index.py .vercel/output/functions/api/index.py
 
 cat > .vercel/output/config.json << 'EOF'
