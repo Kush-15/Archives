@@ -100,6 +100,8 @@ if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SESSION_COOKIE_SECURE = str(get_env('SESSION_COOKIE_SECURE', 'true')).lower() in ('1', 'true', 'yes')
     CSRF_COOKIE_SECURE = str(get_env('CSRF_COOKIE_SECURE', 'true')).lower() in ('1', 'true', 'yes')
+    SESSION_COOKIE_SAMESITE = 'Lax'  # Allow cookies during OAuth redirects
+    CSRF_COOKIE_SAMESITE = 'Lax'      # Allow CSRF cookies during OAuth redirects
 else:
     # Local HTTP dev: cookies must work over plain HTTP between Vite and Django
     SESSION_COOKIE_SAMESITE = 'Lax'
