@@ -256,7 +256,14 @@ def google_auth_callback(request):
     print(f"  GET params: {dict(request.GET)}")
     print("="*80 + "\n")
     
-    frontend_base = getattr(settings, 'FRONTEND_BASE_URL', 'http://127.0.0.1:3000')
+    frontend_base = str(getattr(settings, 'FRONTEND_BASE_URL', '')).strip().rstrip('/')
+    if frontend_base:
+        parsed_frontend = urlparse(frontend_base)
+        frontend_host, _ = _split_host_port(parsed_frontend.netloc)
+        if not settings.DEBUG and frontend_host in {'127.0.0.1', 'localhost'}:
+            frontend_base = f'{request.scheme}://{request.get_host()}'
+    else:
+        frontend_base = f'{request.scheme}://{request.get_host()}'
 
     def _error_redirect(code: str) -> HttpResponseRedirect:
         return HttpResponseRedirect(f'{frontend_base}/auth/callback?error={code}')

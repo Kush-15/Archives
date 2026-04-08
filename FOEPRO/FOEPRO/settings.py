@@ -98,8 +98,8 @@ if _extra_origins:
 # Proxy / HTTPS settings for production behind a reverse proxy
 if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-    SESSION_COOKIE_SECURE = get_env('SESSION_COOKIE_SECURE', 'true').lower() in ('1', 'true', 'yes')
-    CSRF_COOKIE_SECURE = get_env('CSRF_COOKIE_SECURE', 'true').lower() in ('1', 'true', 'yes')
+    SESSION_COOKIE_SECURE = str(get_env('SESSION_COOKIE_SECURE', 'true')).lower() in ('1', 'true', 'yes')
+    CSRF_COOKIE_SECURE = str(get_env('CSRF_COOKIE_SECURE', 'true')).lower() in ('1', 'true', 'yes')
 else:
     # Local HTTP dev: cookies must work over plain HTTP between Vite and Django
     SESSION_COOKIE_SAMESITE = 'Lax'
@@ -291,8 +291,12 @@ if DATABASES.get("default", {}).get("ENGINE") == "django.db.backends.postgresql"
         _connect_timeout = int(os.environ.get("DB_CONNECT_TIMEOUT", "8"))
     except ValueError:
         _connect_timeout = 8
-    DATABASES["default"].setdefault("OPTIONS", {})
-    DATABASES["default"]["OPTIONS"].setdefault("connect_timeout", _connect_timeout)
+    _default_db = DATABASES.get("default", {})
+    if isinstance(_default_db, dict):
+        _default_db.setdefault("OPTIONS", {})
+        _db_options = _default_db.get("OPTIONS")
+        if isinstance(_db_options, dict):
+            _db_options.setdefault("connect_timeout", _connect_timeout)
 
 
 # Password validation
@@ -372,11 +376,26 @@ REST_FRAMEWORK = {
 }
 
 # ---------------------------------------------------------------------------
+# Base URLs
+# ---------------------------------------------------------------------------
+BACKEND_BASE_URL = str(get_env('BACKEND_BASE_URL', 'http://127.0.0.1:8000')).rstrip('/')
+
+_frontend_base_raw = str(get_env('FRONTEND_BASE_URL', '')).strip().rstrip('/')
+if _frontend_base_raw:
+    FRONTEND_BASE_URL = _frontend_base_raw
+elif DEBUG:
+    FRONTEND_BASE_URL = 'http://127.0.0.1:3000'
+else:
+    FRONTEND_BASE_URL = BACKEND_BASE_URL
+
+# ---------------------------------------------------------------------------
 # Google OAuth 2.0
 # ---------------------------------------------------------------------------
 GOOGLE_CLIENT_ID = get_env('GOOGLE_CLIENT_ID', '')
 GOOGLE_CLIENT_SECRET = get_env('GOOGLE_CLIENT_SECRET', '')
-GOOGLE_REDIRECT_URI = get_env('GOOGLE_REDIRECT_URI', 'http://127.0.0.1:8000/api/auth/google/callback/')
+
+_google_redirect_default = f'{BACKEND_BASE_URL}/api/auth/google/callback/'
+GOOGLE_REDIRECT_URI = get_env('GOOGLE_REDIRECT_URI', _google_redirect_default)
 
 if GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET:
     if not GOOGLE_REDIRECT_URI:
@@ -391,10 +410,6 @@ if GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET:
             'Ensure the redirect URI matches your Google Cloud Console project.',
             RuntimeWarning,
         )
-
-# Base URLs
-BACKEND_BASE_URL = get_env('BACKEND_BASE_URL', 'http://127.0.0.1:8000')
-FRONTEND_BASE_URL = get_env('FRONTEND_BASE_URL', 'http://127.0.0.1:3000')
 
 # ---------------------------------------------------------------------------
 # CORS (django-cors-headers)
