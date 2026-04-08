@@ -271,7 +271,7 @@ def google_auth_callback(request):
         frontend_base = f'{request.scheme}://{request.get_host()}'
 
     def _error_redirect(code: str) -> HttpResponseRedirect:
-        return HttpResponseRedirect(f'{frontend_base}/auth/google/callback?error={code}')
+        return HttpResponseRedirect(f'{frontend_base}/api/auth/google/callback?error={code}')
 
     # --- Handle error from Google itself ---
     google_error = request.GET.get('error', '')
@@ -509,7 +509,7 @@ def google_auth_callback(request):
     request.session.pop(_SK_NEXT, None)
 
     # Redirect to SPA callback page with handoff code
-    redirect_url = f'{frontend_base}/auth/google/callback?hcode={handoff_code}'
+    redirect_url = f'{frontend_base}/api/auth/google/callback?hcode={handoff_code}'
     return HttpResponseRedirect(redirect_url)
 
 

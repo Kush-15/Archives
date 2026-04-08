@@ -38,7 +38,7 @@ cat > .vercel/output/config.json << 'EOF'
   "routes": [
     { "src": "/api/auth/google/(.*)", "dest": "/api/index" },
     { "src": "/api/(.*)", "dest": "/api/index" },
-    { "src": "/auth/google/callback", "dest": "/index.html" },
+    { "src": "/api/auth/google/callback", "dest": "/index.html" },
     { "src": "/static/(.*)", "continue": true },
     { "src": "/assets/(.*)", "continue": true },
     { "handle": "filesystem" },
