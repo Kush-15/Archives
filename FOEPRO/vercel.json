@@ -1,11 +1,5 @@
 {
   "version": 2,
   "buildCommand": "bash build.sh",
-  "outputDirectory": ".",
-  "routes": [
-    { "src": "/api/(.*)", "dest": "/api/index.py" },
-    { "src": "/static/(.*)", "dest": "/$1" },
-    { "handle": "filesystem" },
-    { "src": "/(.*)", "dest": "/api/index.py" }
-  ]
+  "outputDirectory": ".vercel/output"
 }

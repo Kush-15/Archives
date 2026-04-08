@@ -9,6 +9,7 @@ googleauth.json
 # Dependencies and build artifacts
 node_modules/
 dist/
+.vercel/output/
 
 # Windows reserved device names
 nul
