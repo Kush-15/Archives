@@ -180,14 +180,11 @@ def _split_host_port(netloc: str) -> tuple[str, str]:
 @require_GET
 def google_auth_start(request):
     """Generate state, store it in session, redirect to Google."""
-    print("\n" + "="*80)
-    print("GOOGLE LOGIN START")
-    print(f"  Request URL: {request.build_absolute_uri()}")
-    print("="*80 + "\n")
+    logger.info('Google OAuth start request received: path=%s', request.path)
     try:
         creds = _get_credentials()
     except ImproperlyConfigured:
-        print("ERROR: OAuth not configured")
+        logger.error('Google OAuth start failed: server not configured')
         return JsonResponse(
             {'error': 'Google OAuth is not configured on this server.'},
             status=503,
@@ -195,12 +192,9 @@ def google_auth_start(request):
 
     client_id = creds['client_id']
     redirect_uri = creds['redirect_uri']
-    
-    print(f"  Client ID: {client_id}")
-    print(f"  Redirect URI: {redirect_uri}")
 
     if not client_id or not redirect_uri:
-        print("ERROR: Missing client_id or redirect_uri")
+        logger.error('Google OAuth start failed: missing client_id or redirect_uri')
         return JsonResponse(
             {'error': 'Google OAuth is not configured on this server.'},
             status=503,
@@ -231,11 +225,13 @@ def google_auth_start(request):
     request.session[_SK_STATE] = state
     request.session[_SK_NEXT] = next_path
     request.session.set_expiry(600)  # session valid for 10 min during OAuth
-    request.session.save()  # ← CRITICAL: Force session save to persist across redirects
-
-    print(f"  State stored: {state[:20]}...")
-    print(f"  Session key: {request.session.session_key}")
-    print(f"  Session saved: {_SK_STATE in request.session}")
+    request.session.save()  # Force session save to persist across redirects.
+    logger.debug(
+        'Google OAuth start session prepared: session_key=%s has_state=%s next=%s',
+        request.session.session_key,
+        _SK_STATE in request.session,
+        next_path,
+    )
 
     params = {
         'client_id': client_id,
@@ -255,11 +251,7 @@ def google_auth_start(request):
 @require_GET
 def google_auth_callback(request):
     """Validate state, exchange code, verify ID token, link/create user."""
-    print("\n" + "="*80)
-    print("CALLBACK HIT! Received request:")
-    print(f"  URL: {request.build_absolute_uri()}")
-    print(f"  GET params: {dict(request.GET)}")
-    print("="*80 + "\n")
+    logger.info('Google OAuth callback received: path=%s', request.path)
     
     frontend_base = str(getattr(settings, 'FRONTEND_BASE_URL', '')).strip().rstrip('/')
     if frontend_base:
@@ -271,7 +263,7 @@ def google_auth_callback(request):
         frontend_base = f'{request.scheme}://{request.get_host()}'
 
     def _error_redirect(code: str) -> HttpResponseRedirect:
-        return HttpResponseRedirect(f'{frontend_base}/api/auth/google/callback?error={code}')
+        return HttpResponseRedirect(f'{frontend_base}/auth/google/callback?error={code}')
 
     # --- Handle error from Google itself ---
     google_error = request.GET.get('error', '')
@@ -294,11 +286,12 @@ def google_auth_callback(request):
     state_expected = request.session.get(_SK_STATE)
     next_path = request.session.get(_SK_NEXT, '/')
 
-    print(f"  Session key in callback: {request.session.session_key}")
-    print(f"  Session data in callback: {dict(request.session)}")
-    print(f"  State received from URL: {state_received[:20] if state_received else 'MISSING'}...")
-    print(f"  State expected from session: {state_expected[:20] if state_expected else 'MISSING'}...")
-    print(f"  Cookies in request: {dict(request.COOKIES)}")
+    logger.debug(
+        'Google OAuth callback state check: session_key=%s has_expected_state=%s has_received_state=%s',
+        request.session.session_key,
+        bool(state_expected),
+        bool(state_received),
+    )
 
     if not state_received or state_received != state_expected:
         logger.warning('Google OAuth state mismatch')
@@ -509,7 +502,7 @@ def google_auth_callback(request):
     request.session.pop(_SK_NEXT, None)
 
     # Redirect to SPA callback page with handoff code
-    redirect_url = f'{frontend_base}/api/auth/google/callback?hcode={handoff_code}'
+    redirect_url = f'{frontend_base}/auth/google/callback?hcode={handoff_code}'
     return HttpResponseRedirect(redirect_url)
 
 
@@ -521,19 +514,16 @@ def google_auth_callback(request):
 @require_POST
 def google_auth_exchange(request):
     """Exchange the one-time handoff code for a DRF token + user payload."""
-    print("\n" + "="*80)
-    print("EXCHANGE HIT! Handoff code exchange request:")
-    print(f"  URL: {request.build_absolute_uri()}")
-    print(f"  Body: {request.body[:200]}")
-    print(f"  Session key: {request.session.session_key}")
-    print(f"  Session data keys: {list(request.session.keys())}")
-    handoff_in_session = request.session.get(_SK_HANDOFF, 'NOT_FOUND')
-    print(f"  Handoff hash in session: {handoff_in_session[:20] + '...' if handoff_in_session != 'NOT_FOUND' else 'NOT_FOUND'}")
-    print("="*80 + "\n")
+    logger.info('Google OAuth exchange request received: path=%s', request.path)
+    logger.debug(
+        'Google OAuth exchange session context: session_key=%s session_keys=%s',
+        request.session.session_key,
+        list(request.session.keys()),
+    )
     try:
         body = _json.loads(request.body)
     except (_json.JSONDecodeError, ValueError):
-        print("ERROR: Invalid JSON in request body")
+        logger.warning('Google OAuth exchange rejected: invalid JSON body')
         return JsonResponse({'error': 'Invalid JSON'}, status=400)
 
     handoff_code = (body.get('code') or '').strip()

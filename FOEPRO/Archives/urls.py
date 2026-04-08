@@ -38,7 +38,7 @@ urlpatterns = [
     # Google OAuth 2.0
     path('api/auth/google/login/', google_auth_start, name='google_auth_login'),
     path('api/auth/google/start/', google_auth_start, name='google_auth_start'),
-    path('api/auth/callback/', google_auth_callback, name='google_auth_callback'),
+    path('api/auth/google/callback/', google_auth_callback, name='google_auth_callback'),
     path('api/auth/google/exchange/', google_auth_exchange, name='google_auth_exchange'),
     
     # E-commerce API
