@@ -231,6 +231,11 @@ def google_auth_start(request):
     request.session[_SK_STATE] = state
     request.session[_SK_NEXT] = next_path
     request.session.set_expiry(600)  # session valid for 10 min during OAuth
+    request.session.save()  # ← CRITICAL: Force session save to persist across redirects
+
+    print(f"  State stored: {state[:20]}...")
+    print(f"  Session key: {request.session.session_key}")
+    print(f"  Session saved: {_SK_STATE in request.session}")
 
     params = {
         'client_id': client_id,
@@ -288,6 +293,12 @@ def google_auth_callback(request):
     state_received = request.GET.get('state', '')
     state_expected = request.session.get(_SK_STATE)
     next_path = request.session.get(_SK_NEXT, '/')
+
+    print(f"  Session key in callback: {request.session.session_key}")
+    print(f"  Session data in callback: {dict(request.session)}")
+    print(f"  State received from URL: {state_received[:20] if state_received else 'MISSING'}...")
+    print(f"  State expected from session: {state_expected[:20] if state_expected else 'MISSING'}...")
+    print(f"  Cookies in request: {dict(request.COOKIES)}")
 
     if not state_received or state_received != state_expected:
         logger.warning('Google OAuth state mismatch')

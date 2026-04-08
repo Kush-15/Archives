@@ -102,12 +102,16 @@ if not DEBUG:
     CSRF_COOKIE_SECURE = str(get_env('CSRF_COOKIE_SECURE', 'true')).lower() in ('1', 'true', 'yes')
     SESSION_COOKIE_SAMESITE = 'Lax'  # Allow cookies during OAuth redirects
     CSRF_COOKIE_SAMESITE = 'Lax'      # Allow CSRF cookies during OAuth redirects
+    SESSION_COOKIE_DOMAIN = None      # Allow cookies across all subdomains/hosts
+    CSRF_COOKIE_DOMAIN = None         # Allow CSRF cookies across all subdomains/hosts
 else:
     # Local HTTP dev: cookies must work over plain HTTP between Vite and Django
     SESSION_COOKIE_SAMESITE = 'Lax'
     CSRF_COOKIE_SAMESITE = 'Lax'
     SESSION_COOKIE_SECURE = False
     CSRF_COOKIE_SECURE = False
+    SESSION_COOKIE_DOMAIN = None
+    CSRF_COOKIE_DOMAIN = None
 
 
 # Application definition
