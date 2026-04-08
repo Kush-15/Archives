@@ -1,0 +1,61 @@
+{
+  "generatedAt": "2026-04-07T05:48:12.498Z",
+  "home": {
+    "data": {
+      "route": "/",
+      "overlay": {
+        "backgroundColor": "rgba(10, 10, 10, 0.72)",
+        "backdropFilter": "none"
+      },
+      "panel": {
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "color": "rgb(248, 247, 244)",
+        "opacity": "0.993756",
+        "mixBlendMode": "normal",
+        "filter": "none"
+      },
+      "modalRoot": {
+        "className": "fixed inset-0 z-[120000] flex items-center justify-center p-4",
+        "zIndex": "auto",
+        "fixedRootClassName": "fixed inset-0 z-[120000] flex items-center justify-center p-4",
+        "fixedRootZIndex": "auto"
+      },
+      "nav": {
+        "className": "arc-nav",
+        "mixBlendMode": "difference",
+        "filter": "none",
+        "opacity": "1"
+      }
+    },
+    "screenshot": "C:\\Users\\Admin\\Documents\\GitHub\\Archives\\FOEPRO\\tmp\\auth-modal-inspect\\home-auth-modal.png"
+  },
+  "catalog": {
+    "data": {
+      "route": "/catalog",
+      "overlay": {
+        "backgroundColor": "rgba(10, 10, 10, 0.72)",
+        "backdropFilter": "none"
+      },
+      "panel": {
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "color": "rgb(248, 247, 244)",
+        "opacity": "0.985983",
+        "mixBlendMode": "normal",
+        "filter": "none"
+      },
+      "modalRoot": {
+        "className": "fixed inset-0 z-[120000] flex items-center justify-center p-4",
+        "zIndex": "auto",
+        "fixedRootClassName": "fixed inset-0 z-[120000] flex items-center justify-center p-4",
+        "fixedRootZIndex": "auto"
+      },
+      "nav": {
+        "className": "arc-nav arc-nav--scrolled arc-nav--page",
+        "mixBlendMode": "normal",
+        "filter": "none",
+        "opacity": "1"
+      }
+    },
+    "screenshot": "C:\\Users\\Admin\\Documents\\GitHub\\Archives\\FOEPRO\\tmp\\auth-modal-inspect\\catalog-auth-modal.png"
+  }
+}
