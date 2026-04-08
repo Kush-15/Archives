@@ -14,7 +14,7 @@ export default function SiteNav({ onSearchClick }: SiteNavProps = {}) {
   const isHome = location.pathname === '/';
 
   const { user, isLoggedIn, logout, setIsAuthModalOpen, setAuthModalMode } = useAuth();
-  const { totalItems, openCart } = useCart();
+  const { totalItems, setIsCartOpen } = useCart();
 
   const [scrolled, setScrolled]       = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -212,7 +212,7 @@ export default function SiteNav({ onSearchClick }: SiteNavProps = {}) {
           className="arc-nav-icon-btn arc-nav-cart-btn"
           onClick={() => {
             console.log('[SiteNav] Cart button clicked');
-            openCart();
+            setIsCartOpen(true);
           }}
           aria-label={`Cart: ${totalItems} items`}
           data-cursor="button"

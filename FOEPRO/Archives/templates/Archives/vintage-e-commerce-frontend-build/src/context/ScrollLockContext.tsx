@@ -70,7 +70,6 @@ export function ScrollLockProvider({ children }: { children: ReactNode }) {
   const reset = useCallback(() => {
     setLockedComponentIds(new Set());
     document.body.style.overflow = '';
-    console.warn('[ScrollLock] Force reset - all locks cleared');
   }, []);
 
   const lockCount = lockedComponentIds.size;

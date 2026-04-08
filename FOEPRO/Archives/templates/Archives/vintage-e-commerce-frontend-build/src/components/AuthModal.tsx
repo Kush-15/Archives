@@ -23,17 +23,61 @@ export function AuthModal() {
       document.addEventListener('keydown', handleEscape);
       document.body.style.overflow = 'hidden';
       document.body.classList.add('auth-modal-open');
+
+      // hide elements with extreme z-index (defensive workaround)
+      const cols = Array.from(document.querySelectorAll<HTMLElement>('*'));
+      const toHide: HTMLElement[] = [];
+      cols.forEach(el => {
+        const z = parseInt(getComputedStyle(el).zIndex || '', 10);
+        const isCursor = el.id === 'custom-cursor-layer' || el.closest('#custom-cursor-layer');
+        if (!isNaN(z) && z >= 2147483647 && !isCursor) {
+          toHide.push(el);
+          // mark and hide
+          el.setAttribute('data-hidden-by-modal', 'true');
+          el.style.setProperty('display', 'none', 'important');
+        }
+      });
+      hiddenByModalRef.current = toHide;
     }
     return () => {
       document.removeEventListener('keydown', handleEscape);
       document.body.style.overflow = '';
       document.body.classList.remove('auth-modal-open');
+      // restore hidden elements
+      hiddenByModalRef.current.forEach(el => {
+        if (el.getAttribute('data-hidden-by-modal') === 'true') {
+          el.removeAttribute('data-hidden-by-modal');
+          el.style.removeProperty('display');
+        }
+      });
+      hiddenByModalRef.current = [];
     };
   }, [isAuthModalOpen, setIsAuthModalOpen]);
+
+  // Focus management: focus the first input when modal opens, restore focus on close
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+  const hiddenByModalRef = useRef<HTMLElement[]>([]);
+  useEffect(() => {
+    if (isAuthModalOpen) {
+      previousFocusRef.current = document.activeElement as HTMLElement;
+      // Focus first input after a tick to allow render
+      requestAnimationFrame(() => {
+        const firstInput = document.querySelector<HTMLInputElement>('.auth-panel input');
+        firstInput?.focus();
+      });
+    } else if (previousFocusRef.current) {
+      previousFocusRef.current.focus();
+      previousFocusRef.current = null;
+    }
+  }, [isAuthModalOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    if (checkingUsername) {
+      setError('Please wait — checking username availability.');
+      return;
+    }
     setIsLoading(true);
 
     try {
@@ -76,7 +120,7 @@ export function AuthModal() {
   if (!isAuthModalOpen || typeof document === 'undefined') return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[120000] flex items-center justify-center p-4">
+    <div className="fixed inset-0 flex items-center justify-center p-4" style={{ zIndex: 999999 }}>
       {/* Backdrop */}
       <div
         className="auth-overlay absolute inset-0 animate-fade-in"
@@ -213,7 +257,7 @@ export function AuthModal() {
 
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || checkingUsername}
               className="auth-primary w-full py-4 text-sm uppercase tracking-[0.22em] disabled:opacity-50"
             >
               {isLoading ? 'Please wait...' : authModalMode === 'login' ? 'Sign In' : 'Create Account'}

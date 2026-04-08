@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, lazy, Suspense } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import SiteNav from '@/components/ui/SiteNav';
 import HeroScene from '../components/scenes/HeroScene';
 import RevealScene from '../components/scenes/RevealScene';
-import CollectionScene from '@/components/scenes/CollectionScene';
+const CollectionScene = lazy(() => import('@/components/scenes/CollectionScene'));
 import CraftsmanshipStack, { STATIONS } from '@/components/ui/CraftsmanshipStation';
 import Loader from '@/components/Loader';
 import { usePerformance } from '@/context/PerformanceContext';
@@ -43,7 +43,13 @@ export function Home({ onSearchClick }: HomeProps = {}) {
         <RevealScene />
 
         {/* ACT III — The Collection (3D on medium/high; static poster on low) */}
-        <CollectionScene />
+        <Suspense fallback={
+          <div className="py-32 flex items-center justify-center bg-[#0a0a0a]">
+            <p className="font-mono text-xs uppercase tracking-widest text-archive-muted">Loading Collection Scene...</p>
+          </div>
+        }>
+          <CollectionScene />
+        </Suspense>
 
         {/* ACT IV — The Craftsmanship (scattered card stack) */}
         <CraftsmanshipStack stations={STATIONS} />

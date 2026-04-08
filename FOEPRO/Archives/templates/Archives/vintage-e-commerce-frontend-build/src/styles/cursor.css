@@ -21,3 +21,16 @@
     display: none !important;
   }
 }
+#custom-cursor-layer {
+  z-index: 9999;
+}
+html.auth-modal-open #custom-cursor-layer,
+body.auth-modal-open #custom-cursor-layer,
+body.cart-panel-open #custom-cursor-layer {
+  display: block !important;
+  z-index: 2147483647 !important;
+}
+
+#custom-cursor-layer [aria-hidden="true"] {
+  z-index: 2147483647 !important;
+}

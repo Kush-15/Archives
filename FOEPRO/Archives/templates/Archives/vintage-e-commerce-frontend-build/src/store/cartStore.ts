@@ -26,6 +26,7 @@ try {
 
 // Notify all listeners
 function notify() {
+  console.log('[CartStore] Notifying', listeners.size, 'listeners');
   listeners.forEach(listener => listener());
 }
 
@@ -46,19 +47,18 @@ export const CartStore = {
   getTotalItems: () => cartItems.reduce((sum, item) => sum + item.quantity, 0),
   getTotalPrice: () => cartItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0),
 
-  // Cart visibility
   open: () => {
     console.log('[CartStore] Opening cart');
     isCartOpen = true;
     notify();
   },
-  
+
   close: () => {
     console.log('[CartStore] Closing cart');
     isCartOpen = false;
     notify();
   },
-  
+
   toggle: () => {
     console.log('[CartStore] Toggling cart, was:', isCartOpen);
     isCartOpen = !isCartOpen;
@@ -109,8 +109,12 @@ export const CartStore = {
 
   // Subscribe to changes
   subscribe: (listener: CartListener) => {
+    console.log('[CartStore] Listener subscribed, total listeners:', listeners.size + 1);
     listeners.add(listener);
-    return () => listeners.delete(listener);
+    return () => {
+      console.log('[CartStore] Listener unsubscribed');
+      listeners.delete(listener);
+    };
   }
 };
 

@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { CartProvider } from '@/context/CartContext';
 import { AuthProvider } from '@/context/AuthContext';
 import { PerformanceProvider, usePerformance } from '@/context/PerformanceContext';
@@ -45,8 +46,7 @@ function AppContent() {
   const isHome = pathname === '/';
   const appIsLoading = isHome ? false : isLoading;
 
-  // Debug log for search state
-  console.log('[App] isSearchOpen:', isSearchOpen, '| isHome:', isHome);
+
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -105,7 +105,9 @@ export function App() {
       <PerformanceProvider>
         <AuthProvider>
           <CartProvider>
-            <AppContent />
+            <ErrorBoundary>
+              <AppContent />
+            </ErrorBoundary>
           </CartProvider>
         </AuthProvider>
       </PerformanceProvider>

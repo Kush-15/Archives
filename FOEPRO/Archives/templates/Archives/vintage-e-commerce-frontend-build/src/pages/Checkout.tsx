@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { apiFetch } from '@/lib/api';
-import { loadStripe } from '@stripe/stripe-js';
+import { loadStripe, Stripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 
 // --- Types ---
@@ -127,7 +127,7 @@ export function Checkout() {
   const [error, setError] = useState('');
   
   // Stripe specifics
-  const [stripePromise, setStripePromise] = useState<any>(null);
+  const [stripePromise, setStripePromise] = useState<Promise<Stripe | null> | null>(null);
   const [clientSecret, setClientSecret] = useState('');
 
   useEffect(() => {
@@ -153,7 +153,9 @@ export function Checkout() {
            setStripePromise(loadStripe(data.publishable_key));
         }
       })
-      .catch(() => {});
+      .catch(() => {
+        setError('Failed to initialize payment gateway. Please refresh the page.');
+      });
 
     apiFetch('/api/addresses/', { headers })
       .then(r => r.json())
@@ -165,7 +167,9 @@ export function Checkout() {
           else if (data.length) setSelectedAddressId(data[0].id);
         }
       })
-      .catch(() => {});
+      .catch(() => {
+        setError('Failed to load saved addresses. Please try again.');
+      });
   }, [isLoggedIn, getAuthHeaders]);
 
   const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -376,10 +380,20 @@ export function Checkout() {
               {showAddressForm && (
                 <div className="p-6 rounded-lg" style={{ background: 'var(--arc-glass-strong)', border: '1px solid var(--arc-border)' }}>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {(['full_name', 'phone', 'line1', 'line2', 'city', 'state', 'pincode'] as const).map(field => (
+                    {(['full_name', 'phone', 'line1', 'line2', 'city', 'state', 'pincode'] as const).map(field => {
+                      const fieldNameMap: Record<string, string> = {
+                        full_name: 'Full Name',
+                        phone: 'Phone',
+                        line1: 'Address Line 1',
+                        line2: 'Address Line 2 (Optional)',
+                        city: 'City',
+                        state: 'State',
+                        pincode: 'Pincode',
+                      };
+                      return (
                       <div key={field} className={field === 'line1' || field === 'line2' ? 'md:col-span-2' : ''}>
                         <label className="block text-xs uppercase tracking-wider mb-1" style={{ color: 'var(--arc-text-muted)' }}>
-                          {field.replace(/_/g, ' ').replace('line1', 'Address Line 1').replace('line2', 'Address Line 2').replace('pincode', 'Pincode')}
+                          {fieldNameMap[field]}
                           {field !== 'line2' && <span style={{ color: '#fca5a5' }}>*</span>}
                         </label>
                         <input
@@ -390,7 +404,8 @@ export function Checkout() {
                           style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--arc-border)', color: 'var(--arc-text-light)' }}
                         />
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
                   <div className="flex gap-3 mt-4">
                     <button

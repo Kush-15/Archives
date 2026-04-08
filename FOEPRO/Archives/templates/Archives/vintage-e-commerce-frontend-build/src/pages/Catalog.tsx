@@ -25,9 +25,7 @@ export function Catalog() {
     setUserRatings(getStoredRatings());
   }, []);
 
-  useEffect(() => {
-    console.log(selectedRating);
-  }, [selectedRating]);
+
 
   const filteredProducts = useMemo(() => {
     let result = [...products];

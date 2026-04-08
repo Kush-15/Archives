@@ -52,11 +52,12 @@ export function useCart() {
     isOpen: state.isOpen as boolean,
     totalItems: state.totalItems as number,
     totalPrice: state.totalPrice as number,
-    
+
     // Actions
     openCart: CartStore.open,
     closeCart: CartStore.close,
     toggleCart: CartStore.toggle,
+    setIsCartOpen: (open: boolean) => open ? CartStore.open() : CartStore.close(),
     addToCart: CartStore.addItem,
     removeFromCart: CartStore.removeItem,
     updateQuantity: CartStore.updateQuantity,

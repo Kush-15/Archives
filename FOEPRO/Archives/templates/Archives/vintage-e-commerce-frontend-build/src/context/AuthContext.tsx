@@ -202,7 +202,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const savedItems = prev.savedItems.includes(productId)
         ? prev.savedItems.filter(id => id !== productId)
         : [...prev.savedItems, productId];
-      return { ...prev, savedItems };
+      const updated = { ...prev, savedItems };
+      // Persist immediately so data isn't lost if user closes tab
+      localStorage.setItem(`archives-saved-${prev.email}`, JSON.stringify(savedItems));
+      return updated;
     });
   };
 

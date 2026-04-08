@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 
 type Point = { x: number; y: number };
 
-export default function CustomCursor(): JSX.Element | null {
+export default function CustomCursor() {
   const cursorRef = useRef<HTMLDivElement>(null);
   const currentRef = useRef<Point>({ x: 0, y: 0 });
   const targetRef = useRef<Point>({ x: 0, y: 0 });
@@ -38,11 +38,11 @@ export default function CustomCursor(): JSX.Element | null {
     layer.style.position = 'fixed';
     layer.style.inset = '0';
     layer.style.pointerEvents = 'none';
-    layer.style.zIndex = '2147483647';
+    layer.style.zIndex = '9999';
     layer.style.isolation = 'isolate';
     layer.style.overflow = 'hidden';
 
-    document.documentElement.appendChild(layer);
+    document.body.appendChild(layer);
     layerRef.current = layer;
     setLayerReady(true);
 

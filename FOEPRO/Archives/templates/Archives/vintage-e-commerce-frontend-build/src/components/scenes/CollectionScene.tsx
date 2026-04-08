@@ -352,13 +352,12 @@ function CollectionCamera({
     invalidate();
   });
 
-  const handlePointerDown = useCallback((e: THREE.Event) => {
+  const handlePointerDown = useCallback((e: { clientX: number; clientY: number; stopPropagation: () => void }) => {
     if (!isCenter) return;
     isDragging.current = true;
     dragDistance.current = 0;
-    const pointerEvent = e as unknown as { clientX: number; clientY: number; stopPropagation: () => void };
-    pointerEvent.stopPropagation();
-    prevPointer.current = { x: pointerEvent.clientX, y: pointerEvent.clientY };
+    e.stopPropagation();
+    prevPointer.current = { x: e.clientX, y: e.clientY };
   }, [isCenter]);
 
   // Window-level move/up for smooth drag even when cursor leaves mesh
@@ -411,7 +410,7 @@ function CollectionCamera({
         onClick();
       }}
       onPointerDown={(e) => {
-        handlePointerDown(e as any);
+        handlePointerDown(e);
       }}
     >
       {/* ── Olympus OM-1 — compact 35mm SLR with pentaprism hump ── */}

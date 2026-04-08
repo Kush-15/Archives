@@ -24,8 +24,7 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
   
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Debug log
-  console.log('[SearchOverlay] isOpen:', isOpen);
+
 
   // Focus input when opened and manage body scroll/class
   useEffect(() => {
@@ -121,7 +120,7 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
   // Tier-aware blur
   const blurAmount = tier === 'low' ? 'none' : tier === 'medium' ? 'blur(8px)' : 'blur(12px)';
 
-  const searchContent = (
+  return createPortal(
     <div
       style={{
         position: 'fixed',
@@ -407,8 +406,7 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
-
-  return createPortal(searchContent, document.body);
 }

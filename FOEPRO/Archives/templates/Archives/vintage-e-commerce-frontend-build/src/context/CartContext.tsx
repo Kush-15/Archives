@@ -10,7 +10,7 @@ const CartContext = createContext<ReturnType<typeof useCartHook> | null>(null);
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const cart = useCartHook();
-  
+
   return (
     <CartContext.Provider value={cart}>
       {children}
