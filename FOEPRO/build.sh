@@ -41,10 +41,14 @@ cat > .vercel/output/config.json << 'EOF'
       "dest": "/api/index"
     },
     {
+      "src": "/static/(.*)",
+      "continue": true
+    },
+    {
       "handle": "filesystem"
     },
     {
-      "src": "/(.*)",
+      "src": "^/(.*)",
       "dest": "/static/index.html"
     }
   ]
