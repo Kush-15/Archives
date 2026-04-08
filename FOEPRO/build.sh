@@ -19,11 +19,18 @@ echo "=== Creating Vercel output structure ==="
 mkdir -p .vercel/output/functions/api
 mkdir -p .vercel/output/static
 
-cp -r Archives/templates/Archives/vintage-e-commerce-frontend-build/dist/* .vercel/output/
+# Copy frontend build to static
+cp -r Archives/templates/Archives/vintage-e-commerce-frontend-build/dist/* .vercel/output/static/
+# Copy Django static files
 cp -r staticfiles/admin .vercel/output/static/ 2>/dev/null || true
 cp -r staticfiles/rest_framework .vercel/output/static/ 2>/dev/null || true
-cp -r media .vercel/output/static/ 2>/dev/null || true
+cp -r media .vercel/output/static/media/ 2>/dev/null || true
+# Copy API function
 cp api/index.py .vercel/output/functions/api/index.py
+
+cat > .vercel/output/functions/api/.func << 'EOF'
+{"runtime": "python3.9"}
+EOF
 
 cat > .vercel/output/config.json << 'EOF'
 {
@@ -31,14 +38,14 @@ cat > .vercel/output/config.json << 'EOF'
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "/api"
+      "dest": "/api/index"
     },
     {
       "handle": "filesystem"
     },
     {
       "src": "/(.*)",
-      "dest": "/api"
+      "dest": "/static/index.html"
     }
   ]
 }
