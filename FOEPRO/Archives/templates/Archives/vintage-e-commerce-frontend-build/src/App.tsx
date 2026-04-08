@@ -84,7 +84,7 @@ function AppContent() {
             <Route path="/order-confirmation" element={<OrderConfirmation />} />
             <Route path="/orders" element={<Orders />} />
             <Route path="/orders/:orderId" element={<OrderDetails />} />
-            <Route path="/auth/callback" element={<GoogleAuthCallback />} />
+            <Route path="/auth/google/callback" element={<GoogleAuthCallback />} />
             <Route path="/terms" element={<TermsAndConditions />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/about" element={<About />} />

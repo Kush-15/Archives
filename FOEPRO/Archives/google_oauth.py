@@ -271,7 +271,7 @@ def google_auth_callback(request):
         frontend_base = f'{request.scheme}://{request.get_host()}'
 
     def _error_redirect(code: str) -> HttpResponseRedirect:
-        return HttpResponseRedirect(f'{frontend_base}/auth/callback?error={code}')
+        return HttpResponseRedirect(f'{frontend_base}/auth/google/callback?error={code}')
 
     # --- Handle error from Google itself ---
     google_error = request.GET.get('error', '')
