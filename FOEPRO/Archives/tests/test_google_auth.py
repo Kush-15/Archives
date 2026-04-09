@@ -413,6 +413,12 @@ class GoogleAuthCallbackTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertIn('error=access_denied', response['Location'])
 
+    def test_legacy_callback_alias_route(self):
+        """Legacy /api/auth/callback/ route resolves to Google callback view."""
+        response = self.client.get('/api/auth/callback/', {'error': 'access_denied'})
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('error=access_denied', response['Location'])
+
     def test_google_redirect_uri_mismatch_error(self):
         """Maps Google's redirect_uri_mismatch error."""
         session = SessionStore()

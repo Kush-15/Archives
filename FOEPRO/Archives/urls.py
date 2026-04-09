@@ -39,6 +39,8 @@ urlpatterns = [
     path('api/auth/google/login/', google_auth_start, name='google_auth_login'),
     path('api/auth/google/start/', google_auth_start, name='google_auth_start'),
     re_path(r'^api/auth/google/callback/?$', google_auth_callback, name='google_auth_callback'),
+    # Legacy callback alias kept for backward compatibility with older deployments/config.
+    re_path(r'^api/auth/callback/?$', google_auth_callback, name='google_auth_callback_legacy'),
     path('api/auth/google/exchange/', google_auth_exchange, name='google_auth_exchange'),
     
     # E-commerce API
