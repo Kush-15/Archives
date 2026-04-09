@@ -2,13 +2,13 @@
 
 A modern, full-stack e-commerce platform built with Django and React, featuring user authentication, product catalog management, shopping cart functionality, and product reviews.
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Overview](#overview)
 - [Features](#features)
 - [Tech Stack](#tech-stack)
 - [Project Structure](#project-structure)
-- [Setup & Installation](#setup--installation)
+- [Setup and Installation](#setup-and-installation)
 - [Configuration](#configuration)
 - [Database Models](#database-models)
 - [API Endpoints](#api-endpoints)
@@ -18,66 +18,74 @@ A modern, full-stack e-commerce platform built with Django and React, featuring 
 
 ---
 
-## 🎯 Overview
+## Overview
 
-**TheArchives** is a vintage-themed e-commerce platform that allows users to browse products, manage shopping carts, leave product reviews, and complete purchases. The backend is built with Django and Django REST Framework, while the frontend is a modern React SPA (Single Page Application).
+**TheArchives** is a vintage-themed e-commerce platform that allows users to browse products, manage shopping carts, leave product reviews, and complete purchases. The backend is built with Django and Django REST Framework, while the frontend is a React SPA.
 
 ### Key URLs
-- **Production**: https://archives-sable.vercel.app
-- **Local Development**: http://localhost:8000
+
+- **Production:** https://archives-sable.vercel.app
+- **Local Development:** http://localhost:8000
 
 ---
 
-## ✨ Features
+## Features
 
 ### User Management
-- ✅ User registration and authentication
-- ✅ Email-based OTP verification (10-minute validity)
-- ✅ Secure password hashing (PBKDF2)
-- ✅ Session-based authentication
-- ✅ User profile management
+
+- User registration and authentication
+- Email-based OTP verification (10-minute validity)
+- Secure password hashing (PBKDF2)
+- Session-based authentication
+- User profile management
 
 ### E-Commerce
-- ✅ Product catalog with categories
-- ✅ Product search and filtering
-- ✅ Product ratings and reviews (1-5 stars)
-- ✅ Shopping cart management
-- ✅ Stock management
-- ✅ Real-time rating statistics
+
+- Product catalog with categories
+- Product search and filtering
+- Product ratings and reviews (1-5 stars)
+- Shopping cart management
+- Stock management
+- Real-time rating statistics
 
 ### Technical Features
-- ✅ RESTful API with Django REST Framework
-- ✅ CSRF protection
-- ✅ Token-based authentication
-- ✅ Multi-database support (SQLite, PostgreSQL)
-- ✅ Single Page Application (SPA) routing
-- ✅ Static file serving with WhiteNoise
+
+- RESTful API with Django REST Framework
+- CSRF protection
+- Token-based authentication
+- Multi-database support (SQLite, PostgreSQL)
+- Single Page Application routing
+- Static file serving with WhiteNoise
 
 ---
 
-## 🛠 Tech Stack
+## Tech Stack
 
 ### Backend
-- **Framework**: Django 5.2.10
-- **REST API**: Django REST Framework 3.16.1
-- **Database**: PostgreSQL / SQLite
-- **Authentication**: Django Session + Token Auth
-- **Static Files**: WhiteNoise 6.x
-- **Email**: Django SMTP with Gmail
+
+- **Framework:** Django 5.2.10
+- **REST API:** Django REST Framework 3.16.1
+- **Database:** PostgreSQL / SQLite
+- **Authentication:** Django Session + Token Auth
+- **Static Files:** WhiteNoise 6.x
+- **Email:** Django SMTP with Gmail
 
 ### Frontend
-- **Framework**: React
-- **API Client**: Fetch API / Axios (integrated in SPA)
-- **Build Tool**: Node.js / npm
-- **Styling**: Custom CSS (vintage-themed)
-- **Routing**: React Router (SPA)
+
+- **Framework:** React
+- **API Client:** Fetch API / Axios (integrated in SPA)
+- **Build Tool:** Node.js / npm
+- **Styling:** Custom CSS (vintage-themed)
+- **Routing:** React Router (SPA)
 
 ### Deployment
-- **Platform**: Vercel
-- **Database**: Supabase PostgreSQL
-- **Static Files**: Vercel / WhiteNoise
+
+- **Platform:** Vercel
+- **Database:** Supabase PostgreSQL
+- **Static Files:** Vercel / WhiteNoise
 
 ### Development Tools
+
 - Python 3.9+
 - Django 5.2
 - PostgreSQL 13+
@@ -85,46 +93,44 @@ A modern, full-stack e-commerce platform built with Django and React, featuring 
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
-```
-Archives/
+```text
+FOEPRO/
 ├── FOEPRO/                          # Main Django project
-│   ├── FOEPRO/
-│   │   ├── settings.py              # Django configuration
-│   │   ├── urls.py                  # Main URL routing
-│   │   ├── wsgi.py                  # WSGI application
-│   │   └── asgi.py                  # ASGI application
-│   ├── Archives/                    # Main Django app
-│   │   ├── models.py                # Database models
-│   │   ├── views.py                 # View functions and ViewSets
-│   │   ├── serializers.py           # DRF serializers
-│   │   ├── urls.py                  # App-level URL routing
-│   │   ├── forms.py                 # Django forms
-│   │   ├── authentication.py        # Custom authentication
-│   │   ├── admin.py                 # Django admin configuration
-│   │   ├── migrations/              # Database migrations
-│   │   ├── templates/               # HTML templates & SPA dist
-│   │   ├── static/                  # Static files (CSS, JS, images)
-│   │   └── management/              # Custom management commands
-│   ├── api/
-│   │   └── index.py                 # Vercel serverless function
-│   ├── core/
-│   │   └── views_health.py          # Health check endpoint
-│   ├── manage.py                    # Django management script
-│   ├── requirements.txt             # Python dependencies
-│   ├── vercel.json                  # Vercel configuration
-│   ├── db.sqlite3                   # Local SQLite database
-│   └── README.md                    # Detailed project documentation
-├── .env                             # Environment variables (not committed)
-└── .venv/                           # Python virtual environment
+│   ├── settings.py                  # Django configuration
+│   ├── urls.py                      # Main URL routing
+│   ├── wsgi.py                      # WSGI application
+│   └── asgi.py                      # ASGI application
+├── Archives/                        # Main Django app
+│   ├── models.py                    # Database models
+│   ├── views.py                     # View functions and ViewSets
+│   ├── serializers.py               # DRF serializers
+│   ├── urls.py                      # App-level URL routing
+│   ├── forms.py                     # Django forms
+│   ├── authentication.py            # Custom authentication
+│   ├── admin.py                     # Django admin configuration
+│   ├── migrations/                  # Database migrations
+│   ├── templates/                   # HTML templates and SPA build
+│   ├── static/                      # Static files (CSS, JS, images)
+│   └── management/                  # Custom management commands
+├── api/
+│   └── index.py                     # Vercel serverless function
+├── core/
+│   └── views_health.py              # Health check endpoint
+├── manage.py                        # Django management script
+├── requirements.txt                 # Python dependencies
+├── vercel.json                      # Vercel configuration
+├── db.sqlite3                       # Local SQLite database
+└── README.md                        # Project documentation
 ```
 
 ---
 
-## 🚀 Setup & Installation
+## Setup and Installation
 
 ### Prerequisites
+
 - Python 3.9 or higher
 - Node.js 16 or higher
 - PostgreSQL 13+ (optional for production)
@@ -133,11 +139,13 @@ Archives/
 ### Backend Setup
 
 #### 1. Navigate to the project directory
+
 ```bash
 cd FOEPRO
 ```
 
 #### 2. Create and activate virtual environment
+
 ```bash
 python -m venv .venv
 
@@ -149,11 +157,13 @@ source .venv/bin/activate
 ```
 
 #### 3. Install Python dependencies
+
 ```bash
 pip install -r requirements.txt
 ```
 
 #### 4. Create `.env` file in the FOEPRO directory
+
 ```env
 # Debug mode (set to False in production)
 DEBUG=True
@@ -178,18 +188,21 @@ RUNSERVER_REMOTE_DB=0
 ```
 
 #### 5. Run database migrations
+
 ```bash
 python manage.py makemigrations Archives
 python manage.py migrate
 ```
 
 #### 6. Create a superuser (admin account)
+
 ```bash
 python manage.py createsuperuser
 # Enter username, email, phone, and password when prompted
 ```
 
 #### 7. Start the development server
+
 ```bash
 python manage.py runserver
 # Server runs at http://localhost:8000
@@ -197,11 +210,12 @@ python manage.py runserver
 
 ---
 
-## ⚙️ Configuration
+## Configuration
 
 ### Environment Variables
 
 #### Development
+
 ```env
 DEBUG=True
 SECRET_KEY=dev-secret-key
@@ -210,6 +224,7 @@ USE_REMOTE_DB=0
 ```
 
 #### Production (Vercel + Supabase)
+
 ```env
 DEBUG=False
 SECRET_KEY=<your-secure-key>
@@ -222,7 +237,7 @@ CSRF_TRUSTED_ORIGINS=https://archives-sable.vercel.app
 
 ### Google OAuth 2.0
 
-The project includes a secure Google OAuth login. To enable it:
+The project includes Google OAuth login. To enable it:
 
 1. Create an OAuth client in Google Cloud Console (Web application) and add `http://127.0.0.1:8000/api/auth/google/callback/` as an authorized redirect URI for local development.
 2. Provide credentials to Django via either:
@@ -235,14 +250,14 @@ The project includes a secure Google OAuth login. To enable it:
 #### Troubleshooting
 
 | Error | Description | Fix |
-|-------|-------------|-----|
+| --- | --- | --- |
 | `redirect_uri_mismatch` | Registered URI differs from configured `GOOGLE_REDIRECT_URI` | Update either Google Cloud Console or `.env` |
 | `state_mismatch` | Session expired or cookies blocked | Retry, ensure cookies are enabled |
 | `google_email_not_verified` | Google account email is unverified | Verify email in Google account settings |
 | `google_sub_mismatch` | Email already linked to another Google account | Sign in with original account or contact support |
 | `token_exchange_failed` | Network/Google API error | Check backend logs for details |
 
-See `FOEPRO/SECURITY.md` for complete security architecture.
+See `SECURITY.md` for complete security architecture.
 
 ### Database Selection
 
@@ -250,56 +265,60 @@ The app automatically selects the database based on environment:
 
 1. **Local Development** (runserver + no USE_REMOTE_DB):
    - Uses SQLite (`db.sqlite3`)
-
 2. **DEBUG Mode** (no Vercel):
    - Uses SQLite unless `USE_REMOTE_DB=1`
-
-3. **Production** (Vercel or DEBUG=False):
+3. **Production** (Vercel or `DEBUG=False`):
    - Uses PostgreSQL via `DATABASE_URL`
 
 ---
 
-## 📊 Database Models
+## Database Models
 
 ### Core Models
 
 **User** - Custom user model with authentication
+
 - username, email, phone (all unique)
 - password (hashed with PBKDF2)
 - is_active, is_verified, otp fields
 - created_at, updated_at timestamps
 
 **Category** - Product categories
+
 - name (unique)
 - slug (auto-generated from name)
 
 **Product** - E-commerce products
+
 - category (ForeignKey to Category)
 - name, description, price, stock
 - rating_avg (auto-calculated), rating_count
 - slug (unique, auto-generated)
 
 **ProductReview** - User reviews for products
+
 - UUID primary key
 - product, user (unique together)
 - rating (1-5), review_text, review_date
 
 **Cart** - Shopping cart per user
+
 - OneToOne relationship with User
 - Auto-tracks creation/update time
 
 **CartItem** - Items in user's cart
+
 - cart, product (unique together)
 - quantity
 
 ---
 
-## 🔌 API Endpoints
+## API Endpoints
 
 ### Authentication
 
 | Method | Endpoint | Description |
-|--------|----------|-------------|
+| --- | --- | --- |
 | POST | `/api/signup/` | Register new user |
 | POST | `/api/signin/` | User login |
 | POST | `/api/verify-otp/` | Verify email OTP |
@@ -310,7 +329,7 @@ The app automatically selects the database based on environment:
 ### Products
 
 | Method | Endpoint | Description |
-|--------|----------|-------------|
+| --- | --- | --- |
 | GET | `/api/categories/` | List all categories |
 | GET | `/api/products/` | List products (supports filtering) |
 | GET | `/product/<slug>/` | Get product details |
@@ -318,7 +337,7 @@ The app automatically selects the database based on environment:
 ### Cart
 
 | Method | Endpoint | Description |
-|--------|----------|-------------|
+| --- | --- | --- |
 | GET | `/api/cart/` | Get user's cart |
 | POST | `/api/cart/add_to_cart/` | Add item to cart |
 | DELETE | `/api/cart/<id>/` | Remove item from cart |
@@ -326,34 +345,34 @@ The app automatically selects the database based on environment:
 ### Reviews
 
 | Method | Endpoint | Description |
-|--------|----------|-------------|
+| --- | --- | --- |
 | GET | `/api/products/<id>/reviews/` | List product reviews |
 | POST | `/api/products/<id>/reviews/` | Create new review |
 
 ---
 
-## 🔐 Authentication
+## Authentication
 
 ### Validation Rules
 
-- **Username**: Unique, max 150 chars
-- **Email**: Unique, valid format, required
-- **Phone**: Unique, 10 digits
-- **Password**: Min 6 chars, hashed with PBKDF2
-- **OTP**: 6 digits, expires in 10 minutes
+- **Username:** Unique, max 150 chars
+- **Email:** Unique, valid format, required
+- **Phone:** Unique, 10 digits
+- **Password:** Min 6 chars, hashed with PBKDF2
+- **OTP:** 6 digits, expires in 10 minutes
 
 ### Security Features
 
-✅ Password hashing (PBKDF2)
-✅ Session management
-✅ CSRF protection
-✅ Input validation
-✅ Unique constraints on sensitive fields
-✅ Token-based API authentication
+- Password hashing (PBKDF2)
+- Session management
+- CSRF protection
+- Input validation
+- Unique constraints on sensitive fields
+- Token-based API authentication
 
 ---
 
-## 🌐 Deployment
+## Deployment
 
 ### Deploy to Vercel
 
@@ -384,7 +403,7 @@ python manage.py collectstatic --noinput
 
 ---
 
-## 🔧 Development
+## Development
 
 ### Running Locally
 
@@ -423,7 +442,7 @@ python manage.py collectstatic --noinput
 ### Common Issues
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | "No module named 'Archives'" | Ensure you're in FOEPRO directory |
 | Database connection error | Check DATABASE_URL and PostgreSQL status |
 | CSRF token missing | Include X-CSRFToken header in API requests |
@@ -431,9 +450,9 @@ python manage.py collectstatic --noinput
 
 ---
 
-## 📚 Related Documentation
+## Related Documentation
 
-- **[Detailed Backend Docs](./FOEPRO/BACKEND_DOCUMENTATION.md)** - Comprehensive API and database schema documentation
+- **[Detailed Backend Docs](./BACKEND_DOCUMENTATION.md)** - Comprehensive API and database schema documentation
 - [Django Docs](https://docs.djangoproject.com/)
 - [Django REST Framework](https://www.django-rest-framework.org/)
 - [Vercel Deployment](https://vercel.com/docs)
@@ -441,10 +460,10 @@ python manage.py collectstatic --noinput
 
 ---
 
-## 💡 Key Technologies Used
+## Key Technologies Used
 
 | Component | Technology |
-|-----------|------------|
+| --- | --- |
 | Backend Framework | Django 5.2.10 |
 | REST API | Django REST Framework |
 | Database | PostgreSQL / SQLite |
@@ -456,36 +475,41 @@ python manage.py collectstatic --noinput
 
 ---
 
-## 📝 Recent Changelog
+## Recent Changelog
 
 ### v1.0.4 (Latest)
+
 - UI improvements and bug fixes
 - Enhanced product catalog
 - Improved cart functionality
 
 ### v1.0.3
+
 - UI refinements
 
 ### v1.0.2
+
 - Additional features
 
 ### v1.0.1
+
 - Initial UI implementation
 
 ### v1.0.0
+
 - First full-stack release
 
 ---
 
-## 📞 Support
+## Support
 
-1. Check the detailed documentation in `FOEPRO/BACKEND_DOCUMENTATION.md`
+1. Check the detailed documentation in `BACKEND_DOCUMENTATION.md`
 2. Review recent git commits for changes
 3. Check git logs: `git log --oneline -20`
 
 ---
 
-**Project**: TheArchives - E-Commerce Platform
-**Status**: Active Development
-**Last Updated**: March 2026
-**Version**: UI 1.0.4
+**Project:** TheArchives - E-Commerce Platform  
+**Status:** Active Development  
+**Last Updated:** March 2026  
+**Version:** UI 1.0.4
