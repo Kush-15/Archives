@@ -15,7 +15,6 @@ import os
 import secrets
 import time
 import re
-from pathlib import Path
 from urllib.parse import urlencode, urlparse
 
 import requests
@@ -62,22 +61,13 @@ def _load_credentials():
     """Load Google OAuth credentials with precedence:
 
     1. ``GOOGLE_CREDENTIALS_FILE`` env var pointing to a JSON file.
-    2. ``BASE_DIR / credentials.json`` file (if it exists).
-    3. ``GOOGLE_CLIENT_ID`` + ``GOOGLE_CLIENT_SECRET`` env vars (already in
-       ``settings``).
+    2. ``GOOGLE_CLIENT_ID`` + ``GOOGLE_CLIENT_SECRET`` values from settings.
 
     Returns a dict ``{'client_id', 'client_secret', 'redirect_uri'}``.
     Raises ``ImproperlyConfigured`` if no usable source is found.
     """
 
-    # --- Try JSON file first ---
-    cred_file = os.environ.get('GOOGLE_CREDENTIALS_FILE', '')
-    if not cred_file:
-        default_path = Path(settings.BASE_DIR) / 'credentials.json'
-        if default_path.is_file():
-            cred_file = str(default_path)
-
-    if cred_file:
+    def _load_from_file(cred_file: str) -> dict[str, str]:
         try:
             with open(cred_file, 'r') as f:
                 raw = _json.load(f)
@@ -96,7 +86,8 @@ def _load_credentials():
         missing = _REQUIRED_JSON_KEYS - set(raw.keys())
         if missing:
             raise ImproperlyConfigured(
-                f'Google credentials file is missing keys: {", ".join(sorted(missing))}'
+                f'Google credentials file is missing keys: '
+                f'{", ".join(sorted(missing))}'
             )
 
         redirect_uri = (
@@ -111,22 +102,27 @@ def _load_credentials():
             'redirect_uri': redirect_uri,
         }
 
-    # --- Fall back to env-var settings ---
+    # If a credentials file is explicitly provided, use it.
+    cred_file = os.environ.get('GOOGLE_CREDENTIALS_FILE', '').strip()
+    if cred_file:
+        return _load_from_file(cred_file)
+
+    # Otherwise use env/settings values.
     client_id = getattr(settings, 'GOOGLE_CLIENT_ID', '')
     client_secret = getattr(settings, 'GOOGLE_CLIENT_SECRET', '')
 
-    if not client_id or not client_secret:
-        raise ImproperlyConfigured(
-            'Google OAuth is not configured. Provide a credentials.json file '
-            '(GOOGLE_CREDENTIALS_FILE env or BASE_DIR/credentials.json) or set '
-            'GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET environment variables.'
-        )
+    if client_id and client_secret:
+        return {
+            'client_id': client_id,
+            'client_secret': client_secret,
+            'redirect_uri': getattr(settings, 'GOOGLE_REDIRECT_URI', ''),
+        }
 
-    return {
-        'client_id': client_id,
-        'client_secret': client_secret,
-        'redirect_uri': getattr(settings, 'GOOGLE_REDIRECT_URI', ''),
-    }
+    raise ImproperlyConfigured(
+        'Google OAuth is not configured. Set GOOGLE_CLIENT_ID and '
+        'GOOGLE_CLIENT_SECRET environment variables, or set '
+        'GOOGLE_CREDENTIALS_FILE to a valid credentials JSON file.'
+    )
 
 
 def _get_credentials():
@@ -206,9 +202,11 @@ def google_auth_start(request):
     redirect_host, redirect_port = _split_host_port(redirect_parts.netloc)
     current_host, current_port = _split_host_port(request.get_host())
     if (
-        redirect_parts.scheme
+        not settings.DEBUG
+        and redirect_parts.scheme
         and redirect_host
         and current_host
+        and current_host != 'testserver'
         and (redirect_host != current_host or (redirect_port and redirect_port != current_port))
     ):
         logger.info(

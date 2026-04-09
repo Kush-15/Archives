@@ -74,8 +74,10 @@ else:
 
 # SECURITY WARNING: don't run with debug turned on in production!
 
+_PRIMARY_DEPLOY_DOMAIN = 'thearchives-chi.vercel.app'
+
 ALLOWED_HOSTS = [
-    'archives-sable.vercel.app',
+    _PRIMARY_DEPLOY_DOMAIN,
     '.vercel.app',
     'localhost',
     '127.0.0.1',
@@ -87,7 +89,7 @@ if _extra_hosts:
     ALLOWED_HOSTS.extend(h.strip() for h in _extra_hosts.split(',') if h.strip())
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://archives-sable.vercel.app',
+    f'https://{_PRIMARY_DEPLOY_DOMAIN}',
 ]
 
 # Extend CSRF_TRUSTED_ORIGINS from env (comma-separated)
@@ -384,7 +386,8 @@ REST_FRAMEWORK = {
 # ---------------------------------------------------------------------------
 # Base URLs
 # ---------------------------------------------------------------------------
-BACKEND_BASE_URL = str(get_env('BACKEND_BASE_URL', 'http://127.0.0.1:8000')).rstrip('/')
+_backend_base_default = 'http://127.0.0.1:8000' if DEBUG else f'https://{_PRIMARY_DEPLOY_DOMAIN}'
+BACKEND_BASE_URL = str(get_env('BACKEND_BASE_URL', _backend_base_default)).rstrip('/')
 
 _frontend_base_raw = str(get_env('FRONTEND_BASE_URL', '')).strip().rstrip('/')
 if _frontend_base_raw:
