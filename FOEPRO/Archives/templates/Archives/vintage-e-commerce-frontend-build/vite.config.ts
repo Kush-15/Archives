@@ -10,7 +10,8 @@ const __dirname = path.dirname(__filename);
 // https://vite.dev/config/
 export default defineConfig(({ command }) => ({
   plugins: [react(), tailwindcss()],
-  base: './',
+  // Use absolute asset URLs so SPA deep links (e.g. /auth/google/callback) load JS bundles correctly.
+  base: '/',
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src"),
