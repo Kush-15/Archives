@@ -24,6 +24,8 @@ from google.oauth2 import id_token as google_id_token
 from django.conf import settings
 from django.contrib.auth import login as django_login
 from django.core.exceptions import ImproperlyConfigured
+from django.core.signing import BadSignature, SignatureExpired
+from django.core import signing
 from django.http import JsonResponse, HttpResponseRedirect
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
@@ -40,6 +42,7 @@ logger = logging.getLogger(__name__)
 GOOGLE_AUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth'
 GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token'
 HANDOFF_TTL_SECONDS = 120
+HANDOFF_SIG_SALT = 'google-oauth-handoff-v1'
 
 # Session keys
 _SK_STATE = 'google_oauth_state'
@@ -493,7 +496,8 @@ def google_auth_callback(request):
 
     # --- Store one-time handoff code in session ---
     handoff_code = secrets.token_urlsafe(48)
-    request.session[_SK_HANDOFF] = hashlib.sha256(handoff_code.encode()).hexdigest()
+    handoff_hash = hashlib.sha256(handoff_code.encode()).hexdigest()
+    request.session[_SK_HANDOFF] = handoff_hash
     request.session[_SK_HANDOFF_UID] = user.pk
     request.session[_SK_HANDOFF_TS] = int(time.time())
     request.session[_SK_HANDOFF_NEXT] = next_path
@@ -501,9 +505,21 @@ def google_auth_callback(request):
     # Callback completed successfully; clear state/next markers.
     request.session.pop(_SK_STATE, None)
     request.session.pop(_SK_NEXT, None)
+    request.session.save()
+
+    # Signed fallback ties handoff to the same browser session key.
+    handoff_sig = signing.dumps(
+        {
+            'uid': user.pk,
+            'code_hash': handoff_hash,
+            'next': next_path,
+            'sk': request.session.session_key or '',
+        },
+        salt=HANDOFF_SIG_SALT,
+    )
 
     # Redirect to SPA callback page with handoff code
-    redirect_url = f'{frontend_base}/auth/google/callback?hcode={handoff_code}'
+    redirect_url = f'{frontend_base}/auth/google/callback?{urlencode({"hcode": handoff_code, "sig": handoff_sig})}'
     return HttpResponseRedirect(redirect_url)
 
 
@@ -528,6 +544,7 @@ def google_auth_exchange(request):
         return JsonResponse({'error': 'Invalid JSON'}, status=400)
 
     handoff_code = (body.get('code') or '').strip()
+    handoff_sig = (body.get('sig') or '').strip()
     if not handoff_code:
         return JsonResponse({'error': 'Missing code'}, status=400)
 
@@ -536,9 +553,33 @@ def google_auth_exchange(request):
     uid = request.session.pop(_SK_HANDOFF_UID, None)
     ts = request.session.pop(_SK_HANDOFF_TS, None)
     redirect_to = request.session.pop(_SK_HANDOFF_NEXT, '/')
+    has_session_handoff = bool(stored_hash and uid and ts)
+    if has_session_handoff:
+        request.session.save()
+    else:
+        if not handoff_sig:
+            return JsonResponse({'error': 'Invalid or expired handoff code'}, status=400)
+        try:
+            signed_data = signing.loads(
+                handoff_sig,
+                salt=HANDOFF_SIG_SALT,
+                max_age=HANDOFF_TTL_SECONDS,
+            )
+        except SignatureExpired:
+            return JsonResponse({'error': 'Handoff code expired'}, status=400)
+        except BadSignature:
+            return JsonResponse({'error': 'Invalid or expired handoff code'}, status=400)
 
-    if not stored_hash or not uid or not ts:
-        return JsonResponse({'error': 'Invalid or expired handoff code'}, status=400)
+        signed_session_key = str(signed_data.get('sk') or '')
+        current_session_key = str(request.session.session_key or '')
+        if not signed_session_key or signed_session_key != current_session_key:
+            return JsonResponse({'error': 'Invalid or expired handoff code'}, status=400)
+
+        stored_hash = signed_data.get('code_hash')
+        uid = signed_data.get('uid')
+        redirect_to = _sanitize_next(signed_data.get('next'))
+        if not stored_hash or not uid:
+            return JsonResponse({'error': 'Invalid or expired handoff code'}, status=400)
 
     # Verify code matches
     code_hash = hashlib.sha256(handoff_code.encode()).hexdigest()
@@ -546,7 +587,7 @@ def google_auth_exchange(request):
         return JsonResponse({'error': 'Invalid handoff code'}, status=400)
 
     # Verify TTL
-    if int(time.time()) - ts > HANDOFF_TTL_SECONDS:
+    if has_session_handoff and int(time.time()) - ts > HANDOFF_TTL_SECONDS:
         return JsonResponse({'error': 'Handoff code expired'}, status=400)
 
     # Retrieve user and token

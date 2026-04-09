@@ -44,6 +44,7 @@ export function GoogleAuthCallback() {
 
   useEffect(() => {
     const code = searchParams.get('hcode');
+    const sig = searchParams.get('sig') || undefined;
     const errorParam = searchParams.get('error');
 
     if (errorParam) {
@@ -77,7 +78,7 @@ export function GoogleAuthCallback() {
 
     (async () => {
       try {
-        const result = await completeGoogleLogin(code);
+        const result = await completeGoogleLogin(code, sig);
         if (result.ok) {
           sessionStorage.setItem(exchangeDoneKey, '1');
           navigate(result.redirectTo || '/profile', { replace: true });

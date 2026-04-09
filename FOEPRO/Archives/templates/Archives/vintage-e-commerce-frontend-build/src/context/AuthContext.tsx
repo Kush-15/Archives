@@ -34,7 +34,7 @@ interface AuthContextType {
   setAuthModalMode: (mode: 'login' | 'signup') => void;
   getAuthHeaders: () => Record<string, string>;
   startGoogleLogin: (nextPath?: string) => void;
-  completeGoogleLogin: (code: string) => Promise<GoogleLoginResult>;
+  completeGoogleLogin: (code: string, sig?: string) => Promise<GoogleLoginResult>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -228,12 +228,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     window.location.href = apiUrl(`/api/auth/google/login/?next=${encodeURIComponent(next)}`);
   };
 
-  const completeGoogleLogin = useCallback(async (code: string): Promise<GoogleLoginResult> => {
+  const completeGoogleLogin = useCallback(async (code: string, sig?: string): Promise<GoogleLoginResult> => {
     try {
+      const payload: { code: string; sig?: string } = { code };
+      if (sig) {
+        payload.sig = sig;
+      }
       const res = await apiFetch('/api/auth/google/exchange/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code }),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();

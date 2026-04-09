@@ -17,6 +17,7 @@ import tempfile
 import time
 from unittest.mock import patch, MagicMock
 
+from django.core import signing
 from django.test import TestCase, RequestFactory, override_settings
 from django.contrib.sessions.backends.db import SessionStore
 from django.core.exceptions import ImproperlyConfigured
@@ -36,6 +37,7 @@ from Archives.google_oauth import (
     _SK_HANDOFF_TS,
     _SK_HANDOFF_NEXT,
     HANDOFF_TTL_SECONDS,
+    HANDOFF_SIG_SALT,
 )
 
 
@@ -615,3 +617,54 @@ class GoogleAuthExchangeTests(TestCase):
         )
         response2 = google_auth_exchange(request2)
         self.assertEqual(response2.status_code, 400)
+
+    def test_signed_fallback_allows_exchange_when_session_data_missing(self):
+        session = SessionStore()
+        session.save()
+        code = 'valid-code'
+        sig = signing.dumps(
+            {
+                'uid': self.user.pk,
+                'code_hash': hashlib.sha256(code.encode()).hexdigest(),
+                'next': '/profile',
+                'sk': session.session_key,
+            },
+            salt=HANDOFF_SIG_SALT,
+        )
+        request = _make_request(
+            self.factory,
+            'POST',
+            '/api/auth/google/exchange/',
+            {'code': code, 'sig': sig},
+            session=session,
+        )
+        response = google_auth_exchange(request)
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['status'], 'success')
+        self.assertEqual(data['redirect_to'], '/profile')
+
+    def test_signed_fallback_rejects_session_mismatch(self):
+        session = SessionStore()
+        session.save()
+        code = 'valid-code'
+        sig = signing.dumps(
+            {
+                'uid': self.user.pk,
+                'code_hash': hashlib.sha256(code.encode()).hexdigest(),
+                'next': '/profile',
+                'sk': 'different-session-key',
+            },
+            salt=HANDOFF_SIG_SALT,
+        )
+        request = _make_request(
+            self.factory,
+            'POST',
+            '/api/auth/google/exchange/',
+            {'code': code, 'sig': sig},
+            session=session,
+        )
+        response = google_auth_exchange(request)
+        self.assertEqual(response.status_code, 400)
+        data = json.loads(response.content)
+        self.assertIn('Invalid or expired handoff code', data['error'])
