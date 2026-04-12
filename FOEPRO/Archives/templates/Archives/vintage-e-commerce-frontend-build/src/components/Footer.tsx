@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { FooterSocialLinks } from '@/ui/FooterSocialLinks';
 
 export function Footer() {
   return (
@@ -77,9 +78,12 @@ export function Footer() {
 
         {/* Bottom */}
         <div className="pt-8 border-t border-archive-800 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-sm text-archive-500">
-            © {new Date().getFullYear()} The Archives. All rights reserved.
-          </p>
+          <div className="flex flex-col items-center md:items-start gap-3">
+            <p className="text-sm text-archive-500">
+              © {new Date().getFullYear()} The Archives. All rights reserved.
+            </p>
+            <FooterSocialLinks justifyContent="flex-start" />
+          </div>
           <div className="flex items-center gap-6">
             <Link
               to="/terms"
