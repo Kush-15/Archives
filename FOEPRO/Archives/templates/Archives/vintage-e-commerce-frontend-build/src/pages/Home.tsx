@@ -4,6 +4,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import SiteNav from '@/components/ui/SiteNav';
 import HeroScene from '../components/scenes/HeroScene';
 import RevealScene from '../components/scenes/RevealScene';
+import { MessageCircle, Camera, X as XIcon } from 'lucide-react';
 const CollectionScene = lazy(() => import('@/components/scenes/CollectionScene'));
 import CraftsmanshipStack, { STATIONS } from '@/components/ui/CraftsmanshipStation';
 import Loader from '@/components/Loader';
@@ -99,6 +100,78 @@ export function Home({ onSearchClick }: HomeProps = {}) {
             }}
           >
             <span>© {new Date().getFullYear()} The Archives. All rights reserved.</span>
+            <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', justifyContent: 'center' }}>
+              <a
+                href="https://discord.gg/p89YbDMWZ"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Discord"
+                style={{
+                  color: 'inherit',
+                  width: '1.85rem',
+                  height: '1.85rem',
+                  border: '1px solid rgba(248, 247, 244, 0.35)',
+                  borderRadius: '999px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <MessageCircle size={14} strokeWidth={1.8} />
+              </a>
+              <a
+                href="https://ig.me/j/AbaYv6JEmEqmzJsm/"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Instagram"
+                style={{
+                  color: 'inherit',
+                  width: '1.85rem',
+                  height: '1.85rem',
+                  border: '1px solid rgba(248, 247, 244, 0.35)',
+                  borderRadius: '999px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Camera size={14} strokeWidth={1.8} />
+              </a>
+              <span
+                aria-label="LinkedIn placeholder"
+                title="LinkedIn"
+                style={{
+                  color: 'inherit',
+                  width: '1.85rem',
+                  height: '1.85rem',
+                  border: '1px solid rgba(248, 247, 244, 0.2)',
+                  borderRadius: '999px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  opacity: 0.6,
+                }}
+              >
+                <span style={{ fontSize: '0.7rem', fontWeight: 700, lineHeight: 1 }}>in</span>
+              </span>
+              <span
+                aria-label="X placeholder"
+                title="X"
+                style={{
+                  color: 'inherit',
+                  width: '1.85rem',
+                  height: '1.85rem',
+                  border: '1px solid rgba(248, 247, 244, 0.2)',
+                  borderRadius: '999px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  opacity: 0.6,
+                }}
+              >
+                <XIcon size={14} strokeWidth={1.8} />
+              </span>
+            </div>
             <div style={{ display: 'flex', gap: '2rem' }}>
               <a href="/terms" style={{ color: 'inherit', textDecoration: 'none', borderBottom: '1px solid currentColor', paddingBottom: '1px' }}>Terms &amp; Conditions</a>
               <a href="/privacy" style={{ color: 'inherit', textDecoration: 'none', borderBottom: '1px solid currentColor', paddingBottom: '1px' }}>Privacy Policy</a>
